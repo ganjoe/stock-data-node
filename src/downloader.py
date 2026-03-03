@@ -30,8 +30,19 @@ from models import (
 
 logger = logging.getLogger(__name__)
 
-# How many seconds of history to cover per chunk
-CHUNK_DURATION_SECONDS = 86400 * 30   # 30 days
+# Chunk size per timeframe (larger chunks = fewer IBKR API calls for coarse timeframes)
+CHUNK_DURATION: dict[str, int] = {
+    "1m":  86400 * 1,        # 1 day
+    "5m":  86400 * 7,        # 1 week
+    "15m": 86400 * 14,       # 2 weeks
+    "30m": 86400 * 14,       # 2 weeks
+    "1h":  86400 * 30,       # 1 month
+    "4h":  86400 * 90,       # 3 months
+    "1D":  86400 * 365,      # 1 year  (IBKR handles up to 1Y of daily bars per request)
+    "1W":  86400 * 365 * 5,  # 5 years
+    "1M":  86400 * 365 * 10, # 10 years
+    "default": 86400 * 30,   # fallback
+}
 
 # Max history lookback per timeframe (seconds)
 MAX_HISTORY_LOOKBACK: dict[str, int] = {
@@ -245,11 +256,12 @@ class Downloader:
         if start >= now:
             return []  # Already up to date
 
+        chunk_size = CHUNK_DURATION.get(timeframe, CHUNK_DURATION["default"])
         chunks: list[DownloadChunk] = []
         chunk_start = start
 
         while chunk_start < now:
-            chunk_end = min(chunk_start + CHUNK_DURATION_SECONDS, now)
+            chunk_end = min(chunk_start + chunk_size, now)
             is_final = (chunk_end >= now)
             chunks.append(DownloadChunk(
                 ticker="",  # filled by caller

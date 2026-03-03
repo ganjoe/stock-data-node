@@ -5,7 +5,9 @@ Manages the ib_insync connection to an IB Gateway instance. (F-CON-010, F-CON-02
 from __future__ import annotations
 
 import asyncio
+import calendar
 import logging
+from datetime import date as date_type
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -172,7 +174,7 @@ class GatewayClient(IGatewayClient):
             barSizeSetting=bar_size,
             whatToShow="TRADES",
             useRTH=True,   # Regular Trading Hours only
-            formatDate=2,  # Unix timestamps
+            formatDate=1,  # String dates — more compatible across bar sizes
         )
 
         if not bars:
@@ -181,9 +183,8 @@ class GatewayClient(IGatewayClient):
 
         result: list[OHLCVBar] = []
         for bar in bars:
-            ts = int(bar.date.timestamp()) if hasattr(bar.date, "timestamp") else int(bar.date)
-            # Filter to the requested window
-            if ts < start_ts or ts > end_ts:
+            ts = self._bar_date_to_timestamp(bar.date)
+            if ts is None:
                 continue
             result.append(OHLCVBar(
                 timestamp=ts,
@@ -196,6 +197,36 @@ class GatewayClient(IGatewayClient):
 
         logger.debug("Received %d bars for %s/%s", len(result), contract.symbol, timeframe)
         return result
+
+    @staticmethod
+    def _bar_date_to_timestamp(bar_date: object) -> int | None:
+        """
+        Converts ib_insync bar.date to a Unix timestamp.
+        IBKR returns different types depending on bar size and formatDate setting:
+          - formatDate=1+daily  → datetime.date (e.g. date(2024, 3, 1))
+          - formatDate=1+intra  → datetime (e.g. datetime(2024, 3, 1, 9, 30))
+          - formatDate=2        → int (Unix timestamp, but broken for daily on some versions)
+          - str                 → "20240301" or "20240301 09:30:00"
+        """
+        try:
+            if isinstance(bar_date, datetime):
+                return int(bar_date.replace(tzinfo=timezone.utc).timestamp())
+            if isinstance(bar_date, date_type):
+                # datetime.date — treat as midnight UTC
+                return calendar.timegm(bar_date.timetuple())
+            if isinstance(bar_date, int):
+                return bar_date
+            if isinstance(bar_date, str):
+                s = bar_date.strip()
+                if len(s) == 8:  # "20240301"
+                    d = datetime.strptime(s, "%Y%m%d").replace(tzinfo=timezone.utc)
+                    return int(d.timestamp())
+                # "20240301 09:30:00" or "20240301 09:30:00 US/Eastern"
+                d = datetime.strptime(s[:17], "%Y%m%d %H:%M:%S").replace(tzinfo=timezone.utc)
+                return int(d.timestamp())
+            return None
+        except Exception:
+            return None
 
     @staticmethod
     def _seconds_to_duration(seconds: int, timeframe: str) -> str:
