@@ -1,0 +1,31 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Validation temp directory
+_validation_tmp/
+
+# Parquet data (large, managed externally)
+data/
+
+# Logs
+logs/
+
+# State files (manually managed)
+state/
+
+# Watch files
+watch/
+
+# Environment
+.env
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store

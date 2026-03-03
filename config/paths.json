@@ -1,0 +1,4 @@
+{
+    "parquet_dir": "/app/data/parquet",
+    "watch_dir": "/app/watch"
+}

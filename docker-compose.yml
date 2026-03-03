@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  stock-data-node:
+    build: .
+    container_name: stock-data-node
+    restart: unless-stopped
+    environment:
+      - APP_BASE_DIR=/app
+    volumes:
+      # Config files (hot-reload supported)
+      - ./config:/app/config
+      # Parquet data (readable by dashboard and other services)
+      - ./data:/app/data
+      # Watch directory (drop .txt files here to trigger downloads)
+      - ./watch:/app/watch
+      # Log files (accessible from host for inspection)
+      - ./logs:/app/logs
+      # Persistent state (failed_ticker.json blacklist)
+      - ./state:/app/state
+    ports:
+      # REST API
+      - "8000:8000"
+    # The container must be able to reach the IB-Gateway container.
+    # Option A: put both containers on the same Docker network (recommended)
+    # Option B: use host networking (add: network_mode: "host")
+    #
+    # Example with shared network:
+    # networks:
+    #   - trading-net
+    #
+    # networks:
+    #   trading-net:
+    #     external: true
+
+networks:
+  default:
+    name: trading-net
+    driver: bridge

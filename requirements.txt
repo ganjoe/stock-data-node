@@ -1,0 +1,5 @@
+ib_insync>=0.9.86
+pyarrow>=14.0.0
+fastapi>=0.104.0
+uvicorn>=0.24.0
+watchdog>=3.0.0

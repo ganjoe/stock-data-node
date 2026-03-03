@@ -1,0 +1,44 @@
+{
+    "AAPL": {
+        "symbol": "AAPL",
+        "exchange": "SMART",
+        "currency": "USD",
+        "sec_type": "STK"
+    },
+    "MSFT": {
+        "symbol": "MSFT",
+        "exchange": "SMART",
+        "currency": "USD",
+        "sec_type": "STK"
+    },
+    "GOOG": {
+        "symbol": "GOOG",
+        "exchange": "SMART",
+        "currency": "USD",
+        "sec_type": "STK"
+    },
+    "AMZN": {
+        "symbol": "AMZN",
+        "exchange": "SMART",
+        "currency": "USD",
+        "sec_type": "STK"
+    },
+    "NVDA": {
+        "symbol": "NVDA",
+        "exchange": "SMART",
+        "currency": "USD",
+        "sec_type": "STK"
+    },
+    "SPY": {
+        "symbol": "SPY",
+        "exchange": "SMART",
+        "currency": "USD",
+        "sec_type": "STK"
+    },
+    "SAP": {
+        "symbol": "SAP",
+        "exchange": "IBIS",
+        "currency": "EUR",
+        "sec_type": "STK"
+    }
+}
