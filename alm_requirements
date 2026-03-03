@@ -1,0 +1,25 @@
+ID,Category,Title,Description,Covered By
+F-SYS-010,System,Docker Container Deployment,Das System muss als autarker Docker-Container deploybar sein.,-
+F-SYS-020,System,Startup Corruption Check,"Das System muss beim Start alle bestehenden Parquet-Dateien auf Korruptheit prüfen. Korrupte Dateien werden gelöscht und die betroffenen Ticker in eine Watch-Datei geschrieben, damit sie automatisch neu heruntergeladen werden.",-
+F-SYS-030,System,Startup Connectivity Check,Das System muss beim Start die Erreichbarkeit des IB-Gateways prüfen und bei Fehler eine Fehlermeldung im Terminal ausgeben.,-
+F-CFG-010,Config,Gateway Environment Config,Eine Konfigurationsdatei (gateway.json) muss getrennte IP-Adressen und Ports für Live- und Paper-Trading-Verbindungen definieren.,-
+F-CFG-020,Config,Pfad-Konfigurationen,Der Zielpfad für Parquet-Dateien und der Watch-Ordner müssen über eine separate Konfigurationsdatei (paths.json) extern konfigurierbar sein.,-
+F-CFG-030,Config,Per-Ticker Timeframe Config,"Jeder Ticker-Ordner kann eine timeframes.json enthalten, die die zu ladenden Timeframes definiert. Falls nicht vorhanden, gilt der Default [1D].",-
+F-CFG-040,Config,Runtime Config Reload,"Änderungen an Konfigurationsdateien (z.B. ticker_map.json, timeframes.json) müssen im laufenden Betrieb ohne Neustart wirksam werden.",-
+F-CFG-050,Config,REST API Timeframe Persistence,"Wenn die REST-API einen neuen Timeframe für einen Ticker anfordert, muss dieser dauerhaft in der timeframes.json des betreffenden Ticker-Ordners ergänzt werden.",-
+F-CON-010,Network,Active Gateway Connection,"Das System muss sich mit einer externen, bereits authentifizierten IB-Gateway-Instanz (z.B. in einem anderen Docker) verbinden.",-
+F-CON-020,Network,Auto Market Data Detection,"Das System muss beim Start den bestmöglichen Market-Data-Typ über die IBKR-API anfordern (Live bevorzugt, Fallback auf Delayed). Der erkannte Typ wird im Terminal-Log ausgegeben.",-
+F-DAT-010,Data,Parquet Format & Partitioning,Rohe Marktdaten (OHLCV) müssen im Parquet-Format partitioniert nach Ticker-Ordner und Timeframe-Datei mit Unix-Timestamps gespeichert werden.,-
+F-DAT-020,Data,Konfliktfreier Append-Write,"Neue Marktdaten müssen via Append-Strategie (Write-to-Temp + Atomic Rename) konfliktfrei für parallele Lesezugriffe (z.B. Dashboard) geschrieben werden.",-
+F-INT-010,Interface,REST API Timeframe Override,Die REST-API muss die Übermittlung von Tickern inklusive expliziter Timeframe-Vorgaben ermöglichen.,-
+F-INT-020,Interface,Fehlertolerantes Datei-Parsing,"Watch-Dateien müssen robust geparst werden (Trennung der Ticker durch Leerzeichen, Kommata oder Zeilenumbrüche).",-
+F-INT-030,Interface,File Lifecycle Management,Abgearbeitete Ticker und komplett leere Watch-Dateien müssen vom System automatisch gelöscht werden.,-
+F-LOG-010,Logging,Strukturiertes Error Logging,"Fehler (z.B. Pacing, No Data) müssen crash-sicher und kategorisiert in eine zentrale Log-Datei geschrieben werden.",-
+F-LOG-020,Logging,Verbose Terminal Logging,"Das System muss ausgiebiges, strukturiertes Logging auf stdout/stderr ausgeben (Queue-Status, aktiver Ticker, Fortschritt, Fehler), damit über docker attach/logs der Zustand einsehbar ist.",-
+F-FNC-010,Function,Priority Queue,REST-API-Anfragen (Prio 1) müssen vor File-Watcher-Tickern (Prio 2) in der Abarbeitung priorisiert werden.,-
+F-FNC-020,Function,History Chunking Preemption,"Historische Downloads müssen in Blöcke zerlegt werden, um zwischenzeitlich hochpriorisierte Ticker (nur Prio 1 / REST-API) abzuarbeiten. Ticker gleicher Priorität unterbrechen sich nicht gegenseitig.",-
+F-FNC-030,Function,Smart Delta Download,Das System muss bestehende Parquet-Daten prüfen und ausschließlich fehlende neue Kerzen (Delta) pro Timeframe anfordern.,-
+F-FNC-040,Function,Ticker Symbol Resolution,Ticker müssen über eine Mapping-Datei (ticker_map.json) in gültige IBKR-Contracts aufgelöst werden.,-
+F-FNC-050,Function,Adaptive Rate Limiting,Pacing-Limits müssen dynamisch verwaltet und API-Fehler mit exponentiellem Backoff behandelt werden.,-
+F-FNC-060,Function,Timeframe Download Order,"Der Bulk-Downloader muss zuerst alle Daily-Timeframes (1D) aller Ticker abarbeiten, bevor er die übrigen Timeframes (aus den jeweiligen timeframes.json) verarbeitet.",-
+F-FNC-070,Function,Failed Ticker Blacklist,"Bei permanenten Fehlern (z.B. unbekannter Contract, Ticker nicht in ticker_map.json) wird der Ticker in failed_ticker.json aufgenommen. Ticker in dieser Datei werden bei zukünftigen Downloads automatisch übersprungen. Die Datei wird manuell editiert – Entfernung eines Eintrags erlaubt den erneuten Download.",-
