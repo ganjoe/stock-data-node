@@ -1,7 +1,7 @@
 """
-downloader.py — T-005
+downloader.py — T-005 + T-IMP-005/009/010
 Core download orchestrator: chunking, delta detection, preemption, phase ordering.
-(F-FNC-020, F-FNC-030, F-FNC-060)
+(F-FNC-020, F-FNC-030, F-FNC-060, F-IMP-060, F-IMP-100, F-IMP-130)
 """
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ from models import (
     DownloadPriority,
     DownloadRequest,
     DownloadResult,
+    ErrorCategory,
     FailedTickerEntry,
     IBKRContract,
     IConfigLoader,
@@ -57,22 +58,31 @@ MAX_HISTORY_LOOKBACK: dict[str, int] = {
     "1M":  86400 * 365 * 20,
 }
 
-# Errors that indicate a permanent failure (no point retrying)
-PERMANENT_ERROR_PATTERNS = [
-    "No security definition",
-    "No data of type",
-    "No historical data",
-    "Invalid contract",
-    "Ambiguous contract",
-]
 
-# Errors that indicate temporary pacing issues
-PACING_ERROR_PATTERNS = [
-    "pacing violation",
-    "Historical Market Data Service error message:1",
-    "Too many requests",
-    "Max number of",
-]
+def classify_error(error_msg: str) -> ErrorCategory:
+    """
+    Classifies an IBKR error message into one of 7 categories. (F-IMP-060)
+    Supports English and German error messages.
+    """
+    if not error_msg:
+        return ErrorCategory.UNKNOWN
+
+    msg = error_msg.lower()
+
+    if "qualify" in msg or "no security definition" in msg or "ambiguous contract" in msg or "invalid contract" in msg:
+        return ErrorCategory.QUALIFY_FAILED
+    if "no data" in msg or "hmds" in msg or "keine daten" in msg or "ergab keine" in msg or "no historical data" in msg:
+        return ErrorCategory.NO_DATA
+    if "permission" in msg or "not allowed" in msg or "abonnement" in msg:
+        return ErrorCategory.NO_PERMISSIONS
+    if "timeout" in msg:
+        return ErrorCategory.TIMEOUT
+    if "pacing" in msg or "violation" in msg or "too many requests" in msg or "max number of" in msg:
+        return ErrorCategory.PACING
+    if "cancelled" in msg or "query cancelled" in msg:
+        return ErrorCategory.CANCELLED
+
+    return ErrorCategory.UNKNOWN
 
 
 class Downloader:
@@ -137,8 +147,12 @@ class Downloader:
         logger.info("Downloader stop requested.")
 
     async def _process_request(self, request: DownloadRequest) -> None:
-        """Processes one DownloadRequest with chunking and preemption."""
+        """Processes one DownloadRequest with chunking, preemption, and batch progress."""
         request.status = TickerStatus.DOWNLOADING
+        request_start = time.monotonic()
+        chunk_ok = 0
+        chunk_fail = 0
+        total_bars = 0
 
         if not self._gateway.is_connected():
             logger.error("Gateway disconnected — re-queuing %s/%s", request.ticker, request.timeframe)
@@ -182,7 +196,7 @@ class Downloader:
                     request.ticker, request.timeframe, i + 1, len(chunks)
                 )
                 self._queue.enqueue(request)
-                return
+                return  # preempted — no batch summary
 
             # Rate limiting
             await self._rate_limiter.acquire()
@@ -191,23 +205,23 @@ class Downloader:
             result = await self._download_chunk(chunk, request.contract)
 
             if result.error:
-                error_msg = result.error.lower()
+                category = classify_error(result.error)
 
-                if any(p.lower() in error_msg for p in PACING_ERROR_PATTERNS):
+                if category == ErrorCategory.PACING:
                     logger.warning("Pacing error on %s/%s — applying backoff and retrying chunk", request.ticker, request.timeframe)
                     self._rate_limiter.report_pacing_error()
                     await self._rate_limiter.acquire()
-                    # Re-download this chunk
                     result = await self._download_chunk(chunk, request.contract)
                     if result.error:
                         logger.error(
                             "Chunk retry also failed for %s/%s: %s",
                             request.ticker, request.timeframe, result.error
                         )
+                        chunk_fail += 1
                         request.status = TickerStatus.FAILED
-                        return
+                        break
 
-                elif any(p.lower() in error_msg for p in PERMANENT_ERROR_PATTERNS):
+                elif category == ErrorCategory.QUALIFY_FAILED:
                     logger.error(
                         "Permanent error for %s/%s: %s — adding to blacklist",
                         request.ticker, request.timeframe, result.error
@@ -218,32 +232,66 @@ class Downloader:
                         timestamp=datetime.now(timezone.utc).isoformat(),
                         source="downloader",
                     ))
+                    chunk_fail += 1
                     request.status = TickerStatus.FAILED
-                    return
+                    break
+
+                elif category == ErrorCategory.NO_DATA:
+                    # NO_DATA is NOT permanent — just skip this chunk (F-IMP-060)
+                    logger.debug(
+                        "No data for %s/%s chunk %d/%d — skipping (not a permanent error)",
+                        request.ticker, request.timeframe, i + 1, len(chunks)
+                    )
+                    chunk_fail += 1
+                    continue
+
+                elif category == ErrorCategory.NO_PERMISSIONS:
+                    logger.error(
+                        "Permission error for %s/%s: %s — stopping",
+                        request.ticker, request.timeframe, result.error
+                    )
+                    chunk_fail += 1
+                    request.status = TickerStatus.FAILED
+                    break
 
                 else:
                     logger.error(
-                        "Unknown error for %s/%s: %s — skipping chunk",
-                        request.ticker, request.timeframe, result.error
+                        "%s error for %s/%s: %s — skipping chunk",
+                        category.value, request.ticker, request.timeframe, result.error
                     )
+                    chunk_fail += 1
                     continue
 
             self._rate_limiter.report_success()
 
             if result.bars:
                 self._writer.append_bars(request.ticker, request.timeframe, result.bars)
+                chunk_ok += 1
+                total_bars += len(result.bars)
             else:
                 logger.debug("Empty chunk for %s/%s (no new bars)", request.ticker, request.timeframe)
+                chunk_ok += 1  # empty but successful
 
-        request.status = TickerStatus.DONE
-        logger.info("✅ Done: %s / %s", request.ticker, request.timeframe)
+        # Batch progress reporting (F-IMP-130)
+        elapsed = time.monotonic() - request_start
+        total_chunks = chunk_ok + chunk_fail
+        if request.status != TickerStatus.FAILED:
+            request.status = TickerStatus.DONE
+        logger.info(
+            "📊 %s: %s/%s — %d/%d chunks OK, %d bars, %.1fs",
+            "✅" if request.status == TickerStatus.DONE else "❌",
+            request.ticker, request.timeframe,
+            chunk_ok, total_chunks, total_bars, elapsed,
+        )
 
     def _calculate_chunks(
         self, last_ts: Optional[int], timeframe: str
     ) -> list[DownloadChunk]:
         """
-        Splits the time range [start, now] into chunks of CHUNK_DURATION_SECONDS.
+        Splits the time range [start, now] into chunks.
         If last_ts is provided, downloads only from last_ts+1 (delta).
+        Chunks are returned in descending order (newest first) for faster
+        access to current data. (F-IMP-100)
         """
         now = int(time.time())
         lookback = MAX_HISTORY_LOOKBACK.get(timeframe, 86400 * 365)
@@ -271,6 +319,9 @@ class Downloader:
                 is_final=is_final,
             ))
             chunk_start = chunk_end + 1
+
+        # Descending order: newest chunks first (F-IMP-100)
+        chunks.reverse()
 
         return chunks
 

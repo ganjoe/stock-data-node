@@ -87,6 +87,32 @@ class ConfigLoader(IConfigLoader):
             json.dump(current, f, indent=2)
         logger.info("Added timeframe %s to %s/timeframes.json", timeframe, ticker)
 
+    def register_unmapped_ticker(self, ticker: str) -> None:
+        """Adds {ticker: null} to ticker_map.json if not already present. (F-IMP-070)"""
+        path = self._config_dir / "ticker_map.json"
+        if not path.exists():
+            return
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                raw = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return
+
+        normalized = ticker.strip().upper()
+        if normalized in raw:
+            return  # Never overwrite existing mapping (could be manual)
+
+        raw[normalized] = None  # null = unmapped, awaiting manual mapping
+        sorted_map = dict(sorted(raw.items()))
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(sorted_map, f, indent=2, ensure_ascii=False)
+        logger.info(
+            "Auto-registered %s as null in ticker_map.json (awaiting manual mapping)",
+            normalized,
+        )
+        # Reload to update in-memory map
+        self._load_ticker_map()
+
     def reload_if_changed(self) -> None:
         """Checks file mtimes and reloads changed configs. (F-CFG-040)"""
         files = {
@@ -156,14 +182,27 @@ class ConfigLoader(IConfigLoader):
             )
         with open(path, "r", encoding="utf-8") as f:
             raw = json.load(f)
-        self._ticker_map = {
-            symbol.upper(): IBKRContract(
-                symbol=data["symbol"],
-                exchange=data["exchange"],
-                currency=data["currency"],
-                sec_type=data["sec_type"],
-            )
-            for symbol, data in raw.items()
-        }
+
+        self._ticker_map = {}
+        null_count = 0
+        for symbol, data in raw.items():
+            key = symbol.upper()
+            if data is None:
+                # null = unmapped/SKIP sentinel (F-IMP-070)
+                self._ticker_map[key] = IBKRContract(
+                    symbol="SKIP", exchange="", currency="", sec_type=""
+                )
+                null_count += 1
+            else:
+                self._ticker_map[key] = IBKRContract(
+                    symbol=data["symbol"],
+                    exchange=data["exchange"],
+                    currency=data["currency"],
+                    sec_type=data["sec_type"],
+                )
+
         self._file_mtimes[str(path)] = path.stat().st_mtime
-        logger.debug("Loaded ticker_map.json (%d tickers)", len(self._ticker_map))
+        logger.debug(
+            "Loaded ticker_map.json (%d tickers, %d unmapped/null)",
+            len(self._ticker_map), null_count,
+        )

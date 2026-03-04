@@ -14,6 +14,7 @@ from typing import Optional
 from ib_insync import IB, Contract, util
 
 from models import (
+    BatchConfig,
     GatewayConfig,
     IBKRContract,
     IGatewayClient,
@@ -96,18 +97,18 @@ class GatewayClient(IGatewayClient):
     def is_connected(self) -> bool:
         return self._ib.isConnected()
 
-    async def detect_market_data_type(self) -> MarketDataType:
+    async def detect_market_data_type(self) -> BatchConfig:
         """
         Requests Live market data. IBKR automatically falls back to Delayed
-        if no live subscription exists. We detect which one is active.
-        (F-CON-020)
+        if no live subscription exists. We detect which one is active
+        and return an adaptive BatchConfig. (F-CON-020, F-IMP-010/020)
         """
         logger.info("Detecting market data type…")
         # Request Live (IBKR falls back to Delayed automatically)
         self._ib.reqMarketDataType(MarketDataType.LIVE)
         await asyncio.sleep(0.5)  # brief pause for the setting to propagate
 
-        # Try requesting a small snapshot (AAPL is highly liquid, always available)
+        # Try requesting a small snapshot (SPY is highly liquid, always available)
         spy = Contract(symbol="SPY", secType="STK", exchange="SMART", currency="USD")
         try:
             ticker = self._ib.reqMktData(spy, snapshot=True)
@@ -118,6 +119,12 @@ class GatewayClient(IGatewayClient):
             if ticker.last and ticker.last > 0:
                 self._market_data_type = MarketDataType.LIVE
                 logger.info("✅ Market data type: LIVE (real-time)")
+                return BatchConfig(
+                    market_data_type=MarketDataType.LIVE,
+                    max_concurrent=20,
+                    base_pacing_delay=0.1,
+                    description="Live (real-time)",
+                )
             else:
                 self._market_data_type = MarketDataType.DELAYED
                 logger.info("ℹ️  Market data type: DELAYED (15-min delay, no live subscription)")
@@ -125,7 +132,54 @@ class GatewayClient(IGatewayClient):
             logger.warning("Could not detect market data type: %s — assuming DELAYED", exc)
             self._market_data_type = MarketDataType.DELAYED
 
-        return self._market_data_type
+        return BatchConfig(
+            market_data_type=MarketDataType.DELAYED,
+            max_concurrent=1,
+            base_pacing_delay=3.0,
+            description="Delayed (15-min)",
+        )
+
+    async def qualify_contracts_batch(
+        self, contracts: dict[str, IBKRContract]
+    ) -> dict[str, IBKRContract]:
+        """
+        Qualifies all contracts in a single IBKR batch call.
+        Returns only successfully qualified contracts (conId != 0). (F-IMP-040)
+        """
+        if not contracts:
+            return {}
+
+        # Build ib_insync Contract objects
+        ib_contracts: dict[str, Contract] = {}
+        for ticker, ibkr in contracts.items():
+            c = Contract(
+                symbol=ibkr.symbol,
+                secType=ibkr.sec_type,
+                exchange=ibkr.exchange,
+                currency=ibkr.currency,
+            )
+            ib_contracts[ticker] = c
+
+        # Batch qualify
+        try:
+            await self._ib.qualifyContractsAsync(*ib_contracts.values())
+        except Exception as exc:
+            logger.warning("Batch contract qualification error: %s", exc)
+            return {}
+
+        # Filter: only successful (conId != 0)
+        qualified: dict[str, IBKRContract] = {}
+        for ticker, c in ib_contracts.items():
+            if c.conId and c.conId != 0:
+                qualified[ticker] = contracts[ticker]
+            else:
+                logger.warning("Contract qualification failed for %s — will be skipped", ticker)
+
+        logger.info(
+            "Contract qualification: %d/%d succeeded",
+            len(qualified), len(contracts),
+        )
+        return qualified
 
     async def request_historical_bars(
         self,

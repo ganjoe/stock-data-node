@@ -129,3 +129,37 @@ class ParquetWriter(IParquetWriter):
         except Exception as exc:
             logger.warning("Corrupt parquet file %s: %s", filepath, exc)
             return False
+
+    def check_year_coverage(self, ticker: str, timeframe: str) -> set[int]:
+        """
+        Scans existing parquet to find years with >200 bars (fully covered).
+        Current year is always excluded from "covered" to force update. (F-IMP-030)
+        """
+        path = self._get_parquet_path(ticker, timeframe)
+        if not path.exists():
+            return set()
+
+        try:
+            table = pq.read_table(str(path), columns=["timestamp"])
+            if table.num_rows == 0:
+                return set()
+        except Exception as exc:
+            logger.warning("Cannot read coverage for %s/%s: %s", ticker, timeframe, exc)
+            return set()
+
+        from datetime import datetime
+
+        # Count bars per year
+        year_counts: dict[int, int] = {}
+        for ts in table.column("timestamp").to_pylist():
+            y = datetime.fromtimestamp(int(ts)).year
+            year_counts[y] = year_counts.get(y, 0) + 1
+
+        # Threshold: 200 trading days = roughly a full year
+        covered = {y for y, count in year_counts.items() if count > 200}
+
+        # Always exclude current year — force update
+        current_year = datetime.now().year
+        covered.discard(current_year)
+
+        return covered

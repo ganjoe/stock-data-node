@@ -122,8 +122,13 @@ async def main() -> None:
         logger.critical("Cannot connect to IB Gateway: %s", exc)
         sys.exit(1)
 
-    # ── Detect market data type (F-CON-020) ────────────────────
-    await gateway.detect_market_data_type()
+    # ── Detect market data type (F-CON-020, F-IMP-010/020) ────────
+    batch_config = await gateway.detect_market_data_type()
+    rate_limiter.configure(batch_config)
+    logger.info(
+        "Market data config: %s (concurrent=%d, pacing=%.1fs)",
+        batch_config.description, batch_config.max_concurrent, batch_config.base_pacing_delay,
+    )
 
     # ── Signal handling ────────────────────────────────────────
     loop = asyncio.get_running_loop()

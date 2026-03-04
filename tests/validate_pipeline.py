@@ -162,7 +162,8 @@ class PipelineValidator:
 
         # Market data detection
         mdt = await gateway.detect_market_data_type()
-        print(f"── Market data type detected: {mdt.name}")
+        rate_limiter.configure(mdt)
+        print(f"── Market data detected: {mdt.description} (concurrent={mdt.max_concurrent}, pacing={mdt.base_pacing_delay}s)")
 
         # Process watch file
         print("── Processing watch file…")

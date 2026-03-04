@@ -42,6 +42,27 @@ class TimeframePhase(str, Enum):
     SECONDARY = "secondary"   # Phase 2: remaining timeframes
 
 
+class ErrorCategory(str, Enum):
+    """Fine-grained IBKR error classification. (F-IMP-060)"""
+    QUALIFY_FAILED = "QUALIFY_FAILED"
+    NO_DATA = "NO_DATA"
+    NO_PERMISSIONS = "NO_PERMISSIONS"
+    TIMEOUT = "TIMEOUT"
+    PACING = "PACING"
+    CANCELLED = "CANCELLED"
+    UNKNOWN = "UNKNOWN"
+
+
+class MarketStatus(str, Enum):
+    """NYSE market status. (F-IMP-080)"""
+    OPEN = "OPEN"
+    CLOSED = "CLOSED"
+    PRE_MARKET = "PRE-MARKET"
+    POST_MARKET = "POST-MARKET"
+    CLOSED_WEEKEND = "CLOSED (WEEKEND)"
+    CLOSED_HOLIDAY = "CLOSED (HOLIDAY)"
+
+
 # ─── Config Data Structures ──────────────────────────────────────
 
 @dataclass(frozen=True)
@@ -77,6 +98,15 @@ class IBKRContract:
     exchange: str
     currency: str
     sec_type: str        # "STK", "FUT", etc.
+
+
+@dataclass(frozen=True)
+class BatchConfig:
+    """Runtime configuration adapted to detected market data permissions. (F-IMP-010, F-IMP-020)"""
+    market_data_type: MarketDataType
+    max_concurrent: int       # Live=20, Delayed=1
+    base_pacing_delay: float  # Live=0.1, Delayed=3.0, Fallback=5.0
+    description: str          # Human-readable label
 
 
 # ─── Domain Objects ──────────────────────────────────────────────
@@ -170,6 +200,11 @@ class IConfigLoader(ABC):
         """Checks file mtimes and reloads changed configs. (F-CFG-040)"""
         ...
 
+    @abstractmethod
+    def register_unmapped_ticker(self, ticker: str) -> None:
+        """Adds {ticker: null} to ticker_map.json if not already present. (F-IMP-070)"""
+        ...
+
 
 class IGatewayClient(ABC):
     """Manages IBKR Gateway connection. (F-CON-010/020)"""
@@ -184,8 +219,8 @@ class IGatewayClient(ABC):
     def is_connected(self) -> bool: ...
 
     @abstractmethod
-    async def detect_market_data_type(self) -> MarketDataType:
-        """Detects best available market data type. (F-CON-020)"""
+    async def detect_market_data_type(self) -> BatchConfig:
+        """Detects best market data type and returns adaptive config. (F-CON-020, F-IMP-010/020)"""
         ...
 
     @abstractmethod
@@ -194,6 +229,13 @@ class IGatewayClient(ABC):
         start_ts: int, end_ts: int
     ) -> list[OHLCVBar]:
         """Downloads historical bars for a single chunk."""
+        ...
+
+    @abstractmethod
+    async def qualify_contracts_batch(
+        self, contracts: dict[str, IBKRContract]
+    ) -> dict[str, IBKRContract]:
+        """Qualifies all contracts in a single batch call. (F-IMP-040)"""
         ...
 
 
@@ -242,9 +284,19 @@ class IParquetWriter(ABC):
         """Returns True if parquet file is readable. (F-SYS-020)"""
         ...
 
+    @abstractmethod
+    def check_year_coverage(self, ticker: str, timeframe: str) -> set[int]:
+        """Returns set of years with >200 bars (fully covered). (F-IMP-030)"""
+        ...
+
 
 class IRateLimiter(ABC):
-    """Adaptive rate limiting with backoff. (F-FNC-050)"""
+    """Adaptive rate limiting with backoff. (F-FNC-050, F-IMP-010/020)"""
+
+    @abstractmethod
+    def configure(self, config: BatchConfig) -> None:
+        """Applies BatchConfig pacing and concurrency settings. (F-IMP-020)"""
+        ...
 
     @abstractmethod
     async def acquire(self) -> None:

@@ -28,6 +28,7 @@ class TickerResolver(ITickerResolver):
         - ticker is empty / invalid
         - ticker is in the failed/blacklist
         - ticker is not found in ticker_map.json
+        - ticker is mapped to null (SKIP sentinel, F-IMP-070)
         """
         if not ticker or not ticker.strip():
             return None
@@ -47,6 +48,14 @@ class TickerResolver(ITickerResolver):
             logger.warning(
                 "Ticker %s not found in ticker_map.json — add it to enable download",
                 normalized
+            )
+            return None
+
+        # SKIP sentinel: ticker_map has null mapping (F-IMP-070)
+        if contract.symbol == "SKIP":
+            logger.info(
+                "Ticker %s mapped to null — skipping (awaiting manual mapping)",
+                normalized,
             )
             return None
 
