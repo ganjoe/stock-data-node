@@ -450,6 +450,35 @@ In `src/main.py` where `create_api` is called, update the call to pass the `watc
 
 ---
 
+## PART 3: Extensions (Phase 4) - Optional Ticker Map
+
+### T-EXT-001 — Default Contract Inference
+**Target File:** `ticker_resolver.py`
+**Covers:** F-CFG-010, F-CFG-020, F-CFG-030
+
+#### Logic Steps
+1. In `TickerResolver.resolve(ticker)`: If the ticker is *not* found in `ticker_map.json`, do **not** return `None`.
+2. Construct and return a fallback `IBKRContract` with `symbol=ticker`, `exchange="SMART"`, `currency="USD"`, `sec_type="STK"`.
+3. Log an `INFO` message indicating that a default contract was inferred.
+
+### T-EXT-002 — Defer Blacklisting to API Errors
+**Target Files:** `file_watcher.py`, `downloader.py`
+**Covers:** F-ERR-010
+
+#### Logic Steps
+1. **`file_watcher.py`**: Remove the logic that writes to `failed_store` simply because a ticker isn't in `ticker_map.json`. (This is now impossible anyway since `resolve()` returns a fallback).
+2. **`downloader.py`**: In `_process_request()`, when `classify_error()` returns `ErrorCategory.QUALIFY_FAILED`, add the ticker to `failed_store` (the blacklist) *in addition* to writing the `null` mapping to `ticker_map.json`.
+
+### T-EXT-003 — Clean up failed_ticker.json on Success
+**Target File:** `downloader.py`
+**Covers:** Prevent permanent lock-out if user fixes mapping
+
+#### Logic Steps
+1. In `_process_request()`: If `total_bars_received > 0` (meaning a successful cross-check/download occurred), check if the ticker is in `self._failed_store`.
+2. If it is, remove it from the blacklist. NOTE: Since `IFailedTickerStore` doesn't have a `remove` method yet, implement `remove(ticker: str)` in `IFailedTickerStore` and `FailedTickerStore`.
+
+---
+
 ## Verification Plan
 
 ### Automated (Syntax Check)

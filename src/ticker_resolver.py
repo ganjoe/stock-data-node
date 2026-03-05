@@ -45,11 +45,16 @@ class TickerResolver(ITickerResolver):
 
         contract = self._config.get_ticker_map().get(normalized)
         if contract is None:
-            logger.warning(
-                "Ticker %s not found in ticker_map.json — add it to enable download",
+            logger.info(
+                "Ticker %s not mapped — using default fallback (SMART/USD/STK)",
                 normalized
             )
-            return None
+            return IBKRContract(
+                symbol=normalized,
+                exchange="SMART",
+                currency="USD",
+                sec_type="STK"
+            )
 
         # SKIP sentinel: ticker_map has null mapping (F-IMP-070)
         if contract.symbol == "SKIP":

@@ -223,7 +223,7 @@ class Downloader:
 
                 elif category == ErrorCategory.QUALIFY_FAILED:
                     logger.error(
-                        "Permanent error for %s/%s: %s — adding to blacklist",
+                        "Permanent error for %s/%s: %s — adding to blacklist and mapping to SKIP",
                         request.ticker, request.timeframe, result.error
                     )
                     self._failed_store.add(FailedTickerEntry(
@@ -232,6 +232,10 @@ class Downloader:
                         timestamp=datetime.now(timezone.utc).isoformat(),
                         source="downloader",
                     ))
+                    # Also register as null mapping so we don't spam IBKR on restart
+                    if hasattr(self._config, "register_unmapped_ticker"):
+                        self._config.register_unmapped_ticker(request.ticker)
+                    
                     chunk_fail += 1
                     request.status = TickerStatus.FAILED
                     break
@@ -275,6 +279,12 @@ class Downloader:
         # Batch progress reporting (F-IMP-130)
         elapsed = time.monotonic() - request_start
         total_chunks = chunk_ok + chunk_fail
+        
+        # Self-healing blacklist (T-EXT-003): Remove from blacklist if successful
+        if total_bars > 0 and self._failed_store.is_blacklisted(request.ticker):
+            logger.info("Auto-cleaning %s from blacklist due to successful download.", request.ticker)
+            self._failed_store.remove(request.ticker)
+
         if request.status != TickerStatus.FAILED:
             request.status = TickerStatus.DONE
         logger.info(

@@ -1506,3 +1506,14 @@ T-012 (main.py) ─── orchestrates all ──→ T-001 through T-011
 **Recommended implementation order:**
 `T-001 → T-010 → T-006 → T-009 → T-004 → T-003 → T-002 → T-011 → T-005 → T-007 → T-008 → T-012 → T-013 → T-014`
 
+
+## PART 3: Extensions (Phase 4)
+
+The following requirements govern the **Optional Ticker Map** feature (T-EXT-001, T-EXT-002, T-EXT-003):
+
+| ID | Title | Description | Covered By |
+|----|-------|-------------|------------|
+| F-CFG-010 | Optional Ticker Map | Entries in `ticker_map.json` are optional. The absence of a ticker in the map must not lead to immediate blacklisting. | T-EXT-001 |
+| F-CFG-020 | Default Contract Inference | If a requested ticker is not defined in the map, the system implicitly generates a default contract: `sec_type="STK"`, `exchange="SMART"`, `currency="USD"`. The input string is used as the `symbol`. | T-EXT-001 |
+| F-CFG-030 | Explicit Alias Mapping | The `ticker_map.json` is used primarily for exceptions: differing currencies/exchanges (e.g., EUR at IBIS) or as an alias-mapping where a search term (Key) maps to an actual IBKR symbol (Field `symbol`). | T-EXT-001 |
+| F-ERR-010 | API-Driven Blacklisting | A ticker is only added to `failed_ticker.json` (blacklisted) when an API attempt (e.g., contract qualification or download) explicitly fails (e.g., invalid symbol / no definition found). | T-EXT-002 |

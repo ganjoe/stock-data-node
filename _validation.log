@@ -1,0 +1,377 @@
+18:31:26 | DEBUG    | config_loader             | Loaded gateway.json (mode=paper)
+18:31:26 | DEBUG    | config_loader             | Loaded paths.json
+18:31:26 | DEBUG    | config_loader             | Loaded ticker_map.json (3 tickers, 0 unmapped/null)
+18:31:26 | INFO     | startup_checks            | ═══ Running startup integrity checks… ═══
+18:31:26 | INFO     | startup_checks            | ✅ All parquet files OK — no corruption detected.
+18:31:26 | INFO     | startup_checks            | ═══ Startup checks complete. ═══
+18:31:26 | INFO     | gateway_client            | Connecting to IB Gateway at 0.0.0.0:4002 (mode=paper)…
+18:31:27 | INFO     | gateway_client            | ✅ Connected to IB Gateway at 0.0.0.0:4002 (clientId=6243)
+18:31:27 | INFO     | gateway_client            | Detecting market data type…
+18:31:28 | ERROR    | ib_insync.wrapper         | Error 10089, reqId 3: Requested market data requires additional subscription for API. See link in 'Market Data Connections' dialog for more details.Delayed market data is available.SPY ARCA/TOP/ALL, contract: Contract(secType='STK', symbol='SPY', exchange='SMART', currency='USD')
+18:31:29 | INFO     | gateway_client            | ℹ️  Market data type: DELAYED (15-min delay, no live subscription)
+18:31:29 | INFO     | rate_limiter              | Rate limiter configured: pacing=3.0s, concurrent=1 (Delayed (15-min))
+18:31:29 | ERROR    | ib_insync.wrapper         | Error 300, reqId 3: Can't find EId with tickerId:3
+18:31:31 | INFO     | api_server                | API: Trigger staleness request received.
+18:31:31 | INFO     | file_watcher              | File watcher: found 1 file(s) in watch dir
+18:31:31 | INFO     | file_watcher              | Processing watch file test_validation.txt with 3 ticker(s)
+18:31:31 | DEBUG    | priority_queue            | Enqueued AAPL/1D (prio=WATCHER) — queue size: 1
+18:31:31 | DEBUG    | priority_queue            | Enqueued MSFT/1D (prio=WATCHER) — queue size: 2
+18:31:31 | DEBUG    | priority_queue            | Enqueued GOOG/1D (prio=WATCHER) — queue size: 3
+18:31:31 | INFO     | file_watcher              | Enqueued 3 ticker(s), 0 failed, from test_validation.txt
+18:31:31 | DEBUG    | file_watcher              | Deleting processed watch file: test_validation.txt
+18:31:31 | INFO     | api_server                | API: trigger-staleness scan complete. Tickers evaluated from parquet: 0
+18:31:32 | INFO     | downloader                | Downloader started.
+18:31:32 | DEBUG    | priority_queue            | Dequeued AAPL/1D (prio=WATCHER) — queue size: 2
+18:31:32 | INFO     | downloader                | ▶ Processing: AAPL / 1D (prio=WATCHER, queue remaining: 2)
+18:31:32 | INFO     | downloader                | Full download for AAPL/1D (no existing data)
+18:31:32 | INFO     | downloader                | Downloading AAPL/1D in 20 chunk(s)…
+18:31:32 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20260305 23:31:32 UTC | duration=12 M | barSize=1 day
+18:31:33 | DEBUG    | gateway_client            | Received 248 bars for AAPL/1D
+18:31:33 | INFO     | parquet_writer            | Written 248 bars to AAPL/1D.parquet (total: 248)
+18:31:33 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:31:35 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20250305 23:31:50 UTC | duration=1 Y | barSize=1 day
+18:31:36 | DEBUG    | gateway_client            | Received 250 bars for AAPL/1D
+18:31:36 | INFO     | parquet_writer            | Written 250 bars to AAPL/1D.parquet (total: 498)
+18:31:36 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:31:38 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20240305 23:31:49 UTC | duration=1 Y | barSize=1 day
+18:31:39 | DEBUG    | gateway_client            | Received 251 bars for AAPL/1D
+18:31:39 | INFO     | parquet_writer            | Written 251 bars to AAPL/1D.parquet (total: 749)
+18:31:39 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:31:41 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20230306 23:31:48 UTC | duration=1 Y | barSize=1 day
+18:31:42 | DEBUG    | gateway_client            | Received 251 bars for AAPL/1D
+18:31:42 | INFO     | parquet_writer            | Written 251 bars to AAPL/1D.parquet (total: 1000)
+18:31:42 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:31:44 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20220306 23:31:47 UTC | duration=1 Y | barSize=1 day
+18:31:45 | DEBUG    | gateway_client            | Received 253 bars for AAPL/1D
+18:31:45 | INFO     | parquet_writer            | Written 253 bars to AAPL/1D.parquet (total: 1253)
+18:31:45 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:31:47 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20210306 23:31:46 UTC | duration=1 Y | barSize=1 day
+18:31:48 | DEBUG    | gateway_client            | Received 252 bars for AAPL/1D
+18:31:48 | INFO     | parquet_writer            | Written 252 bars to AAPL/1D.parquet (total: 1504)
+18:31:48 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:31:50 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20200306 23:31:45 UTC | duration=1 Y | barSize=1 day
+18:31:51 | DEBUG    | gateway_client            | Received 252 bars for AAPL/1D
+18:31:51 | INFO     | parquet_writer            | Written 252 bars to AAPL/1D.parquet (total: 1755)
+18:31:51 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:31:53 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20190307 23:31:44 UTC | duration=1 Y | barSize=1 day
+18:31:54 | DEBUG    | gateway_client            | Received 251 bars for AAPL/1D
+18:31:54 | INFO     | parquet_writer            | Written 251 bars to AAPL/1D.parquet (total: 2006)
+18:31:54 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:31:56 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20180307 23:31:43 UTC | duration=1 Y | barSize=1 day
+18:31:57 | DEBUG    | gateway_client            | Received 252 bars for AAPL/1D
+18:31:57 | INFO     | parquet_writer            | Written 252 bars to AAPL/1D.parquet (total: 2258)
+18:31:57 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:31:59 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20170307 23:31:42 UTC | duration=1 Y | barSize=1 day
+18:32:00 | DEBUG    | gateway_client            | Received 252 bars for AAPL/1D
+18:32:00 | INFO     | parquet_writer            | Written 252 bars to AAPL/1D.parquet (total: 2510)
+18:32:00 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:02 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20160307 23:31:41 UTC | duration=1 Y | barSize=1 day
+18:32:03 | DEBUG    | gateway_client            | Received 252 bars for AAPL/1D
+18:32:03 | INFO     | parquet_writer            | Written 252 bars to AAPL/1D.parquet (total: 2762)
+18:32:03 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:05 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20150308 23:31:40 UTC | duration=1 Y | barSize=1 day
+18:32:06 | DEBUG    | gateway_client            | Received 252 bars for AAPL/1D
+18:32:06 | INFO     | parquet_writer            | Written 252 bars to AAPL/1D.parquet (total: 3014)
+18:32:06 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:08 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20140308 23:31:39 UTC | duration=1 Y | barSize=1 day
+18:32:09 | DEBUG    | gateway_client            | Received 252 bars for AAPL/1D
+18:32:09 | INFO     | parquet_writer            | Written 252 bars to AAPL/1D.parquet (total: 3265)
+18:32:09 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:11 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20130308 23:31:38 UTC | duration=1 Y | barSize=1 day
+18:32:12 | DEBUG    | gateway_client            | Received 250 bars for AAPL/1D
+18:32:12 | INFO     | parquet_writer            | Written 250 bars to AAPL/1D.parquet (total: 3514)
+18:32:12 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:14 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20120308 23:31:37 UTC | duration=1 Y | barSize=1 day
+18:32:15 | DEBUG    | gateway_client            | Received 252 bars for AAPL/1D
+18:32:15 | INFO     | parquet_writer            | Written 252 bars to AAPL/1D.parquet (total: 3766)
+18:32:15 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:17 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20110309 23:31:36 UTC | duration=1 Y | barSize=1 day
+18:32:18 | DEBUG    | gateway_client            | Received 253 bars for AAPL/1D
+18:32:18 | INFO     | parquet_writer            | Written 253 bars to AAPL/1D.parquet (total: 4019)
+18:32:18 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:20 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20100309 23:31:35 UTC | duration=1 Y | barSize=1 day
+18:32:21 | DEBUG    | gateway_client            | Received 252 bars for AAPL/1D
+18:32:21 | INFO     | parquet_writer            | Written 252 bars to AAPL/1D.parquet (total: 4271)
+18:32:21 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:23 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20090309 23:31:34 UTC | duration=1 Y | barSize=1 day
+18:32:24 | DEBUG    | gateway_client            | Received 252 bars for AAPL/1D
+18:32:24 | INFO     | parquet_writer            | Written 252 bars to AAPL/1D.parquet (total: 4523)
+18:32:24 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:26 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20080309 23:31:33 UTC | duration=1 Y | barSize=1 day
+18:32:27 | DEBUG    | gateway_client            | Received 252 bars for AAPL/1D
+18:32:27 | INFO     | parquet_writer            | Written 252 bars to AAPL/1D.parquet (total: 4775)
+18:32:27 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:29 | DEBUG    | gateway_client            | Requesting historical bars: AAPL / 1D | end=20070310 23:31:32 UTC | duration=1 Y | barSize=1 day
+18:32:30 | DEBUG    | gateway_client            | Received 251 bars for AAPL/1D
+18:32:30 | INFO     | parquet_writer            | Written 251 bars to AAPL/1D.parquet (total: 5025)
+18:32:30 | INFO     | downloader                | 📊 ✅: AAPL/1D — 20/20 chunks OK, 5030 bars, 57.4s
+18:32:30 | DEBUG    | priority_queue            | Dequeued MSFT/1D (prio=WATCHER) — queue size: 1
+18:32:30 | INFO     | downloader                | ▶ Processing: MSFT / 1D (prio=WATCHER, queue remaining: 1)
+18:32:30 | INFO     | downloader                | Full download for MSFT/1D (no existing data)
+18:32:30 | INFO     | downloader                | Downloading MSFT/1D in 20 chunk(s)…
+18:32:30 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:32 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20260305 23:32:30 UTC | duration=12 M | barSize=1 day
+18:32:33 | DEBUG    | gateway_client            | Received 248 bars for MSFT/1D
+18:32:33 | INFO     | parquet_writer            | Written 248 bars to MSFT/1D.parquet (total: 248)
+18:32:33 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:35 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20250305 23:32:48 UTC | duration=1 Y | barSize=1 day
+18:32:36 | DEBUG    | gateway_client            | Received 250 bars for MSFT/1D
+18:32:36 | INFO     | parquet_writer            | Written 250 bars to MSFT/1D.parquet (total: 498)
+18:32:36 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:38 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20240305 23:32:47 UTC | duration=1 Y | barSize=1 day
+18:32:39 | DEBUG    | gateway_client            | Received 251 bars for MSFT/1D
+18:32:39 | INFO     | parquet_writer            | Written 251 bars to MSFT/1D.parquet (total: 749)
+18:32:39 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:41 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20230306 23:32:46 UTC | duration=1 Y | barSize=1 day
+18:32:42 | DEBUG    | gateway_client            | Received 251 bars for MSFT/1D
+18:32:42 | INFO     | parquet_writer            | Written 251 bars to MSFT/1D.parquet (total: 1000)
+18:32:42 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:44 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20220306 23:32:45 UTC | duration=1 Y | barSize=1 day
+18:32:45 | DEBUG    | gateway_client            | Received 253 bars for MSFT/1D
+18:32:45 | INFO     | parquet_writer            | Written 253 bars to MSFT/1D.parquet (total: 1253)
+18:32:45 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:47 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20210306 23:32:44 UTC | duration=1 Y | barSize=1 day
+18:32:48 | DEBUG    | gateway_client            | Received 252 bars for MSFT/1D
+18:32:48 | INFO     | parquet_writer            | Written 252 bars to MSFT/1D.parquet (total: 1504)
+18:32:48 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:50 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20200306 23:32:43 UTC | duration=1 Y | barSize=1 day
+18:32:51 | DEBUG    | gateway_client            | Received 252 bars for MSFT/1D
+18:32:51 | INFO     | parquet_writer            | Written 252 bars to MSFT/1D.parquet (total: 1755)
+18:32:51 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:53 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20190307 23:32:42 UTC | duration=1 Y | barSize=1 day
+18:32:54 | DEBUG    | gateway_client            | Received 251 bars for MSFT/1D
+18:32:54 | INFO     | parquet_writer            | Written 251 bars to MSFT/1D.parquet (total: 2006)
+18:32:54 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:56 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20180307 23:32:41 UTC | duration=1 Y | barSize=1 day
+18:32:57 | DEBUG    | gateway_client            | Received 252 bars for MSFT/1D
+18:32:57 | INFO     | parquet_writer            | Written 252 bars to MSFT/1D.parquet (total: 2258)
+18:32:57 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:32:59 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20170307 23:32:40 UTC | duration=1 Y | barSize=1 day
+18:33:00 | DEBUG    | gateway_client            | Received 252 bars for MSFT/1D
+18:33:00 | INFO     | parquet_writer            | Written 252 bars to MSFT/1D.parquet (total: 2510)
+18:33:00 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:02 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20160307 23:32:39 UTC | duration=1 Y | barSize=1 day
+18:33:03 | DEBUG    | gateway_client            | Received 252 bars for MSFT/1D
+18:33:03 | INFO     | parquet_writer            | Written 252 bars to MSFT/1D.parquet (total: 2762)
+18:33:03 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:05 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20150308 23:32:38 UTC | duration=1 Y | barSize=1 day
+18:33:06 | DEBUG    | gateway_client            | Received 252 bars for MSFT/1D
+18:33:06 | INFO     | parquet_writer            | Written 252 bars to MSFT/1D.parquet (total: 3014)
+18:33:06 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:08 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20140308 23:32:37 UTC | duration=1 Y | barSize=1 day
+18:33:09 | DEBUG    | gateway_client            | Received 252 bars for MSFT/1D
+18:33:09 | INFO     | parquet_writer            | Written 252 bars to MSFT/1D.parquet (total: 3265)
+18:33:09 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:11 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20130308 23:32:36 UTC | duration=1 Y | barSize=1 day
+18:33:12 | DEBUG    | gateway_client            | Received 250 bars for MSFT/1D
+18:33:12 | INFO     | parquet_writer            | Written 250 bars to MSFT/1D.parquet (total: 3514)
+18:33:12 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:14 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20120308 23:32:35 UTC | duration=1 Y | barSize=1 day
+18:33:15 | DEBUG    | gateway_client            | Received 252 bars for MSFT/1D
+18:33:15 | INFO     | parquet_writer            | Written 252 bars to MSFT/1D.parquet (total: 3766)
+18:33:15 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:17 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20110309 23:32:34 UTC | duration=1 Y | barSize=1 day
+18:33:18 | DEBUG    | gateway_client            | Received 253 bars for MSFT/1D
+18:33:18 | INFO     | parquet_writer            | Written 253 bars to MSFT/1D.parquet (total: 4019)
+18:33:18 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:20 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20100309 23:32:33 UTC | duration=1 Y | barSize=1 day
+18:33:21 | DEBUG    | gateway_client            | Received 252 bars for MSFT/1D
+18:33:21 | INFO     | parquet_writer            | Written 252 bars to MSFT/1D.parquet (total: 4271)
+18:33:21 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:23 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20090309 23:32:32 UTC | duration=1 Y | barSize=1 day
+18:33:24 | DEBUG    | gateway_client            | Received 252 bars for MSFT/1D
+18:33:24 | INFO     | parquet_writer            | Written 252 bars to MSFT/1D.parquet (total: 4523)
+18:33:24 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:26 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20080309 23:32:31 UTC | duration=1 Y | barSize=1 day
+18:33:27 | DEBUG    | gateway_client            | Received 252 bars for MSFT/1D
+18:33:27 | INFO     | parquet_writer            | Written 252 bars to MSFT/1D.parquet (total: 4775)
+18:33:27 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:29 | DEBUG    | gateway_client            | Requesting historical bars: MSFT / 1D | end=20070310 23:32:30 UTC | duration=1 Y | barSize=1 day
+18:33:30 | DEBUG    | gateway_client            | Received 251 bars for MSFT/1D
+18:33:30 | INFO     | parquet_writer            | Written 251 bars to MSFT/1D.parquet (total: 5025)
+18:33:30 | INFO     | downloader                | 📊 ✅: MSFT/1D — 20/20 chunks OK, 5030 bars, 60.0s
+18:33:30 | DEBUG    | priority_queue            | Dequeued GOOG/1D (prio=WATCHER) — queue size: 0
+18:33:30 | INFO     | downloader                | ▶ Processing: GOOG / 1D (prio=WATCHER, queue remaining: 0)
+18:33:30 | INFO     | downloader                | Full download for GOOG/1D (no existing data)
+18:33:30 | INFO     | downloader                | Downloading GOOG/1D in 20 chunk(s)…
+18:33:30 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:32 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20260305 23:33:30 UTC | duration=12 M | barSize=1 day
+18:33:33 | DEBUG    | gateway_client            | Received 248 bars for GOOG/1D
+18:33:33 | INFO     | parquet_writer            | Written 248 bars to GOOG/1D.parquet (total: 248)
+18:33:33 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.5s before next request
+18:33:35 | INFO     | downloader                | Downloader stop requested.
+18:33:35 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20250305 23:33:48 UTC | duration=1 Y | barSize=1 day
+18:33:36 | DEBUG    | gateway_client            | Received 250 bars for GOOG/1D
+18:33:36 | INFO     | parquet_writer            | Written 250 bars to GOOG/1D.parquet (total: 498)
+18:33:36 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:38 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20240305 23:33:47 UTC | duration=1 Y | barSize=1 day
+18:33:39 | DEBUG    | gateway_client            | Received 251 bars for GOOG/1D
+18:33:39 | INFO     | parquet_writer            | Written 251 bars to GOOG/1D.parquet (total: 749)
+18:33:39 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:41 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20230306 23:33:46 UTC | duration=1 Y | barSize=1 day
+18:33:42 | DEBUG    | gateway_client            | Received 251 bars for GOOG/1D
+18:33:42 | INFO     | parquet_writer            | Written 251 bars to GOOG/1D.parquet (total: 1000)
+18:33:42 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:44 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20220306 23:33:45 UTC | duration=1 Y | barSize=1 day
+18:33:45 | DEBUG    | gateway_client            | Received 253 bars for GOOG/1D
+18:33:45 | INFO     | parquet_writer            | Written 253 bars to GOOG/1D.parquet (total: 1253)
+18:33:45 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:47 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20210306 23:33:44 UTC | duration=1 Y | barSize=1 day
+18:33:48 | DEBUG    | gateway_client            | Received 252 bars for GOOG/1D
+18:33:48 | INFO     | parquet_writer            | Written 252 bars to GOOG/1D.parquet (total: 1504)
+18:33:48 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:50 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20200306 23:33:43 UTC | duration=1 Y | barSize=1 day
+18:33:51 | DEBUG    | gateway_client            | Received 252 bars for GOOG/1D
+18:33:51 | INFO     | parquet_writer            | Written 252 bars to GOOG/1D.parquet (total: 1755)
+18:33:51 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:53 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20190307 23:33:42 UTC | duration=1 Y | barSize=1 day
+18:33:54 | DEBUG    | gateway_client            | Received 251 bars for GOOG/1D
+18:33:54 | INFO     | parquet_writer            | Written 251 bars to GOOG/1D.parquet (total: 2006)
+18:33:54 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:56 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20180307 23:33:41 UTC | duration=1 Y | barSize=1 day
+18:33:57 | DEBUG    | gateway_client            | Received 252 bars for GOOG/1D
+18:33:57 | INFO     | parquet_writer            | Written 252 bars to GOOG/1D.parquet (total: 2258)
+18:33:57 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:33:59 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20170307 23:33:40 UTC | duration=1 Y | barSize=1 day
+18:34:00 | DEBUG    | gateway_client            | Received 252 bars for GOOG/1D
+18:34:00 | INFO     | parquet_writer            | Written 252 bars to GOOG/1D.parquet (total: 2510)
+18:34:00 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:34:02 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20160307 23:33:39 UTC | duration=1 Y | barSize=1 day
+18:34:03 | DEBUG    | gateway_client            | Received 252 bars for GOOG/1D
+18:34:03 | INFO     | parquet_writer            | Written 252 bars to GOOG/1D.parquet (total: 2762)
+18:34:03 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.5s before next request
+18:34:05 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20150308 23:33:38 UTC | duration=1 Y | barSize=1 day
+18:34:06 | DEBUG    | gateway_client            | Received 238 bars for GOOG/1D
+18:34:06 | INFO     | parquet_writer            | Written 238 bars to GOOG/1D.parquet (total: 3000)
+18:34:06 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.5s before next request
+18:34:08 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20140308 23:33:37 UTC | duration=1 Y | barSize=1 day
+18:34:09 | ERROR    | ib_insync.wrapper         | Error 162, reqId 56: Historical Market Data Service error message:HMDS query returned no data: GOOG@SMART Trades, contract: Contract(secType='STK', symbol='GOOG', exchange='SMART', currency='USD')
+18:34:09 | DEBUG    | gateway_client            | No bars returned for GOOG/1D
+18:34:09 | DEBUG    | downloader                | Empty chunk for GOOG/1D (no new bars)
+18:34:09 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.7s before next request
+18:34:11 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20130308 23:33:36 UTC | duration=1 Y | barSize=1 day
+18:34:12 | ERROR    | ib_insync.wrapper         | Error 162, reqId 57: Historical Market Data Service error message:HMDS query returned no data: GOOG@SMART Trades, contract: Contract(secType='STK', symbol='GOOG', exchange='SMART', currency='USD')
+18:34:12 | DEBUG    | gateway_client            | No bars returned for GOOG/1D
+18:34:12 | DEBUG    | downloader                | Empty chunk for GOOG/1D (no new bars)
+18:34:12 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.7s before next request
+18:34:14 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20120308 23:33:35 UTC | duration=1 Y | barSize=1 day
+18:34:15 | ERROR    | ib_insync.wrapper         | Error 162, reqId 58: Historical Market Data Service error message:HMDS query returned no data: GOOG@SMART Trades, contract: Contract(secType='STK', symbol='GOOG', exchange='SMART', currency='USD')
+18:34:15 | DEBUG    | gateway_client            | No bars returned for GOOG/1D
+18:34:15 | DEBUG    | downloader                | Empty chunk for GOOG/1D (no new bars)
+18:34:15 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.7s before next request
+18:34:17 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20110309 23:33:34 UTC | duration=1 Y | barSize=1 day
+18:34:18 | ERROR    | ib_insync.wrapper         | Error 162, reqId 59: Historical Market Data Service error message:HMDS query returned no data: GOOG@SMART Trades, contract: Contract(secType='STK', symbol='GOOG', exchange='SMART', currency='USD')
+18:34:18 | DEBUG    | gateway_client            | No bars returned for GOOG/1D
+18:34:18 | DEBUG    | downloader                | Empty chunk for GOOG/1D (no new bars)
+18:34:18 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.6s before next request
+18:34:20 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20100309 23:33:33 UTC | duration=1 Y | barSize=1 day
+18:34:21 | ERROR    | ib_insync.wrapper         | Error 162, reqId 60: Historical Market Data Service error message:HMDS query returned no data: GOOG@SMART Trades, contract: Contract(secType='STK', symbol='GOOG', exchange='SMART', currency='USD')
+18:34:21 | DEBUG    | gateway_client            | No bars returned for GOOG/1D
+18:34:21 | DEBUG    | downloader                | Empty chunk for GOOG/1D (no new bars)
+18:34:21 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.8s before next request
+18:34:23 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20090309 23:33:32 UTC | duration=1 Y | barSize=1 day
+18:34:24 | ERROR    | ib_insync.wrapper         | Error 162, reqId 61: Historical Market Data Service error message:HMDS query returned no data: GOOG@SMART Trades, contract: Contract(secType='STK', symbol='GOOG', exchange='SMART', currency='USD')
+18:34:24 | DEBUG    | gateway_client            | No bars returned for GOOG/1D
+18:34:24 | DEBUG    | downloader                | Empty chunk for GOOG/1D (no new bars)
+18:34:24 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.7s before next request
+18:34:26 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20080309 23:33:31 UTC | duration=1 Y | barSize=1 day
+18:34:27 | ERROR    | ib_insync.wrapper         | Error 162, reqId 62: Historical Market Data Service error message:HMDS query returned no data: GOOG@SMART Trades, contract: Contract(secType='STK', symbol='GOOG', exchange='SMART', currency='USD')
+18:34:27 | DEBUG    | gateway_client            | No bars returned for GOOG/1D
+18:34:27 | DEBUG    | downloader                | Empty chunk for GOOG/1D (no new bars)
+18:34:27 | DEBUG    | rate_limiter              | Rate limiter: waiting 2.7s before next request
+18:34:29 | DEBUG    | gateway_client            | Requesting historical bars: GOOG / 1D | end=20070310 23:33:30 UTC | duration=1 Y | barSize=1 day
+18:34:30 | ERROR    | ib_insync.wrapper         | Error 162, reqId 63: Historical Market Data Service error message:HMDS query returned no data: GOOG@SMART Trades, contract: Contract(secType='STK', symbol='GOOG', exchange='SMART', currency='USD')
+18:34:30 | DEBUG    | gateway_client            | No bars returned for GOOG/1D
+18:34:30 | DEBUG    | downloader                | Empty chunk for GOOG/1D (no new bars)
+18:34:30 | INFO     | downloader                | 📊 ✅: GOOG/1D — 20/20 chunks OK, 3002 bars, 59.9s
+18:34:30 | INFO     | downloader                | Downloader stopped.
+18:34:30 | INFO     | gateway_client            | Disconnected from IB Gateway.
+
+════════════════════════════════════════════════════════════
+  Stock Data Node — Pipeline Validation
+════════════════════════════════════════════════════════════
+
+✅ Directories created.
+✅ Config files written to /home/daniel/stock-data-node/_validation_tmp/config
+✅ Watch file created: test_validation.txt (AAPL, MSFT, GOOG)
+
+── Wiring components…
+── Running startup checks…
+── Connecting to IB Gateway at 0.0.0.0:4002…
+── Market data detected: Delayed (15-min) (concurrent=1, pacing=3.0s)
+── Setting up API and triggering staleness check…
+── Starting Uvicorn API server on port 52679…
+── Sending POST request to /trigger-staleness…
+── API Response: 202 - {"status":"accepted","tickers_evaluated":0}
+── Queue size after API trigger: 3
+── Starting downloads (3 request(s))…
+
+
+── Pipeline complete.
+
+════════════════════════════════════════════════════════════
+  VERIFICATION — Parquet Output
+════════════════════════════════════════════════════════════
+
+════════════════════════════════════════════════════════════
+  TICKER: AAPL | TIMEFRAME: 1D
+  Rows: 5025 | Date Range: 2006-03-10 → 2026-03-05
+════════════════════════════════════════════════════════════
+Date                        Open      High       Low     Close         Volume
+-----------------------------------------------------------------------------
+2006-03-10 00:00            2.29      2.30      2.23      2.26      905088800
+2006-03-13 00:00            2.32      2.37      2.31      2.35      810468400
+2006-03-14 00:00            2.35      2.40      2.34      2.40      614812800
+2006-03-15 00:00            2.42      2.43      2.34      2.37      865096400
+2006-03-16 00:00            2.39      2.39      2.30      2.30      723234400
+2026-02-27 00:00          272.77    272.81    262.89    264.18       26248237
+2026-03-02 00:00          262.46    266.53    260.20    264.72       18290672
+2026-03-03 00:00          263.48    265.56    260.13    263.75       18325414
+2026-03-04 00:00          264.70    266.15    261.42    262.52       18489944
+2026-03-05 00:00          260.79    261.56    257.25    260.29       24663877
+
+════════════════════════════════════════════════════════════
+  TICKER: GOOG | TIMEFRAME: 1D
+  Rows: 3000 | Date Range: 2014-03-27 → 2026-03-05
+════════════════════════════════════════════════════════════
+Date                        Open      High       Low     Close         Volume
+-----------------------------------------------------------------------------
+2014-03-27 00:00           14.16     14.16     13.79     13.92         292788
+2014-03-28 00:00           13.99     14.12     13.93     13.96        1199229
+2014-03-31 00:00           14.13     14.14     13.89     13.89         256691
+2014-04-01 00:00           13.93     14.17     13.93     14.14         196529
+2014-04-02 00:00           14.96     15.08     14.02     14.14        4014811
+2026-02-27 00:00          303.99    312.08    303.59    311.43        9633494
+2026-03-02 00:00          302.80    308.14    301.06    306.36        8716964
+2026-03-03 00:00          298.42    303.94    296.69    303.56        9645878
+2026-03-04 00:00          302.69    305.46    300.80    303.45        8620593
+2026-03-05 00:00          303.20    303.37    298.07    300.91       10741435
+
+════════════════════════════════════════════════════════════
+  TICKER: MSFT | TIMEFRAME: 1D
+  Rows: 5025 | Date Range: 2006-03-10 → 2026-03-05
+════════════════════════════════════════════════════════════
+Date                        Open      High       Low     Close         Volume
+-----------------------------------------------------------------------------
+2006-03-10 00:00           27.06     27.22     26.88     27.15       32903400
+2006-03-13 00:00           27.18     27.29     26.16     27.11       38043000
+2006-03-14 00:00           27.04     27.38     26.99     27.20       37888600
+2006-03-15 00:00           27.18     27.45     27.01     27.35       52927400
+2006-03-16 00:00           27.29     27.48     27.22     27.22       70445000
+2026-02-27 00:00          390.88    396.82    390.00    392.74       21785822
+2026-03-02 00:00          392.79    401.19    390.63    398.55       18391707
+2026-03-03 00:00          393.28    406.70    392.67    403.93       21964168
+2026-03-04 00:00          401.27    411.04    400.31    405.20       21858691
+2026-03-05 00:00          404.39    411.61    404.39    410.68       22338550
+
+════════════════════════════════════════════════════════════
+  VALIDATION SUMMARY
+════════════════════════════════════════════════════════════
+  ✅ AAPL     — has data
+  ✅ MSFT     — has data
+  ✅ GOOG     — has data
+
+  Result: 3/3 tickers OK
+════════════════════════════════════════════════════════════
+
+✅ Auto-deleted /home/daniel/stock-data-node/_validation_tmp (AUTO_CLEANUP=1)

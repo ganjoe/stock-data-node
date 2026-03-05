@@ -44,6 +44,15 @@ class FailedTickerStore(IFailedTickerStore):
         self._write(entries)
         logger.info("Added %s to failed_ticker.json (reason: %s)", entry.ticker, entry.reason)
 
+    def remove(self, ticker: str) -> None:
+        """Removes a ticker from the blacklist if it exists."""
+        entries = self.load()
+        filtered = [e for e in entries if e.ticker.upper() != ticker.upper()]
+        
+        if len(filtered) < len(entries):
+            self._write(filtered)
+            logger.info("Removed %s from failed_ticker.json (successful recovery)", ticker)
+
     def load(self) -> list[FailedTickerEntry]:
         """Reads and parses failed_ticker.json. Returns empty list if missing or corrupt."""
         if not self._filepath.exists():

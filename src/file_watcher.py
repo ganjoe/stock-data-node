@@ -88,19 +88,8 @@ class FileWatcher:
             contract = self._resolver.resolve(ticker)
 
             if contract is None:
-                # Check if it's blacklisted (resolver already logs it)
-                if self._failed_store.is_blacklisted(ticker):
-                    logger.debug("Skipping blacklisted ticker %s from file", ticker)
-                else:
-                    # Not in ticker_map — add to failed store
-                    logger.warning("Ticker %s not resolvable — adding to failed_ticker.json", ticker)
-                    self._failed_store.add(FailedTickerEntry(
-                        ticker=ticker,
-                        reason="Not found in ticker_map.json",
-                        timestamp=datetime.now(timezone.utc).isoformat(),
-                        source="watch_file",
-                    ))
-                    failed_tickers.append(ticker)
+                # Ticker is explicitly blacklisted or mapped to SKIP null
+                logger.debug("Skipping unresolved/blacklisted ticker %s from file", ticker)
                 continue
 
             # Get timeframes for this ticker
