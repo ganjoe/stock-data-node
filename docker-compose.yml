@@ -9,15 +9,15 @@ services:
       - APP_BASE_DIR=/app
     volumes:
       # Config files (hot-reload supported)
-      - ${DATA_PATH:-.}/config:/app/config
+      - /home/daniel/stock-data-node/config:/app/config
       # Parquet data (readable by dashboard and other services)
-      - ${DATA_PATH:-.}/data:/app/data
+      - /home/daniel/stock-data-node/data:/app/data
       # Watch directory (drop .txt files here to trigger downloads)
-      - ${DATA_PATH:-.}/watch:/app/watch
+      - /home/daniel/stock-data-node/watch:/app/watch
       # Log files (accessible from host for inspection)
-      - ${DATA_PATH:-.}/logs:/app/logs
+      - /home/daniel/stock-data-node/logs:/app/logs
       # Persistent state (failed_ticker.json blacklist)
-      - ${DATA_PATH:-.}/state:/app/state
+      - /home/daniel/stock-data-node/state:/app/state
     network_mode: "host"
     # Port mappings are ignored when using host networking
     # ports:
