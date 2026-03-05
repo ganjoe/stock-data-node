@@ -18,22 +18,7 @@ services:
       - ./logs:/app/logs
       # Persistent state (failed_ticker.json blacklist)
       - ./state:/app/state
-    ports:
-      # REST API
-      - "8000:8000"
-    # The container must be able to reach the IB-Gateway container.
-    # Option A: put both containers on the same Docker network (recommended)
-    # Option B: use host networking (add: network_mode: "host")
-    #
-    # Example with shared network:
-    # networks:
-    #   - trading-net
-    #
-    # networks:
-    #   trading-net:
-    #     external: true
-
-networks:
-  default:
-    name: trading-net
-    driver: bridge
+    network_mode: "host"
+    # Port mappings are ignored when using host networking
+    # ports:
+    #   - "8000:9000"

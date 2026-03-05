@@ -156,11 +156,11 @@ async def main() -> None:
         cfg = uvicorn.Config(
             app=api,
             host="0.0.0.0",
-            port=8000,
+            port=8002,
             log_level="warning",
         )
         server = uvicorn.Server(cfg)
-        logger.info("REST API listening on http://0.0.0.0:8000")
+        logger.info("REST API listening on http://0.0.0.0:8002")
         await server.serve()
 
     async def shutdown_watcher() -> None:

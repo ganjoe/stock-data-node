@@ -17,10 +17,10 @@ RUN mkdir -p /app/config /app/data/parquet /app/watch /app/logs /app/state
 ENV APP_BASE_DIR=/app
 
 # Expose REST API port
-EXPOSE 8000
+EXPOSE 8002
 
 # Healthcheck via the /health endpoint
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')" || exit 1
 
 CMD ["python", "src/main.py"]
