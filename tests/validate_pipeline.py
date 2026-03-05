@@ -53,7 +53,7 @@ from ticker_resolver import TickerResolver
 
 TEST_TICKERS = ["AAPL", "MSFT", "GOOG"]
 
-GATEWAY_HOST = "127.0.0.1"
+GATEWAY_HOST = "0.0.0.0"#bei ib-gateway das docker gateway ip eintragen z.b. 172.17.0.1
 GATEWAY_PORT = 4002          # Paper trading port (change to 4001 for live)
 GATEWAY_MODE = "paper"
 
