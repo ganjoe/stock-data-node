@@ -38,6 +38,10 @@ import pyarrow.parquet as pq
 SRC_DIR = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(SRC_DIR))
 
+import uvicorn
+import urllib.request
+
+from api_server import create_api
 from config_loader import ConfigLoader
 from downloader import Downloader
 from failed_ticker_store import FailedTickerStore
@@ -53,7 +57,7 @@ from ticker_resolver import TickerResolver
 
 TEST_TICKERS = ["AAPL", "MSFT", "GOOG"]
 
-GATEWAY_HOST = "0.0.0.0"#bei ib-gateway das docker gateway ip eintragen z.b. 172.17.0.1
+GATEWAY_HOST = "0.0.0.0"#bei ib-gateway-app docker gateway ip eintragen z.b. 172.17.0.1
 GATEWAY_PORT = 4002          # Paper trading port (change to 4001 for live)
 GATEWAY_MODE = "paper"
 
@@ -165,10 +169,41 @@ class PipelineValidator:
         rate_limiter.configure(mdt)
         print(f"── Market data detected: {mdt.description} (concurrent={mdt.max_concurrent}, pacing={mdt.base_pacing_delay}s)")
 
-        # Process watch file
-        print("── Processing watch file…")
-        watcher.scan_once()
-        print(f"── Queue size after scan: {queue.size()}")
+        # Process watch file via API Endpoint
+        print("── Setting up API and triggering staleness check…")
+        api = create_api(queue, resolver, config, failed_store, watcher)
+        
+        # Find a free port dynamically
+        import socket
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(("127.0.0.1", 0))
+            free_port = s.getsockname()[1]
+
+        # Start uvicorn in the background for testing
+        print(f"── Starting Uvicorn API server on port {free_port}…")
+        cfg = uvicorn.Config(app=api, host="127.0.0.1", port=free_port, log_level="warning")
+        server = uvicorn.Server(cfg)
+        server_task = asyncio.create_task(server.serve())
+        
+        # Wait a moment for server to bind
+        await asyncio.sleep(2)
+        
+        print("── Sending POST request to /trigger-staleness…")
+        try:
+            req = urllib.request.Request(f"http://127.0.0.1:{free_port}/trigger-staleness", method="POST")
+            response = await asyncio.to_thread(urllib.request.urlopen, req)
+            with response:
+                status_code = response.getcode()
+                response_json = response.read().decode("utf-8")
+                print(f"── API Response: {status_code} - {response_json}")
+        except Exception as e:
+            print(f"── API Error: {e}")
+            
+        print(f"── Queue size after API trigger: {queue.size()}")
+        
+        # Shutdown server gracefully
+        server.should_exit = True
+        await asyncio.sleep(1)
 
         if queue.size() == 0:
             print("⚠️  Queue is empty after scanning — nothing to download.")
@@ -301,6 +336,11 @@ class PipelineValidator:
 
     def cleanup(self) -> None:
         """Removes the _validation_tmp directory."""
+        if os.environ.get("AUTO_CLEANUP") == "1":
+            shutil.rmtree(VALIDATION_DIR, ignore_errors=True)
+            print(f"✅ Auto-deleted {VALIDATION_DIR} (AUTO_CLEANUP=1)")
+            return
+            
         answer = input(f"Delete validation data at {VALIDATION_DIR}? (y/n): ").strip().lower()
         if answer == "y":
             shutil.rmtree(VALIDATION_DIR, ignore_errors=True)

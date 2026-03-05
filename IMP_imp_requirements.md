@@ -4,7 +4,7 @@
 
 12 new requirements (F-IMP-010 to F-IMP-130, excluding F-IMP-110) are integrated into the existing stock-data-node codebase. Changes are grouped into 10 atomic work orders.
 
-> All work orders modify **existing files**. New modules: `market_clock.py` (T-IMP-007), `run_logger.py` (T-IMP-004), `staleness.py` (T-IMP-008).
+> All work orders modify **existing files**. New modules: `market_clock.py` (T-IMP-007), `run_logger.py` (T-IMP-004), `staleness.py` (T-IMP-008). 1 new endpoint `POST /trigger-staleness` added to `api_server.py` (T-IMP-011).
 
 ---
 
@@ -21,9 +21,9 @@ T-IMP-002 (CoverageCheck)       ─── depends on parquet_writer.py
 T-IMP-003 (BatchQualify)        ─── depends on gateway_client.py
 T-IMP-009 (DescendingOrder)     ─── depends on T-IMP-002
 T-IMP-010 (BatchProgress)       ─── depends on T-IMP-004
-```
+T-IMP-011 (API Staleness)       ─── depends on T-IMP-008
 
-**Implementation Order:** Skeleton → T-IMP-005 → T-IMP-007 → T-IMP-008 → T-IMP-004 → T-IMP-001 → T-IMP-006 → T-IMP-002 → T-IMP-003 → T-IMP-009 → T-IMP-010
+**Implementation Order:** Skeleton → T-IMP-005 → T-IMP-007 → T-IMP-008 → T-IMP-004 → T-IMP-001 → T-IMP-006 → T-IMP-002 → T-IMP-003 → T-IMP-009 → T-IMP-010 → T-IMP-011
 
 ---
 
@@ -400,6 +400,53 @@ def is_stale(last_timestamp: int, timeframe: str) -> bool:
 #### Edge Cases
 - All chunks fail → report `0/20 chunks OK, 0 bars`
 - Preempted → don't print summary (request re-queued)
+
+---
+
+### T-IMP-011 — API Staleness Trigger Endpoint
+**Target Files:** `api_server.py`, `main.py`
+**Covers:** F-API-010, F-API-020, F-API-030, F-API-040
+
+#### Code Stub
+
+```python
+# In api_server.py: pass `watcher` instance into the API server factory
+def create_api(
+    queue: IPriorityQueue,
+    resolver: ITickerResolver,
+    config: IConfigLoader,
+    failed_store: IFailedTickerStore,
+    watcher: FileWatcher  # NEW DEPENDENCY
+) -> FastAPI:
+    # ...
+    @app.post("/trigger-staleness")
+    async def trigger_staleness():
+        """
+        Scans watch directory first, then parquet directory for all known tickers,
+        checks timeframes, and enqueues them for update.
+        Returns 202 Accepted. (F-API-040)
+        """
+        # TODO: Implement
+        pass
+```
+
+#### Logic Steps
+1. Call `watcher.scan_once()` to ingest any newly placed files before validating existing ones.
+2. Get the `parquet_dir` path from `config.get_paths_config().parquet_dir`.
+3. List all immediate subdirectories in `parquet_dir` (these are the ticker names). **(F-API-020)**
+4. For each ticker found in the parquet directory:
+   - Call `config.get_timeframes_for_ticker(ticker)` to get its timeframes.
+   - For each timeframe, create a `DownloadRequest` with `ticker=ticker`, `timeframe=timeframe`, and `priority=DownloadPriority.WATCHER`.
+   - Call `queue.enqueue(request)`. **(F-API-030)**
+5. Keep track of how many tickers from the parquet dir were found and enqueued.
+6. Return a `FastAPI.responses.JSONResponse` with status code `202` and content `{"status": "accepted", "tickers_evaluated": count}`. **(F-API-040)**
+
+#### Main.py Update
+In `src/main.py` where `create_api` is called, update the call to pass the `watcher` instance as the 5th argument.
+
+#### Edge Cases
+- Parquet directory does not exist or is empty → Return `{"status": "accepted", "tickers_evaluated": 0}`.
+- Do NOT block waiting for downloads to finish.
 
 ---
 

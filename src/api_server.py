@@ -6,9 +6,14 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
+from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+if TYPE_CHECKING:
+    from file_watcher import FileWatcher
+
+from fastapi import FastAPI, HTTPException, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from models import (
@@ -49,6 +54,7 @@ def create_api(
     resolver: ITickerResolver,
     config: IConfigLoader,
     failed_store: IFailedTickerStore,
+    watcher: "FileWatcher",
 ) -> FastAPI:
     """
     Creates and returns the FastAPI application with all routes configured.
@@ -124,6 +130,53 @@ def create_api(
             timeframes=ordered_tfs,
             status="queued",
             message=f"Enqueued {len(ordered_tfs)} download(s) for {ticker}.",
+        )
+
+    @app.post("/trigger-staleness")
+    async def trigger_staleness() -> JSONResponse:
+        """
+        Scans watch directory first, then parquet directory for all known tickers,
+        checks timeframes, and enqueues them for update.
+        Returns 202 Accepted. (F-API-040)
+        """
+        # 1. Ingest newly placed watch files
+        watcher.scan_once()
+
+        count = 0
+        # 2. Get parquet_dir
+        parquet_dir = config.get_paths_config().parquet_dir
+        p_dir = Path(parquet_dir)
+
+        # 3. List all ticker subdirectories
+        if p_dir.exists() and p_dir.is_dir():
+            for item in p_dir.iterdir():
+                if not item.is_dir():
+                    continue
+                
+                ticker = item.name
+                # Only enqueue if we can resolve the ticker
+                contract = resolver.resolve(ticker)
+                if not contract:
+                    continue
+
+                # 4. Fetch timeframes and enqueue
+                timeframes = config.get_timeframes_for_ticker(ticker)
+                for tf in timeframes:
+                    req = DownloadRequest(
+                        ticker=ticker,
+                        timeframe=tf,
+                        priority=DownloadPriority.WATCHER,
+                        contract=contract,
+                    )
+                    queue.enqueue(req)
+                
+                if timeframes:
+                    count += 1
+
+        # 5. Return JSONResponse with 202
+        return JSONResponse(
+            status_code=status.HTTP_202_ACCEPTED,
+            content={"status": "accepted", "tickers_evaluated": count}
         )
 
     @app.get("/status", response_model=StatusResponse)

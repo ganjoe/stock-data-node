@@ -9,6 +9,7 @@ import calendar
 import logging
 from datetime import date as date_type
 from datetime import datetime, timezone
+import random
 from typing import Optional
 
 from ib_insync import IB, Contract, util
@@ -70,15 +71,16 @@ class GatewayClient(IGatewayClient):
             endpoint.host, endpoint.port, self._config.mode
         )
         try:
+            client_id = random.randint(1, 9999)
             await self._ib.connectAsync(
                 host=endpoint.host,
                 port=endpoint.port,
-                clientId=1,
+                clientId=client_id,
                 timeout=20,
             )
             logger.info(
-                "✅ Connected to IB Gateway at %s:%d",
-                endpoint.host, endpoint.port
+                "✅ Connected to IB Gateway at %s:%d (clientId=%d)",
+                endpoint.host, endpoint.port, client_id
             )
         except Exception as exc:
             msg = (

@@ -109,7 +109,7 @@ async def main() -> None:
     gateway      = GatewayClient(config.get_gateway_config())
     downloader   = Downloader(gateway, queue, writer, rate_limiter, config, failed_store)
     watcher      = FileWatcher(paths.watch_dir, queue, resolver, config, failed_store)
-    api          = create_api(queue, resolver, config, failed_store)
+    api          = create_api(queue, resolver, config, failed_store, watcher)
 
     # ── Startup checks (F-SYS-020) ────────────────────────────
     checker = StartupChecker(paths, writer)

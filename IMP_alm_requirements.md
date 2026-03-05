@@ -872,8 +872,8 @@ class FileWatcher:
 | Field | Value |
 |-------|-------|
 | **Target File** | `src/api_server.py` |
-| **Description** | Minimal FastAPI server for ticker download requests |
-| **Covers** | F-INT-010, F-CFG-050 |
+| **Description** | Minimal FastAPI server for ticker download requests and global staleness trigger |
+| **Covers** | F-INT-010, F-CFG-050, F-API-010, F-API-020, F-API-030, F-API-040 |
 | **Context** | Uses `IPriorityQueue`, `ITickerResolver`, `IConfigLoader`, `DownloadRequest`, `DownloadPriority` |
 
 **Code Stub:**
@@ -910,13 +910,13 @@ def create_api(
     resolver: ITickerResolver,
     config: IConfigLoader,
     failed_store: IFailedTickerStore,
+    watcher: "FileWatcher",
 ) -> FastAPI:
     # TODO: Implement POST /download endpoint
+    # TODO: Implement POST /trigger-staleness endpoint
     # TODO: Implement GET /status endpoint (optional)
     ...
 ```
-
-**Algo/Logic Steps:**
 
 1. **`POST /download`**: Accept `TickerRequest` body.
    - Resolve ticker via `resolver.resolve()`
@@ -926,7 +926,15 @@ def create_api(
    - Create `DownloadRequest` for each timeframe with `priority=API`
    - Enqueue all requests
    - Return `TickerResponse(status="queued", ...)`
-2. **`GET /status`** (optional, minimal): Return queue size and current processing ticker. Keep it simple.
+2. **`POST /trigger-staleness`**: No body required. **(F-API-010)**
+   - Call `watcher.scan_once()` to process any pending files in the watch directory first.
+   - Scan the `config.get_paths_config().parquet_dir` for all subdirectories (each represents a valid ticker). **(F-API-020)**
+   - For each found ticker directory:
+     - Fetch timeframes via `config.get_timeframes_for_ticker(ticker)`
+     - For each timeframe, create a `DownloadRequest` with `priority=WATCHER` (System prio 2). **(F-API-030)**
+     - Enqueue the request.
+   - Return a synchronous `202 Accepted` response immediately with JSON payload: `{"status": "accepted", "tickers_evaluated": <count>}`. **(F-API-040)**
+3. **`GET /status`** (optional, minimal): Return queue size and current processing ticker. Keep it simple.
 
 **Edge Cases:**
 - Empty ticker string → return 400
@@ -1236,7 +1244,6 @@ ib_insync>=0.9.86
 pyarrow>=14.0.0
 fastapi>=0.104.0
 uvicorn>=0.24.0
-watchdog>=3.0.0
 ```
 
 **Algo/Logic Steps:**

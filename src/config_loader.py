@@ -166,9 +166,10 @@ class ConfigLoader(IConfigLoader):
             )
         with open(path, "r", encoding="utf-8") as f:
             raw = json.load(f)
+        base_dir = self._config_dir.parent
         self._paths_config = PathsConfig(
-            parquet_dir=raw["parquet_dir"],
-            watch_dir=raw["watch_dir"],
+            parquet_dir=str(base_dir / raw["parquet_dir"]),
+            watch_dir=str(base_dir / raw["watch_dir"]),
         )
         self._file_mtimes[str(path)] = path.stat().st_mtime
         logger.debug("Loaded paths.json")
