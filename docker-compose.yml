@@ -21,4 +21,4 @@ services:
     network_mode: "host"
     # Port mappings are ignored when using host networking
     # ports:
-    #   - "8000:9000"
+    #   - "8000:8002"
