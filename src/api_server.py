@@ -139,6 +139,7 @@ def create_api(
         checks timeframes, and enqueues them for update.
         Returns 202 Accepted. (F-API-040)
         """
+        logger.info("API: Trigger staleness request received.")
         # 1. Ingest newly placed watch files
         watcher.scan_once()
 
@@ -172,6 +173,8 @@ def create_api(
                 
                 if timeframes:
                     count += 1
+        
+        logger.info("API: trigger-staleness scan complete. Tickers evaluated from parquet: %d", count)
 
         # 5. Return JSONResponse with 202
         return JSONResponse(
