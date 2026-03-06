@@ -229,6 +229,7 @@ class GatewayClient(IGatewayClient):
         # Convert end_ts to IBKR end datetime string (YYYYMMDD HH:MM:SS UTC)
         end_dt = datetime.fromtimestamp(end_ts, tz=timezone.utc)
         end_str = end_dt.strftime("%Y%m%d %H:%M:%S UTC")
+        readable_end = end_dt.strftime("%d.%m.%Y %H:%M:%S")
 
         # Calculate duration string from the time window
         duration_seconds = end_ts - start_ts
@@ -236,7 +237,7 @@ class GatewayClient(IGatewayClient):
 
         logger.debug(
             "Requesting historical bars: %s / %s | end=%s | duration=%s | barSize=%s",
-            contract.symbol, timeframe, end_str, duration_str, bar_size
+            contract.symbol, timeframe, readable_end, duration_str, bar_size
         )
 
         bars = await self._ib.reqHistoricalDataAsync(

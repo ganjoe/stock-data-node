@@ -41,6 +41,18 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "CELC": {
+    "symbol": "CELC",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "CENX": {
+    "symbol": "CENX",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
   "CGON": {
     "symbol": "CGON",
     "exchange": "NASDAQ",
@@ -50,6 +62,12 @@
   "COST": {
     "symbol": "COST",
     "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "CRGY": {
+    "symbol": "CRGY",
+    "exchange": "NYSE",
     "currency": "USD",
     "sec_type": "STK"
   },
@@ -110,6 +128,12 @@
   "KO": {
     "symbol": "KOD",
     "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "KRMN": {
+    "symbol": "KRMN",
+    "exchange": "NYSE",
     "currency": "USD",
     "sec_type": "STK"
   },
@@ -205,6 +229,12 @@
   },
   "RNG": {
     "symbol": "RNGTU",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "ROKU": {
+    "symbol": "ROKU",
     "exchange": "NASDAQ",
     "currency": "USD",
     "sec_type": "STK"

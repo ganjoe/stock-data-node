@@ -184,7 +184,7 @@ class Downloader:
             logger.info(
                 "ℹ️  Delta download for %s/%s (appending from %s)",
                 request.ticker, request.timeframe,
-                datetime.fromtimestamp(last_ts, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                datetime.fromtimestamp(last_ts, tz=timezone.utc).strftime("%d.%m.%Y %H:%M:%S")
             )
         else:
             logger.info("ℹ️  Full download for %s/%s (no existing data)", request.ticker, request.timeframe)
@@ -321,10 +321,11 @@ class Downloader:
         if request.status != TickerStatus.FAILED:
             request.status = TickerStatus.DONE
         logger.info(
-            "📊 %s: %s/%s — %d/%d chunks OK, %d bars, %.1fs",
-            "✅" if request.status == TickerStatus.DONE else "❌",
-            request.ticker, request.timeframe,
-            chunk_ok, total_chunks, total_bars, elapsed,
+            "📊 {}: {}/{} — {}/{} chunks OK, {:,d} bars, {:.1f}s".replace(",", ".").format(
+                "✅" if request.status == TickerStatus.DONE else "❌",
+                request.ticker, request.timeframe,
+                chunk_ok, total_chunks, total_bars, elapsed,
+            )
         )
 
     def _calculate_chunks(

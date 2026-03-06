@@ -122,7 +122,7 @@ class MarketClock:
 
         return {
             "status": status.value,
-            "server_time_et": now.strftime("%Y-%m-%d %H:%M:%S %Z"),
+            "server_time_et": now.strftime("%d.%m.%Y %H:%M:%S %Z"),
             "next_event": next_event,
             "seconds_to_next_event": int(time_to_event.total_seconds()),
             "human_readable": str(time_to_event).split(".")[0],

@@ -155,8 +155,8 @@ class DownloadChunk:
     is_final: bool       # True if this is the last chunk
 
     def __repr__(self) -> str:
-        s = datetime.fromtimestamp(self.start_ts, tz=timezone.utc).strftime("%Y%m%d")
-        e = datetime.fromtimestamp(self.end_ts, tz=timezone.utc).strftime("%Y%m%d")
+        s = datetime.fromtimestamp(self.start_ts, tz=timezone.utc).strftime("%d.%m.%Y")
+        e = datetime.fromtimestamp(self.end_ts, tz=timezone.utc).strftime("%d.%m.%Y")
         return f"DownloadChunk({self.ticker}/{self.timeframe}, {s} to {e})"
 
 

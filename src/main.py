@@ -101,7 +101,7 @@ def configure_logging(log_dir: str) -> None:
     log_dir_path.mkdir(parents=True, exist_ok=True)
 
     fmt = "%(asctime)s | %(levelname)-8s | %(name)-25s | %(message)s"
-    datefmt = "%Y-%m-%d %H:%M:%S"
+    datefmt = "%d.%m.%Y %H:%M:%S"
     formatter = logging.Formatter(fmt, datefmt=datefmt)
 
     root = logging.getLogger()
