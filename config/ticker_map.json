@@ -1,4 +1,10 @@
 {
+  "AAOI": {
+    "symbol": "AAOI",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
   "AAPL": {
     "symbol": "AAPL",
     "exchange": "SMART",
@@ -38,6 +44,12 @@
   "CVX": {
     "symbol": "CVX",
     "exchange": "NYSE",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "FSLY": {
+    "symbol": "FSLY",
+    "exchange": "NASDAQ",
     "currency": "USD",
     "sec_type": "STK"
   },
@@ -119,6 +131,12 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "NKTR": {
+    "symbol": "NKTR",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
   "NVDA": {
     "symbol": "NVDA",
     "exchange": "SMART",
@@ -145,6 +163,12 @@
   },
   "PM": {
     "symbol": "PMBS",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "RNG": {
+    "symbol": "RNGTU",
     "exchange": "NASDAQ",
     "currency": "USD",
     "sec_type": "STK"
@@ -199,6 +223,12 @@
   },
   "XOM": {
     "symbol": "XOMA",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "YOU": {
+    "symbol": "YOUL",
     "exchange": "NASDAQ",
     "currency": "USD",
     "sec_type": "STK"

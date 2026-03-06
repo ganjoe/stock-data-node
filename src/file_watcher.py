@@ -47,6 +47,10 @@ class FileWatcher:
         self._resolver = resolver
         self._config = config
         self._failed_store = failed_store
+        
+        # Track files currently being processed to avoid duplicate enqueueing
+        # over multiple scan intervals before the file is deleted.
+        self._processing_files: set[Path] = set()
 
     def scan_once(self) -> None:
         """
@@ -62,21 +66,39 @@ class FileWatcher:
 
         logger.info("File watcher: found %d file(s) in watch dir", len(txt_files))
 
-        for filepath in txt_files:
-            try:
-                self._process_file(filepath)
-            except FileNotFoundError:
-                logger.debug("Watch file %s disappeared during processing — skipping.", filepath)
-            except Exception as exc:
-                logger.error("Error processing watch file %s: %s", filepath, exc)
+        # First check if we need to clean up any processing files that no longer exist
+        existing_files = set(self._watch_dir.glob("*.txt"))
+        self._processing_files = {f for f in self._processing_files if f in existing_files}
+        
+        # Now process new files
+        for f in existing_files:
+            if f.is_file():
+                if f in self._processing_files:
+                    continue  # Already enqueued, just waiting for deletion
+                    
+                filename = f.name
+                if filename.startswith("failed_"):
+                    # Process recovered failed files if any
+                    pass # TODO: Implement recovery logic for failed files
+
+                logger.info("── Scanning: %s", f.name)
+                try:
+                    self._process_file(f)
+                except FileNotFoundError:
+                    logger.debug("Watch file %s disappeared during processing — skipping.", f)
+                except Exception as exc:
+                    logger.error("Error processing watch file %s: %s", f, exc)
 
     def _process_file(self, filepath: Path) -> None:
         """Parses a single watch file, resolves tickers, enqueues and cleans up."""
+        self._processing_files.add(filepath)
+        
         tickers = self._parse_ticker_file(filepath)
 
         if not tickers:
             logger.info("ℹ️  Deleting empty watch file %s", filepath.name)
             filepath.unlink(missing_ok=True)
+            self._processing_files.discard(filepath) # Remove from processing set
             return
 
         logger.info("Processing watch file %s with %d ticker(s)", filepath.name, len(tickers))
@@ -148,6 +170,7 @@ class FileWatcher:
         if not failed_tickers:
             logger.debug("Deleting processed watch file: %s", filepath.name)
             filepath.unlink(missing_ok=True)
+            self._processing_files.discard(filepath)
         else:
             # Rewrite file with only the unresolvable tickers
             remaining = "\n".join(failed_tickers) + "\n"
@@ -156,3 +179,6 @@ class FileWatcher:
                 "Watch file %s rewritten with %d unresolvable tickers: %s",
                 filepath.name, len(failed_tickers), failed_tickers
             )
+            # We remove it from processing so it can be picked up again next scan
+            # since it now contains only the failed ones.
+            self._processing_files.discard(filepath)
