@@ -77,8 +77,20 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "DUOL": {
+    "symbol": "DUOL",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
   "ERAS": {
     "symbol": "ERAS",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "FROM": {
+    "symbol": "WFCF",
     "exchange": "NASDAQ",
     "currency": "USD",
     "sec_type": "STK"
@@ -110,6 +122,12 @@
   "HD": {
     "symbol": "HD",
     "exchange": "NYSE",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "HIMS": {
+    "symbol": "HIMZ",
+    "exchange": "NASDAQ",
     "currency": "USD",
     "sec_type": "STK"
   },
@@ -182,6 +200,12 @@
   "NVDA": {
     "symbol": "NVDA",
     "exchange": "SMART",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "ODD": {
+    "symbol": "ODD",
+    "exchange": "NASDAQ",
     "currency": "USD",
     "sec_type": "STK"
   },
@@ -263,6 +287,8 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "SYMBOLS": null,
+  "TC2000": null,
   "TERN": {
     "symbol": "TERN",
     "exchange": "NASDAQ",
@@ -283,6 +309,12 @@
   },
   "UNH": {
     "symbol": "UNHG",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "VITL": {
+    "symbol": "VITL",
     "exchange": "NASDAQ",
     "currency": "USD",
     "sec_type": "STK"

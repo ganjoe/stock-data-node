@@ -1517,6 +1517,7 @@ The following requirements govern the **Optional Ticker Map** feature (T-EXT-001
 | F-CFG-020 | Default Contract Inference | If a requested ticker is not defined in the map, the system implicitly generates a default contract: `sec_type="STK"`, `exchange="SMART"`, `currency="USD"`. The input string is used as the `symbol`. | T-EXT-001 |
 | F-CFG-030 | Explicit Alias Mapping | The `ticker_map.json` is used primarily for exceptions: differing currencies/exchanges (e.g., EUR at IBIS) or as an alias-mapping where a search term (Key) maps to an actual IBKR symbol (Field `symbol`). | T-EXT-001 |
 | F-ERR-010 | API-Driven Blacklisting | A ticker is only added to `failed_ticker.json` (blacklisted) when an API attempt (e.g., contract qualification or download) explicitly fails (e.g., invalid symbol / no definition found). | T-EXT-002 |
+| F-ERR-020 | Historical Data Errors | If `ib_insync` emits an `errorEvent` during a historical data request (e.g., Error 162: No market data permissions, 10090: pacing), the error must be captured and raised as an exception to immediately halt the download sequence for that ticker, preventing useless iterative queries for empty periods. | - |
 
 ---
 

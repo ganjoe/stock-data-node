@@ -240,15 +240,32 @@ class GatewayClient(IGatewayClient):
             contract.symbol, timeframe, readable_end, duration_str, bar_size
         )
 
-        bars = await self._ib.reqHistoricalDataAsync(
-            contract=ib_contract,
-            endDateTime=end_str,
-            durationStr=duration_str,
-            barSizeSetting=bar_size,
-            whatToShow="TRADES",
-            useRTH=True,   # Regular Trading Hours only
-            formatDate=1,  # String dates — more compatible across bar sizes
-        )
+        captured_error: str | None = None
+
+        def on_error(reqId: int, errorCode: int, errorString: str, contract: object) -> None:
+            nonlocal captured_error
+            # 162: Historical Data Error, 200: No security definition, 321: API request invalid, 10090: Pacing
+            if errorCode in (162, 200, 321, 10090):
+                captured_error = f"Error {errorCode}: {errorString}"
+
+        self._ib.errorEvent += on_error
+        
+        try:
+            bars = await self._ib.reqHistoricalDataAsync(
+                contract=ib_contract,
+                endDateTime=end_str,
+                durationStr=duration_str,
+                barSizeSetting=bar_size,
+                whatToShow="TRADES",
+                useRTH=True,   # Regular Trading Hours only
+                formatDate=1,  # String dates — more compatible across bar sizes
+            )
+        finally:
+            self._ib.errorEvent -= on_error
+
+        if captured_error:
+            logger.debug("Captured IB error during download: %s", captured_error)
+            raise RuntimeError(captured_error)
 
         if not bars:
             logger.debug("No bars returned for %s/%s", contract.symbol, timeframe)
