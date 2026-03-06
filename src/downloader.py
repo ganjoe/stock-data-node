@@ -321,11 +321,12 @@ class Downloader:
         if request.status != TickerStatus.FAILED:
             request.status = TickerStatus.DONE
         logger.info(
-            "📊 {}: {}/{} — {}/{} chunks OK, {:,d} bars, {:.1f}s".replace(",", ".").format(
-                "✅" if request.status == TickerStatus.DONE else "❌",
-                request.ticker, request.timeframe,
-                chunk_ok, total_chunks, total_bars, elapsed,
-            )
+            "📊 %s: %s/%s — %d/%d chunks OK, %s bars, %.1fs",
+            "✅" if request.status == TickerStatus.DONE else "❌",
+            request.ticker, request.timeframe,
+            chunk_ok, total_chunks, 
+            f"{total_bars:,d}".replace(",", "."), 
+            elapsed,
         )
 
     def _calculate_chunks(

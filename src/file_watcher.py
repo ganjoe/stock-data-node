@@ -134,9 +134,10 @@ class FileWatcher:
             enqueued_tickers.append(ticker)
 
         logger.info(
-            "Enqueued {:,d} ticker(s), {:,d} failed, from {}".replace(",", ".").format(
-                len(enqueued_tickers), len(failed_tickers), filepath.name
-            )
+            "Enqueued %s ticker(s), %s failed, from %s",
+            f"{len(enqueued_tickers):,d}".replace(",", "."), 
+            f"{len(failed_tickers):,d}".replace(",", "."), 
+            filepath.name
         )
 
         # Cleanup (F-INT-030)

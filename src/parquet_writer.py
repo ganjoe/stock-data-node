@@ -112,9 +112,9 @@ class ParquetWriter(IParquetWriter):
             pq.write_table(combined, str(tmp_path))
             os.replace(str(tmp_path), str(path))
             logger.info(
-                "Written {:,d} bars to {}/{}.parquet (total: {:,d})".replace(",", ".").format(
-                    len(bars), ticker, timeframe, combined.num_rows
-                )
+                "Written %s bars to %s/%s.parquet (total: %s)",
+                f"{len(bars):,d}".replace(",", "."), ticker, timeframe, 
+                f"{combined.num_rows:,d}".replace(",", ".")
             )
         except Exception as exc:
             logger.error("Failed to write parquet for %s/%s: %s", ticker, timeframe, exc)

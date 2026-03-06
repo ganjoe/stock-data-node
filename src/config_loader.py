@@ -266,7 +266,7 @@ class ConfigLoader(IConfigLoader):
 
         self._file_mtimes[str(path)] = path.stat().st_mtime
         logger.debug(
-            "Loaded ticker_map.json ({:,d} tickers, {:,d} unmapped/null)".replace(",", ".").format(
-                len(self._ticker_map), null_count,
-            )
+            "Loaded ticker_map.json (%s tickers, %s unmapped/null)",
+            f"{len(self._ticker_map):,d}".replace(",", "."),
+            f"{null_count:,d}".replace(",", "."),
         )
