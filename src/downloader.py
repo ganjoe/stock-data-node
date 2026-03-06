@@ -184,7 +184,7 @@ class Downloader:
             logger.info(
                 "ℹ️  Delta download for %s/%s (appending from %s)",
                 request.ticker, request.timeframe,
-                datetime.fromtimestamp(last_ts, tz=timezone.utc).strftime("%Y-%m-%d")
+                datetime.fromtimestamp(last_ts, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
             )
         else:
             logger.info("ℹ️  Full download for %s/%s (no existing data)", request.ticker, request.timeframe)
@@ -264,13 +264,23 @@ class Downloader:
                         break
 
                 elif category == ErrorCategory.NO_DATA:
-                    # NO_DATA is NOT permanent — just skip this chunk (F-IMP-060)
-                    logger.debug(
-                        "ℹ️ No data for %s/%s chunk %d/%d — skipping (not a permanent error)",
-                        request.ticker, request.timeframe, i + 1, len(chunks)
-                    )
-                    chunk_fail += 1
-                    continue
+                    # If this is a full download (fetching backwards in time), hitting NO_DATA 
+                    # usually means we've reached the IPO date or the end of the exchange's history.
+                    # We can safely abort fetching even older chunks.
+                    if not last_ts:
+                        logger.info(
+                            "ℹ️ Reached beginning of history (IPO) for %s/%s at chunk %d/%d — stopping early.",
+                            request.ticker, request.timeframe, i + 1, len(chunks)
+                        )
+                        break
+                    else:
+                        # For delta downloads (fetching forwards), maybe a weekend/holiday chunk is empty.
+                        logger.debug(
+                            "ℹ️ No data for %s/%s chunk %d/%d — skipping (not a permanent error)",
+                            request.ticker, request.timeframe, i + 1, len(chunks)
+                        )
+                        chunk_fail += 1
+                        continue
 
                 elif category == ErrorCategory.NO_PERMISSIONS:
                     logger.error(

@@ -5,6 +5,7 @@ All data structures, enums, and interfaces for the stock-data-node project.
 from __future__ import annotations
 
 import time
+from datetime import datetime, timezone
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
@@ -130,6 +131,10 @@ class DownloadRequest:
     status: TickerStatus = TickerStatus.PENDING
     created_at: float = field(default_factory=time.time)
 
+    def __repr__(self) -> str:
+        dt = datetime.fromtimestamp(self.created_at, tz=timezone.utc).strftime("%H:%M:%S")
+        return f"DownloadRequest({self.ticker}/{self.timeframe}, prio={self.priority.name}, created={dt})"
+
     def __lt__(self, other: DownloadRequest) -> bool:
         """For heapq ordering: lower priority value = higher priority."""
         return (int(self.priority), self.created_at) < (int(other.priority), other.created_at)
@@ -148,6 +153,11 @@ class DownloadChunk:
     start_ts: int        # Unix timestamp
     end_ts: int          # Unix timestamp
     is_final: bool       # True if this is the last chunk
+
+    def __repr__(self) -> str:
+        s = datetime.fromtimestamp(self.start_ts, tz=timezone.utc).strftime("%Y%m%d")
+        e = datetime.fromtimestamp(self.end_ts, tz=timezone.utc).strftime("%Y%m%d")
+        return f"DownloadChunk({self.ticker}/{self.timeframe}, {s} to {e})"
 
 
 @dataclass

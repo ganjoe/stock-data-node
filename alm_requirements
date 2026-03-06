@@ -42,3 +42,4 @@ F-EXT-050,Logic,Exchange/Currency Filtering,"Die API-Antwort der Suche wird gefi
 F-EXT-060,Config,Currency Priority List,"Das System nutzt konfigurierbare Prioritätenlisten für Währungen (USD, EUR, CAD, GBP, JPY) und Börsen aus config/auto_discovery.json zur Auswahl des besten Treffers.",-
 F-EXT-070,State,Auto-Mapping Persistence,"Sobald die Auto-Discovery einen passenden Vertrag ermittelt, wird das Mapping dauerhaft in ticker_map.json gespeichert und im Log protokolliert.",-
 F-EXT-080,State,Final Blacklisting,"Erst wenn die Fallback-Suche keine brauchbare STK-Alternative liefert, wird der Ticker in failed_ticker.json gesperrt und in ticker_map auf SKIP gemappt.",-
+F-LOG-070,Logging,Human-Readable Time,"Logs im Terminal dürfen keine Unix-Timestamps roh ausgeben. Alle Zeitangaben müssen in ein menschenlesbares Format (z.B. YYYY-MM-DD HH:MM:SS) konvertiert werden.",-

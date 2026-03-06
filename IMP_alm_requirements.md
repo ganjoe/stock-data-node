@@ -1682,3 +1682,26 @@ The following requirements govern the **Enhanced Visual Logging** (F-LOG-030 thr
 2. **Apply Structure (F-LOG-060)**:
    - Use `logger.info("════════════════════════════════════════════════════════════")` for major headers.
    - Use `logger.info("── %s", msg)` for minor steps in the gateway client or downloader.
+---
+
+### T-018 — Human-Readable Log Timestamps
+
+| Field | Value |
+|-------|-------|
+| **Target File** | `src/*.py` (Audit all) |
+| **Description** | Ensure no raw Unix timestamps are logged to stdout/stderr. |
+| **Covers** | F-LOG-070 |
+| **Context** | Applied to all logging calls globally. |
+
+**Algo/Logic Steps:**
+
+1. **Audit**: Search for all `logger.*` calls that include timestamp variables.
+2. **Transform**: For any variable that is a Unix timestamp (float/int), wrap it in formatting logic:
+   - Use `datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")`.
+3. **Verify**: Check `downloader.py` (delta logs), `gateway_client.py` (request logs), and `failed_ticker_store.py` (blacklisting notifications).
+
+**Edge Cases:**
+- Ensure timezone is always explicitly `timezone.utc` to avoid local machine discrepancies.
+- Do not convert the prefix timestamp (handled by `ColoredFormatter`).
+
+---
