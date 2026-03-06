@@ -33,13 +33,13 @@ class StartupChecker:
         corrupt_tickers = self._check_parquet_integrity()
         if corrupt_tickers:
             logger.warning(
-                "%d ticker(s) had corrupt parquet files and were flagged for re-download: %s",
+                "⚠️ %d ticker(s) had corrupt parquet files and were flagged for re-download: %s",
                 len(corrupt_tickers), corrupt_tickers
             )
             self._write_recovery_watch_file(corrupt_tickers)
         else:
             logger.info("✅ All parquet files OK — no corruption detected.")
-        logger.info("═══ Startup checks complete. ═══")
+        logger.info("── Integrity checks complete.")
         return corrupt_tickers
 
     def _check_parquet_integrity(self) -> list[str]:
@@ -57,13 +57,13 @@ class StartupChecker:
         for parquet_file in parquet_dir.rglob("*.parquet"):
             # Skip temp files from incomplete writes
             if parquet_file.suffix == ".tmp":
-                logger.warning("Found stale temp file %s — deleting.", parquet_file)
+                logger.warning("⚠️ Found stale temp file %s — deleting.", parquet_file)
                 parquet_file.unlink(missing_ok=True)
                 continue
 
             is_valid = self._writer.validate_parquet(str(parquet_file))
             if not is_valid:
-                logger.error("CORRUPT: %s — deleting.", parquet_file)
+                logger.error("❌ CORRUPT: %s — deleting.", parquet_file)
                 try:
                     parquet_file.unlink()
                 except OSError as exc:

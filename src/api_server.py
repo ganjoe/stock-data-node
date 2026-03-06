@@ -80,9 +80,8 @@ def create_api(
 
         # Check if explicitly blacklisted or skipped
         if resolver.is_ignored(ticker):
-            reason = f"Ticker '{ticker}' is blacklisted or mapped to SKIP."
-            logger.warning("API: cannot enqueue %s — %s", ticker, reason)
-            raise HTTPException(status_code=400, detail=reason)
+            logger.warning("❌ Rejected API download for %s (blacklisted/SKIP)", ticker)
+            raise HTTPException(status_code=400, detail=f"Ticker {ticker} is blacklisted or mapped to SKIP")
             
         # Resolve ticker to IBKR contract (will be None if unmapped, triggering Auto-Discovery later)
         contract = resolver.resolve(ticker)
@@ -109,6 +108,8 @@ def create_api(
                 contract=contract,
             )
             queue.enqueue(req)
+            logger.info("✅ API request accepted: %s / %s", ticker, tf)
+
 
         logger.info(
             "API: enqueued %s for timeframes %s (priority=API)",
@@ -133,38 +134,39 @@ def create_api(
         # 1. Ingest newly placed watch files
         watcher.scan_once()
 
-        count = 0
         # 2. Get parquet_dir
         parquet_dir = config.get_paths_config().parquet_dir
         p_dir = Path(parquet_dir)
 
+        all_tickers = set()
         # 3. List all ticker subdirectories
         if p_dir.exists() and p_dir.is_dir():
             for item in p_dir.iterdir():
                 if not item.is_dir():
                     continue
-                
-                ticker = item.name
-                # Only enqueue if the ticker is not explicitly ignored
-                if resolver.is_ignored(ticker):
-                    continue
-                contract = resolver.resolve(ticker)
-
-                # 4. Fetch timeframes and enqueue
-                timeframes = config.get_timeframes_for_ticker(ticker)
-                for tf in timeframes:
-                    req = DownloadRequest(
-                        ticker=ticker,
-                        timeframe=tf,
-                        priority=DownloadPriority.WATCHER,
-                        contract=contract,
-                    )
-                    queue.enqueue(req)
-                
-                if timeframes:
-                    count += 1
+                all_tickers.add(item.name)
         
-        logger.info("API: trigger-staleness scan complete. Tickers evaluated from parquet: %d", count)
+        logger.info("▶️  API: Triggering staleness check for %d ticker(s)", len(all_tickers))
+        count = 0
+        for ticker in all_tickers:
+            # Only enqueue if the ticker is not explicitly ignored
+            if resolver.is_ignored(ticker):
+                continue
+            
+            # 4. Fetch timeframes and enqueue
+            timeframes = config.get_timeframes_for_ticker(ticker)
+            for tf in timeframes:
+                contract = resolver.resolve(ticker)
+                req = DownloadRequest(
+                    ticker=ticker,
+                    timeframe=tf,
+                    priority=DownloadPriority.WATCHER,
+                    contract=contract,
+                )
+                queue.enqueue(req)
+                count += 1
+        
+        logger.info("✅ API: Enqueued %d staleness requests", count)
 
         # 5. Return JSONResponse with 202
         return JSONResponse(

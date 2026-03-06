@@ -67,7 +67,7 @@ class GatewayClient(IGatewayClient):
         """Connects to the active IB Gateway endpoint. Raises ConnectionError on failure."""
         endpoint = self._config.active_endpoint
         logger.info(
-            "Connecting to IB Gateway at %s:%d (mode=%s)…",
+            "🌐 Connecting to IB Gateway at %s:%d (mode=%s)…",
             endpoint.host, endpoint.port, self._config.mode
         )
         try:
@@ -105,7 +105,7 @@ class GatewayClient(IGatewayClient):
         if no live subscription exists. We detect which one is active
         and return an adaptive BatchConfig. (F-CON-020, F-IMP-010/020)
         """
-        logger.info("Detecting market data type…")
+        logger.info("── Detecting market data type…")
         # Request Live (IBKR falls back to Delayed automatically)
         self._ib.reqMarketDataType(MarketDataType.LIVE)
         await asyncio.sleep(0.5)  # brief pause for the setting to propagate

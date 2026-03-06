@@ -11,6 +11,7 @@ import logging
 import signal
 import sys
 import os
+import re
 from pathlib import Path
 
 import uvicorn
@@ -32,6 +33,64 @@ from ticker_resolver import TickerResolver
 
 # ─── Logging Setup ───────────────────────────────────────────────
 
+# ANSI codes for terminal colors
+GREY = "\x1b[38;20m"
+CYAN = "\x1b[36;20m"
+MAGENTA = "\x1b[35;20m"
+YELLOW = "\x1b[33;20m"
+RED = "\x1b[31;20m"
+BOLD_RED = "\x1b[31;1m"
+RESET = "\x1b[0m"
+
+# Regex for highlighting
+TICKER_RE = re.compile(r"\b([A-Z]{1,5})\b")
+NUMBER_RE = re.compile(r"(\b\d+(\.\d+)?\b)")
+
+class ColoredFormatter(logging.Formatter):
+    """
+    Custom formatter providing:
+    - Fixed column widths (F-LOG-050)
+    - ANSI colors based on log level (F-LOG-030)
+    - In-text highlighting for tickers and numbers
+    """
+    COLORS = {
+        logging.DEBUG: GREY,
+        logging.INFO: RESET,
+        logging.WARNING: YELLOW,
+        logging.ERROR: RED,
+        logging.CRITICAL: BOLD_RED,
+    }
+
+    def format(self, record: logging.LogRecord) -> str:
+        # 1. Color the level name and message
+        color = self.COLORS.get(record.levelno, RESET)
+        
+        # 2. In-text highlighting for ticker symbols (Cyan) and numbers (Magenta)
+        # We only highlight the message part
+        msg = str(record.msg)
+        if record.args:
+            try:
+                msg = msg % record.args
+            except Exception:
+                pass
+        
+        # Highlight tickers (all caps, 1-5 chars)
+        msg = TICKER_RE.sub(f"{CYAN}\\1{RESET}{color}", msg)
+        # Highlight numbers
+        msg = NUMBER_RE.sub(f"{MAGENTA}\\1{RESET}{color}", msg)
+        
+        # 3. Format the final output with fixed widths
+        # Columns: Time (8) | Level (8) | Module (20) | Message
+        time_str = self.formatTime(record, "%H:%M:%S")
+        level_str = record.levelname.ljust(8)
+        module_str = record.name[:20].ljust(20)
+        
+        # Special case for separators (F-LOG-060)
+        if "════" in msg:
+            return f"{color}{msg}{RESET}"
+            
+        return f"{time_str} | {color}{level_str}{RESET} | {GREY}{module_str}{RESET} | {color}{msg}{RESET}"
+
 def configure_logging(log_dir: str) -> None:
     """
     Two handlers:
@@ -51,7 +110,7 @@ def configure_logging(log_dir: str) -> None:
     # Terminal — verbose
     stream_handler = logging.StreamHandler(sys.stdout)
     stream_handler.setLevel(logging.DEBUG)
-    stream_handler.setFormatter(formatter)
+    stream_handler.setFormatter(ColoredFormatter())
     root.addHandler(stream_handler)
 
     # File — errors only
@@ -80,9 +139,9 @@ async def main() -> None:
 
     configure_logging(log_dir)
 
-    logger.info("═══════════════════════════════════════════════")
+    logger.info("═══════════════════════════════════════════════════════════════")
     logger.info("  Stock Data Node — starting up")
-    logger.info("═══════════════════════════════════════════════")
+    logger.info("═══════════════════════════════════════════════════════════════")
 
     # ── Load configuration ─────────────────────────────────────
     try:
@@ -126,7 +185,7 @@ async def main() -> None:
     batch_config = await gateway.detect_market_data_type()
     rate_limiter.configure(batch_config)
     logger.info(
-        "Market data config: %s (concurrent=%d, pacing=%.1fs)",
+        "ℹ️  Market data config: %s (concurrent=%d, pacing=%.1fs)",
         batch_config.description, batch_config.max_concurrent, batch_config.base_pacing_delay,
     )
 
@@ -135,7 +194,7 @@ async def main() -> None:
     shutdown_event = asyncio.Event()
 
     def _signal_handler(sig: signal.Signals) -> None:
-        logger.info("Received signal %s — initiating shutdown…", sig.name)
+        logger.info("🛑 Received signal %s — initiating shutdown...", sig.name)
         shutdown_event.set()
 
     for sig in (signal.SIGINT, signal.SIGTERM):
@@ -144,7 +203,7 @@ async def main() -> None:
     # ── Background tasks ───────────────────────────────────────
 
     async def file_watcher_loop() -> None:
-        logger.info("File watcher started (interval: %.0fs)", FILE_WATCHER_INTERVAL)
+        logger.info("ℹ️  File watcher started (interval: %.0fs)", FILE_WATCHER_INTERVAL)
         while not shutdown_event.is_set():
             try:
                 watcher.scan_once()
@@ -160,7 +219,7 @@ async def main() -> None:
             log_level="warning",
         )
         server = uvicorn.Server(cfg)
-        logger.info("REST API listening on http://0.0.0.0:8002")
+        logger.info("ℹ️  REST API listening on http://0.0.0.0:8002")
         await server.serve()
 
     async def shutdown_watcher() -> None:
@@ -169,7 +228,7 @@ async def main() -> None:
         downloader.stop()
 
     # ── Run everything concurrently ────────────────────────────
-    logger.info("All systems go — entering main loop.")
+    logger.info("✅ All systems go — entering main loop.")
     await asyncio.gather(
         file_watcher_loop(),
         api_server_loop(),

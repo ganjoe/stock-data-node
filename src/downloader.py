@@ -114,9 +114,9 @@ class Downloader:
         self._running = False
 
     async def run_loop(self) -> None:
-        """Main processing loop. Runs until stop() is called."""
+        """Main processing loop. Runs until stopped."""
         self._running = True
-        logger.info("Downloader started.")
+        logger.info("✅ Downloader started.")
 
         while self._running:
             self._config.reload_if_changed()
@@ -135,11 +135,11 @@ class Downloader:
                 await self._process_request(request)
             except Exception as exc:
                 logger.error(
-                    "Unexpected error processing %s/%s: %s",
+                    "❌ Unexpected error processing %s/%s: %s",
                     request.ticker, request.timeframe, exc, exc_info=True
                 )
 
-        logger.info("Downloader stopped.")
+        logger.info("🛑 Downloader stopped.")
 
     def stop(self) -> None:
         """Signals the download loop to stop after the current request finishes."""
@@ -155,19 +155,18 @@ class Downloader:
         total_bars = 0
 
         if not self._gateway.is_connected():
-            logger.error("Gateway disconnected — re-queuing %s/%s", request.ticker, request.timeframe)
+            logger.error("❌ Gateway disconnected — re-queuing %s/%s", request.ticker, request.timeframe)
             self._queue.enqueue(request)
             await asyncio.sleep(5)
             return
             
-        # Trigger auto-discovery immediately if unmapped (F-EXT-040)
         if request.contract is None:
-            logger.info("No contract provided for %s. Attempting auto-discovery...", request.ticker)
+            logger.info("ℹ️  No contract provided for %s. Attempting auto-discovery...", request.ticker)
             new_contract = await self._auto_discover_contract(request.ticker)
             if new_contract:
                 request.contract = new_contract
             else:
-                logger.error("Auto-discovery failed for %s. Blacklisting.", request.ticker)
+                logger.error("❌ Auto-discovery failed for %s. Blacklisting.", request.ticker)
                 self._failed_store.add(FailedTickerEntry(
                     ticker=request.ticker,
                     reason="Unmapped & Auto-discovery failed",
@@ -181,26 +180,23 @@ class Downloader:
 
         # Delta detection (F-FNC-030)
         last_ts = self._writer.read_last_timestamp(request.ticker, request.timeframe)
-        if last_ts is not None:
+        if last_ts:
             logger.info(
-                "Delta download for %s/%s — last bar: %s",
+                "ℹ️  Delta download for %s/%s (appending from %s)",
                 request.ticker, request.timeframe,
                 datetime.fromtimestamp(last_ts, tz=timezone.utc).strftime("%Y-%m-%d")
             )
         else:
-            logger.info(
-                "Full download for %s/%s (no existing data)",
-                request.ticker, request.timeframe
-            )
+            logger.info("ℹ️  Full download for %s/%s (no existing data)", request.ticker, request.timeframe)
 
         chunks = self._calculate_chunks(last_ts, request.timeframe)
         if not chunks:
-            logger.info("No chunks to download for %s/%s — already up to date.", request.ticker, request.timeframe)
+            logger.info("✅ No chunks to download for %s/%s — already up to date.", request.ticker, request.timeframe)
             request.status = TickerStatus.DONE
             return
 
         logger.info(
-            "Downloading %s/%s in %d chunk(s)…",
+            "▶️  Downloading %s/%s in %d chunk(s)...",
             request.ticker, request.timeframe, len(chunks)
         )
 
@@ -227,13 +223,13 @@ class Downloader:
                 category = classify_error(result.error)
 
                 if category == ErrorCategory.PACING:
-                    logger.warning("Pacing error on %s/%s — applying backoff and retrying chunk", request.ticker, request.timeframe)
+                    logger.warning("⏳ Pacing error on %s/%s — applying backoff and retrying chunk", request.ticker, request.timeframe)
                     self._rate_limiter.report_pacing_error()
                     await self._rate_limiter.acquire()
                     result = await self._download_chunk(chunk, request.contract)
                     if result.error:
                         logger.error(
-                            "Chunk retry also failed for %s/%s: %s",
+                            "❌ Chunk retry also failed for %s/%s: %s",
                             request.ticker, request.timeframe, result.error
                         )
                         chunk_fail += 1
@@ -241,7 +237,7 @@ class Downloader:
                         break
 
                 elif category == ErrorCategory.QUALIFY_FAILED:
-                    logger.warning("Qualify failed for %s — attempting auto-discovery fallback.", request.ticker)
+                    logger.warning("⚠️ Qualify failed for %s — attempting auto-discovery fallback.", request.ticker)
                     new_contract = await self._auto_discover_contract(request.ticker)
                     if new_contract:
                         request.contract = new_contract
@@ -250,7 +246,7 @@ class Downloader:
                         
                     if not new_contract or result.error:
                         logger.error(
-                            "Permanent error for %s/%s: %s — adding to blacklist and mapping to SKIP",
+                            "❌ Permanent error for %s/%s: %s — adding to blacklist and mapping to SKIP",
                             request.ticker, request.timeframe, result.error
                         )
                         self._failed_store.add(FailedTickerEntry(
@@ -270,7 +266,7 @@ class Downloader:
                 elif category == ErrorCategory.NO_DATA:
                     # NO_DATA is NOT permanent — just skip this chunk (F-IMP-060)
                     logger.debug(
-                        "No data for %s/%s chunk %d/%d — skipping (not a permanent error)",
+                        "ℹ️ No data for %s/%s chunk %d/%d — skipping (not a permanent error)",
                         request.ticker, request.timeframe, i + 1, len(chunks)
                     )
                     chunk_fail += 1
@@ -278,7 +274,7 @@ class Downloader:
 
                 elif category == ErrorCategory.NO_PERMISSIONS:
                     logger.error(
-                        "Permission error for %s/%s: %s — stopping",
+                        "❌ Permission error for %s/%s: %s — stopping",
                         request.ticker, request.timeframe, result.error
                     )
                     chunk_fail += 1
@@ -287,7 +283,7 @@ class Downloader:
 
                 else:
                     logger.error(
-                        "%s error for %s/%s: %s — skipping chunk",
+                        "❌ %s error for %s/%s: %s — skipping chunk",
                         category.value, request.ticker, request.timeframe, result.error
                     )
                     chunk_fail += 1
@@ -309,7 +305,7 @@ class Downloader:
         
         # Self-healing blacklist (T-EXT-003): Remove from blacklist if successful
         if total_bars > 0 and self._failed_store.is_blacklisted(request.ticker):
-            logger.info("Auto-cleaning %s from blacklist due to successful download.", request.ticker)
+            logger.info("✅ Auto-cleaning %s from blacklist due to successful download.", request.ticker)
             self._failed_store.remove(request.ticker)
 
         if request.status != TickerStatus.FAILED:
@@ -444,7 +440,7 @@ class Downloader:
             self._config.update_ticker_map(ticker, new_contract)
             
         logger.info(
-            "Auto-discovered %s -> %s on %s (%s)",
-            ticker, new_contract.symbol, new_contract.exchange, new_contract.currency
+            "✅ Auto-discovered %s -> Exchange: %s, Currency: %s",
+            ticker, new_contract.exchange, new_contract.currency
         )
         return new_contract

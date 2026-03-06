@@ -1631,3 +1631,54 @@ class AutoDiscoveryConfig:
    - Log explicit `INFO`: `"Auto-discovered {ticker} -> Exchange: {exchange}, Currency: {currency}"`.
    - Return the new contract.
 5. If auto-discovery succeeds, immediately proceed with the download chunk sequence using the new contract.
+
+---
+
+## PART 5: Extensions (Phase 6) - Enhanced Visual Logging
+
+The following requirements govern the **Enhanced Visual Logging** (F-LOG-030 through F-LOG-060). This involves a custom ANSI formatter and structured column alignment.
+
+#### T-015 — Central Logging Formatter & ANSI Colors
+| Field | Value |
+|-------|-------|
+| **Target File** | `src/main.py` (or new `src/logger_utils.py`) |
+| **Description** | Implement a custom `logging.Formatter` that handles ANSI colors, Emojis, and fixed-width alignment. |
+| **Covers** | F-LOG-030, F-LOG-040, F-LOG-050, F-LOG-060 |
+| **Context** | Uses standard Python `logging` module. ANSI codes should be defined as constants. |
+
+**Algo/Logic Steps:**
+1. **Define ANSI Constants**:
+   - `GREY = "\x1b[38;20m"` (DEBUG)
+   - `CYAN = "\x1b[36;20m"` (Variables)
+   - `MAGENTA = "\x1b[35;20m"` (Numbers)
+   - `YELLOW = "\x1b[33;20m"` (WARNING)
+   - `RED = "\x1b[31;20m"` (ERROR)
+   - `BOLD_RED = "\x1b[31;1m"` (CRITICAL)
+   - `RESET = "\x1b[0m"`
+2. **Implement `ColoredFormatter(logging.Formatter)`**:
+   - Override `format(record)`:
+     - **Columns (F-LOG-050)**: Standardize `%(asctime)s` to `%H:%M:%S`. Pad `levelname` to 8 chars and `name` (module) to 20 chars.
+     - **Colors (F-LOG-030)**: Wrap the level name and message in the appropriate ANSI code based on `record.levelno`.
+     - **In-Text Highlighting**: Use regex to find capitalized tickers (e.g., `AAPL`) and wrap in `CYAN`. Find numbers/dates and wrap in `MAGENTA`.
+     - **ASCII Separators (F-LOG-060)**: If message contains `════`, treat it as a special block and ensure it fills the line. If it starts with `── `, it's a sub-transition.
+3. **Update `configure_logging()` in `main.py`**:
+   - Replace the standard `logging.Formatter` with `ColoredFormatter` for the `StreamHandler`.
+   - Ensure `sys.stdout` is properly flushed or set up for TTY detection (though Docker logs usually support ANSI).
+
+#### T-016 — Integration of Enhanced Logging
+| Field | Value |
+|-------|-------|
+| **Target File** | Multiple: `src/main.py`, `src/downloader.py`, `src/gateway_client.py`, `src/startup_checks.py` |
+| **Description** | Update log calls to include the new Emoji dictionary and structural markers. |
+| **Covers** | F-LOG-040, F-LOG-060 |
+
+**Algo/Logic Steps:**
+1. **Apply Dictionary (F-LOG-040)**:
+   - **Startup**: `logger.info("✅ Startup integrity checks complete.")`
+   - **Connection**: `logger.info("🌐 Connecting to IB Gateway...")`
+   - **Download Start**: `logger.info("▶️ Processing: %s / %s", ticker, timeframe)`
+   - **Success**: `logger.info("✅ Written %d bars to %s", count, path)`
+   - **Errors**: `logger.error("❌ Qualification failed for %s", ticker)`
+2. **Apply Structure (F-LOG-060)**:
+   - Use `logger.info("════════════════════════════════════════════════════════════")` for major headers.
+   - Use `logger.info("── %s", msg)` for minor steps in the gateway client or downloader.

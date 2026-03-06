@@ -75,7 +75,7 @@ class FileWatcher:
         tickers = self._parse_ticker_file(filepath)
 
         if not tickers:
-            logger.info("Deleting empty watch file: %s", filepath.name)
+            logger.info("ℹ️  Deleting empty watch file %s", filepath.name)
             filepath.unlink(missing_ok=True)
             return
 

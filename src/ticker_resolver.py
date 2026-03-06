@@ -27,11 +27,18 @@ class TickerResolver(ITickerResolver):
         if not ticker or not ticker.strip():
             return True
         normalized = ticker.strip().upper()
+
+        # 1. Check blacklist
         if self._failed_store.is_blacklisted(normalized):
+            logger.info("ℹ️  Skipping %s (blacklisted)", normalized)
             return True
+        
+        # 2. Check SKIP mapping
         self._config.reload_if_changed()
-        contract = self._config.get_ticker_map().get(normalized)
+        mapping = self._config.get_ticker_map()
+        contract = mapping.get(normalized)
         if contract and contract.symbol == "SKIP":
+            logger.info("ℹ️  Skipping %s (mapped to SKIP/null)", normalized)
             return True
         return False
 
