@@ -34,13 +34,13 @@ from ticker_resolver import TickerResolver
 # ─── Logging Setup ───────────────────────────────────────────────
 
 # ANSI codes for terminal colors
-GREY = "\x1b[38;20m"
-CYAN = "\x1b[36;20m"
-MAGENTA = "\x1b[35;20m"
-YELLOW = "\x1b[33;20m"
-RED = "\x1b[31;20m"
-BOLD_RED = "\x1b[31;1m"
-RESET = "\x1b[0m"
+GREY = "\033[90m"
+CYAN = "\033[36m"
+MAGENTA = "\033[35m"
+YELLOW = "\033[33m"
+RED = "\033[31m"
+BOLD_RED = "\033[31;1m"
+RESET = "\033[0m"
 
 # Regex for highlighting
 TICKER_RE = re.compile(r"\b([A-Z]{1,5})\b")

@@ -19,6 +19,7 @@ services:
       # Persistent state (failed_ticker.json blacklist)
       - /home/daniel/stock-data-node/state:/app/state
     network_mode: "host"
+    tty: true
     # Port mappings are ignored when using host networking
     # ports:
     #   - "8000:8002"

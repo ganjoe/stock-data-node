@@ -1,44 +1,206 @@
 {
-    "AAPL": {
-        "symbol": "AAPL",
-        "exchange": "SMART",
-        "currency": "USD",
-        "sec_type": "STK"
-    },
-    "MSFT": {
-        "symbol": "MSFT",
-        "exchange": "SMART",
-        "currency": "USD",
-        "sec_type": "STK"
-    },
-    "GOOG": {
-        "symbol": "GOOG",
-        "exchange": "SMART",
-        "currency": "USD",
-        "sec_type": "STK"
-    },
-    "AMZN": {
-        "symbol": "AMZN",
-        "exchange": "SMART",
-        "currency": "USD",
-        "sec_type": "STK"
-    },
-    "NVDA": {
-        "symbol": "NVDA",
-        "exchange": "SMART",
-        "currency": "USD",
-        "sec_type": "STK"
-    },
-    "SPY": {
-        "symbol": "SPY",
-        "exchange": "SMART",
-        "currency": "USD",
-        "sec_type": "STK"
-    },
-    "SAP": {
-        "symbol": "SAP",
-        "exchange": "IBIS",
-        "currency": "EUR",
-        "sec_type": "STK"
-    }
+  "AAPL": {
+    "symbol": "AAPL",
+    "exchange": "SMART",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "ABBV": {
+    "symbol": "ABBV",
+    "exchange": "NYSE",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "AMD": {
+    "symbol": "AMD",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "AMZN": {
+    "symbol": "AMZN",
+    "exchange": "SMART",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "AVGO": {
+    "symbol": "AVGO",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "COST": {
+    "symbol": "COST",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "CVX": {
+    "symbol": "CVX",
+    "exchange": "NYSE",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "GEV": {
+    "symbol": "GEVO",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "GOOG": {
+    "symbol": "GOOG",
+    "exchange": "SMART",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "GOOGL": {
+    "symbol": "GOOGL",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "HD": {
+    "symbol": "HD",
+    "exchange": "NYSE",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "IBM": {
+    "symbol": "IBM",
+    "exchange": "NYSE",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "JNJ": {
+    "symbol": "JNJ",
+    "exchange": "NYSE",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "KO": {
+    "symbol": "KOD",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "LIN": {
+    "symbol": "LIN",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "LLY": {
+    "symbol": "LLYVK",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "MCD": {
+    "symbol": "MCDS",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "MRK": {
+    "symbol": "MRKR",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "MSFT": {
+    "symbol": "MSFT",
+    "exchange": "SMART",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "NFLX": {
+    "symbol": "NFLX",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "NVDA": {
+    "symbol": "NVDA",
+    "exchange": "SMART",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "ORCL": {
+    "symbol": "ORCX",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "PG": {
+    "symbol": "PGNY",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "PLTR": {
+    "symbol": "PLTR",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "PM": {
+    "symbol": "PMBS",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "RTX": {
+    "symbol": "RTXG",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "RY": {
+    "symbol": "RYAAY",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "SAP": {
+    "symbol": "SAP",
+    "exchange": "IBIS",
+    "currency": "EUR",
+    "sec_type": "STK"
+  },
+  "SPY": {
+    "symbol": "SPY",
+    "exchange": "SMART",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "TMUS": {
+    "symbol": "TMUS",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "UNH": {
+    "symbol": "UNHG",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "VZ": {
+    "symbol": "VZ",
+    "exchange": "NYSE",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "WMT": {
+    "symbol": "WMT",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "XOM": {
+    "symbol": "XOMA",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  }
 }
