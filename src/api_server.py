@@ -78,24 +78,14 @@ def create_api(
 
         logger.info("API: download request for %s (timeframes=%s)", ticker, body.timeframes)
 
-        # Resolve ticker to IBKR contract
+        # Check if explicitly blacklisted or skipped
+        if resolver.is_ignored(ticker):
+            reason = f"Ticker '{ticker}' is blacklisted or mapped to SKIP."
+            logger.warning("API: cannot enqueue %s — %s", ticker, reason)
+            raise HTTPException(status_code=400, detail=reason)
+            
+        # Resolve ticker to IBKR contract (will be None if unmapped, triggering Auto-Discovery later)
         contract = resolver.resolve(ticker)
-        if contract is None:
-            reason = (
-                "Ticker is blacklisted."
-                if failed_store.is_blacklisted(ticker)
-                else f"Ticker '{ticker}' not found in ticker_map.json."
-            )
-            logger.warning("API: cannot resolve %s — %s", ticker, reason)
-            if not failed_store.is_blacklisted(ticker):
-                # Unknown tickers go to failed store
-                failed_store.add(FailedTickerEntry(
-                    ticker=ticker,
-                    reason="Not found in ticker_map.json",
-                    timestamp=datetime.now(timezone.utc).isoformat(),
-                    source="api",
-                ))
-            raise HTTPException(status_code=404, detail=reason)
 
         # Determine timeframes
         if body.timeframes:
@@ -155,10 +145,10 @@ def create_api(
                     continue
                 
                 ticker = item.name
-                # Only enqueue if we can resolve the ticker
-                contract = resolver.resolve(ticker)
-                if not contract:
+                # Only enqueue if the ticker is not explicitly ignored
+                if resolver.is_ignored(ticker):
                     continue
+                contract = resolver.resolve(ticker)
 
                 # 4. Fetch timeframes and enqueue
                 timeframes = config.get_timeframes_for_ticker(ticker)

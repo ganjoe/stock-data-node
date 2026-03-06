@@ -159,6 +159,25 @@ class Downloader:
             self._queue.enqueue(request)
             await asyncio.sleep(5)
             return
+            
+        # Trigger auto-discovery immediately if unmapped (F-EXT-040)
+        if request.contract is None:
+            logger.info("No contract provided for %s. Attempting auto-discovery...", request.ticker)
+            new_contract = await self._auto_discover_contract(request.ticker)
+            if new_contract:
+                request.contract = new_contract
+            else:
+                logger.error("Auto-discovery failed for %s. Blacklisting.", request.ticker)
+                self._failed_store.add(FailedTickerEntry(
+                    ticker=request.ticker,
+                    reason="Unmapped & Auto-discovery failed",
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    source="downloader",
+                ))
+                if hasattr(self._config, "register_unmapped_ticker"):
+                    self._config.register_unmapped_ticker(request.ticker)
+                request.status = TickerStatus.FAILED
+                return
 
         # Delta detection (F-FNC-030)
         last_ts = self._writer.read_last_timestamp(request.ticker, request.timeframe)
@@ -222,23 +241,31 @@ class Downloader:
                         break
 
                 elif category == ErrorCategory.QUALIFY_FAILED:
-                    logger.error(
-                        "Permanent error for %s/%s: %s — adding to blacklist and mapping to SKIP",
-                        request.ticker, request.timeframe, result.error
-                    )
-                    self._failed_store.add(FailedTickerEntry(
-                        ticker=request.ticker,
-                        reason=result.error,
-                        timestamp=datetime.now(timezone.utc).isoformat(),
-                        source="downloader",
-                    ))
-                    # Also register as null mapping so we don't spam IBKR on restart
-                    if hasattr(self._config, "register_unmapped_ticker"):
-                        self._config.register_unmapped_ticker(request.ticker)
-                    
-                    chunk_fail += 1
-                    request.status = TickerStatus.FAILED
-                    break
+                    logger.warning("Qualify failed for %s — attempting auto-discovery fallback.", request.ticker)
+                    new_contract = await self._auto_discover_contract(request.ticker)
+                    if new_contract:
+                        request.contract = new_contract
+                        await self._rate_limiter.acquire()
+                        result = await self._download_chunk(chunk, request.contract)
+                        
+                    if not new_contract or result.error:
+                        logger.error(
+                            "Permanent error for %s/%s: %s — adding to blacklist and mapping to SKIP",
+                            request.ticker, request.timeframe, result.error
+                        )
+                        self._failed_store.add(FailedTickerEntry(
+                            ticker=request.ticker,
+                            reason=result.error or "Auto-discovery failed",
+                            timestamp=datetime.now(timezone.utc).isoformat(),
+                            source="downloader",
+                        ))
+                        # Also register as null mapping so we don't spam IBKR on restart
+                        if hasattr(self._config, "register_unmapped_ticker"):
+                            self._config.register_unmapped_ticker(request.ticker)
+                        
+                        chunk_fail += 1
+                        request.status = TickerStatus.FAILED
+                        break
 
                 elif category == ErrorCategory.NO_DATA:
                     # NO_DATA is NOT permanent — just skip this chunk (F-IMP-060)
@@ -368,3 +395,56 @@ class Downloader:
                 is_delta=False,
                 error=str(exc),
             )
+
+    async def _auto_discover_contract(self, ticker: str) -> Optional[IBKRContract]:
+        """
+        Attempts to find a matching STK contract using reqMatchingSymbols.
+        Returns the best matched IBKRContract based on priority, or None if no match.
+        """
+        results = await self._gateway.search_contract(ticker)
+        
+        # Filter strictly for STK
+        stk_results = [r for r in results if r.contract.secType == "STK"]
+        if not stk_results:
+            logger.warning("Auto-discovery found no STK contracts for %s", ticker)
+            return None
+            
+        auto_cfg = self._config.get_auto_discovery_config()
+        
+        # Scoring function: lower score = better priority
+        def score(desc) -> tuple[int, int]:
+            c = desc.contract
+            # Currency priority
+            curr = c.currency
+            curr_score = 999
+            if curr in auto_cfg.currency_priority:
+                curr_score = auto_cfg.currency_priority.index(curr)
+                
+            # Exchange priority
+            exch = c.primaryExchange or c.exchange
+            exch_score = 999
+            if exch in auto_cfg.exchange_priority:
+                exch_score = auto_cfg.exchange_priority.index(exch)
+                
+            return (curr_score, exch_score)
+            
+        # Sort by best scores
+        stk_results.sort(key=score)
+        best = stk_results[0]
+        
+        new_contract = IBKRContract(
+            symbol=best.contract.symbol,
+            exchange=best.contract.primaryExchange or best.contract.exchange,
+            currency=best.contract.currency,
+            sec_type="STK"
+        )
+        
+        # Persist the new mapping (F-EXT-070)
+        if hasattr(self._config, "update_ticker_map"):
+            self._config.update_ticker_map(ticker, new_contract)
+            
+        logger.info(
+            "Auto-discovered %s -> %s on %s (%s)",
+            ticker, new_contract.symbol, new_contract.exchange, new_contract.currency
+        )
+        return new_contract

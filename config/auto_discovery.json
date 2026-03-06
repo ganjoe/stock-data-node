@@ -1,0 +1,4 @@
+{
+    "currency_priority": ["USD", "EUR", "CAD", "GBP", "JPY"],
+    "exchange_priority": ["SMART", "IBIS2", "NASDAQ", "NYSE", "LSEETF"]
+}

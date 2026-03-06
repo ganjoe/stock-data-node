@@ -22,46 +22,30 @@ class TickerResolver(ITickerResolver):
         self._config = config
         self._failed_store = failed_store
 
+    def is_ignored(self, ticker: str) -> bool:
+        """Returns True if the ticker is blacklisted or sentinel SKIP."""
+        if not ticker or not ticker.strip():
+            return True
+        normalized = ticker.strip().upper()
+        if self._failed_store.is_blacklisted(normalized):
+            return True
+        self._config.reload_if_changed()
+        contract = self._config.get_ticker_map().get(normalized)
+        if contract and contract.symbol == "SKIP":
+            return True
+        return False
+
     def resolve(self, ticker: str) -> Optional[IBKRContract]:
         """
-        Returns the IBKRContract for a ticker symbol, or None if:
-        - ticker is empty / invalid
-        - ticker is in the failed/blacklist
-        - ticker is not found in ticker_map.json
-        - ticker is mapped to null (SKIP sentinel, F-IMP-070)
+        Returns the IBKRContract for a ticker symbol, or None if unmapped.
         """
-        if not ticker or not ticker.strip():
+        if self.is_ignored(ticker):
             return None
 
         normalized = ticker.strip().upper()
-
-        # Check blacklist (re-reads from disk so manual edits take effect)
-        if self._failed_store.is_blacklisted(normalized):
-            logger.info("Skipping blacklisted ticker: %s", normalized)
-            return None
-
-        # Hot-reload ticker_map if the file changed on disk
-        self._config.reload_if_changed()
-
         contract = self._config.get_ticker_map().get(normalized)
-        if contract is None:
-            logger.info(
-                "Ticker %s not mapped — using default fallback (SMART/USD/STK)",
-                normalized
-            )
-            return IBKRContract(
-                symbol=normalized,
-                exchange="SMART",
-                currency="USD",
-                sec_type="STK"
-            )
-
-        # SKIP sentinel: ticker_map has null mapping (F-IMP-070)
-        if contract.symbol == "SKIP":
-            logger.info(
-                "Ticker %s mapped to null — skipping (awaiting manual mapping)",
-                normalized,
-            )
+        if contract is None or contract.symbol == "SKIP":
+            logger.info("Ticker %s not mapped — returning None to trigger Auto-Discovery", normalized)
             return None
 
         return contract

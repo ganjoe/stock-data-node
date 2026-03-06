@@ -10,6 +10,8 @@ from dataclasses import dataclass, field
 from enum import Enum, IntEnum
 from typing import Optional
 
+from ib_insync import ContractDescription
+
 
 # ─── Enums ────────────────────────────────────────────────────────
 
@@ -89,6 +91,13 @@ class PathsConfig:
     """Loaded from config/paths.json. (F-CFG-020)"""
     parquet_dir: str     # e.g. "/app/data/parquet"
     watch_dir: str       # e.g. "/app/watch"
+
+
+@dataclass(frozen=True)
+class AutoDiscoveryConfig:
+    """Loaded from config/auto_discovery.json. (F-EXT-060)"""
+    currency_priority: list[str]
+    exchange_priority: list[str]
 
 
 @dataclass
@@ -205,6 +214,16 @@ class IConfigLoader(ABC):
         """Adds {ticker: null} to ticker_map.json if not already present. (F-IMP-070)"""
         ...
 
+    @abstractmethod
+    def get_auto_discovery_config(self) -> AutoDiscoveryConfig:
+        """Returns the priorities for auto-discovery."""
+        ...
+
+    @abstractmethod
+    def update_ticker_map(self, ticker: str, contract: IBKRContract) -> None:
+        """Persists a new contract mapping to ticker_map.json and updates the runtime cache. (F-EXT-070)"""
+        ...
+
 
 class IGatewayClient(ABC):
     """Manages IBKR Gateway connection. (F-CON-010/020)"""
@@ -238,6 +257,11 @@ class IGatewayClient(ABC):
         """Qualifies all contracts in a single batch call. (F-IMP-040)"""
         ...
 
+    @abstractmethod
+    async def search_contract(self, symbol: str) -> list[ContractDescription]:
+        """Wraps reqMatchingSymbolsAsync to find contract alternatives. (F-EXT-040)"""
+        ...
+
 
 class IPriorityQueue(ABC):
     """Thread-safe priority queue with preemption. (F-FNC-010/020)"""
@@ -259,6 +283,11 @@ class IPriorityQueue(ABC):
 
 class ITickerResolver(ABC):
     """Resolves ticker symbols to IBKR contracts. (F-FNC-040)"""
+
+    @abstractmethod
+    def is_ignored(self, ticker: str) -> bool:
+        """Returns True if the ticker is explicitly blacklisted or mapped to SKIP."""
+        ...
 
     @abstractmethod
     def resolve(self, ticker: str) -> Optional[IBKRContract]:

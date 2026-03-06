@@ -20,3 +20,6 @@ REGELN FÜR DEINE AUSGABE:
    - Identifiziere Widersprüche in meinem Input und weise mich darauf hin, bevor du die Tabelle erstellst.
    - Fasse Duplikate zusammen.
   - Mache Vorschläge aufgrund deiner Erfahrung aus anderen Projekten
+4. wenn es eine alm_requirements.* datei gibt
+-berücksichtige stets den inhalt (Logik-Prüfung), aktualisiere die datei wenn du dich mit den user auf neue Requirements geeinigt hast
+

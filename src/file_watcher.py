@@ -85,12 +85,12 @@ class FileWatcher:
         enqueued_tickers: list[str] = []
 
         for ticker in tickers:
-            contract = self._resolver.resolve(ticker)
-
-            if contract is None:
-                # Ticker is explicitly blacklisted or mapped to SKIP null
+            if self._resolver.is_ignored(ticker):
                 logger.debug("Skipping unresolved/blacklisted ticker %s from file", ticker)
                 continue
+                
+            contract = self._resolver.resolve(ticker)
+            # Proceed even if contract is None (triggering Auto-Discovery in downloader)
 
             # Get timeframes for this ticker
             timeframes = self._config.get_timeframes_for_ticker(ticker)

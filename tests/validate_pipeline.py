@@ -54,8 +54,8 @@ from startup_checks import StartupChecker
 from ticker_resolver import TickerResolver
 
 # ─── Validation settings ─────────────────────────────────────────
-
-TEST_TICKERS = ["AAPL", "MSFT", "GOOG"]
+# Tickers to test with (common, liquid US stocks)
+TEST_TICKERS = ["XDEF"]
 
 GATEWAY_HOST = "0.0.0.0"#bei ib-gateway-app docker gateway ip eintragen z.b. 172.17.0.1
 GATEWAY_PORT = 4002          # Paper trading port (change to 4001 for live)
@@ -114,7 +114,7 @@ class PipelineValidator:
         # ticker_map.json
         ticker_map = {
             t: {"symbol": t, "exchange": "SMART", "currency": "USD", "sec_type": "STK"}
-            for t in TEST_TICKERS
+            for t in TEST_TICKERS if t != "XDEF"
         }
         with open(self._config_dir / "ticker_map.json", "w") as f:
             json.dump(ticker_map, f, indent=2)

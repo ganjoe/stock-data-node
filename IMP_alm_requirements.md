@@ -1517,3 +1517,117 @@ The following requirements govern the **Optional Ticker Map** feature (T-EXT-001
 | F-CFG-020 | Default Contract Inference | If a requested ticker is not defined in the map, the system implicitly generates a default contract: `sec_type="STK"`, `exchange="SMART"`, `currency="USD"`. The input string is used as the `symbol`. | T-EXT-001 |
 | F-CFG-030 | Explicit Alias Mapping | The `ticker_map.json` is used primarily for exceptions: differing currencies/exchanges (e.g., EUR at IBIS) or as an alias-mapping where a search term (Key) maps to an actual IBKR symbol (Field `symbol`). | T-EXT-001 |
 | F-ERR-010 | API-Driven Blacklisting | A ticker is only added to `failed_ticker.json` (blacklisted) when an API attempt (e.g., contract qualification or download) explicitly fails (e.g., invalid symbol / no definition found). | T-EXT-002 |
+
+---
+
+## PART 4: Extensions (Phase 5) - API-Driven Auto-Discovery
+
+The following requirements govern the **API-Driven Auto-Discovery** feature (F-EXT-040 through F-EXT-080). When a ticker is not found in `ticker_map.json`, the system uses `reqMatchingSymbols` to discover the correct exchange and currency, logs it, and persists it.
+
+### 5.1 New Data Structures (`src/models.py`)
+
+```python
+@dataclass(frozen=True)
+class AutoDiscoveryConfig:
+    """Loaded from config/auto_discovery.json (F-EXT-060)."""
+    currency_priority: list[str]
+    exchange_priority: list[str]
+```
+
+### 5.2 Interface Updates
+
+**`IConfigLoader` additions:**
+```python
+    @abstractmethod
+    def get_auto_discovery_config(self) -> AutoDiscoveryConfig:
+        """Returns the priorities for auto-discovery."""
+        ...
+
+    @abstractmethod
+    def update_ticker_map(self, ticker: str, contract: IBKRContract) -> None:
+        """Persists a new contract mapping to ticker_map.json and updates the runtime cache. (F-EXT-070)"""
+        ...
+```
+
+**`IGatewayClient` additions:**
+```python
+    from ib_insync import ContractDescription
+
+    @abstractmethod
+    async def search_contract(self, symbol: str) -> list[ContractDescription]:
+        """Wraps reqMatchingSymbolsAsync to find contract alternatives. (F-EXT-040)"""
+        ...
+```
+
+---
+
+### Implementation Work Orders (Phase 5)
+
+#### T-EXT-004 — Auto-Discovery Config & Map Update
+| Field | Value |
+|-------|-------|
+| **Target File** | `src/config_loader.py`, `src/models.py` |
+| **Description** | Implement `AutoDiscoveryConfig` loading and `update_ticker_map()` saving logic. |
+| **Covers** | F-EXT-060, F-EXT-070 |
+| **Context** | Standard JSON read/write operations within `ConfigLoader`. |
+
+**Algo/Logic Steps:**
+1. **`models.py`**: Add `AutoDiscoveryConfig` dataclass and extend `IConfigLoader`.
+2. **`ConfigLoader._load_all()`**: Add logic to load `config/auto_discovery.json`. Default to `{"currency_priority": ["USD", "EUR"], "exchange_priority": ["SMART", "IBIS2"]}` if missing.
+3. **`ConfigLoader.get_auto_discovery_config()`**: Return the cached config.
+4. **`ConfigLoader.update_ticker_map(ticker, contract)`**: 
+   - Open `config/ticker_map.json`, read current JSON dict.
+   - Insert new key-value pair based on `contract`.
+   - Write back to file.
+   - Update `self._ticker_map` cache in memory.
+
+#### T-EXT-005 — Gateway Client Symbol Search
+| Field | Value |
+|-------|-------|
+| **Target File** | `src/gateway_client.py` |
+| **Description** | Expose the IB API symbol search functionality. |
+| **Covers** | F-EXT-040 |
+| **Context** | Uses `self._ib.reqMatchingSymbolsAsync`. |
+
+**Algo/Logic Steps:**
+1. **`search_contract(symbol)`**: 
+   - Call `await self._ib.reqMatchingSymbolsAsync(symbol)`.
+   - Return the resulting list of `ContractDescription` objects.
+   - Catch exceptions and return `[]` on error.
+
+#### T-EXT-006 — Ticker Resolver Auto-Discovery Integration
+| Field | Value |
+|-------|-------|
+| **Target File** | `src/ticker_resolver.py` |
+| **Description** | Intercept unresolved tickers, trigger search, filter, prioritize, and save the result. |
+| **Covers** | F-EXT-040, F-EXT-050, F-EXT-060, F-EXT-070, F-EXT-080 |
+| **Context** | This requires injecting `IGatewayClient` into `TickerResolver` (or handling it purely in `Downloader`, but `Resolver` is the domain owner of ticker mapping). *Architectural Choice:* Since `search_contract` is async and `TickerResolver.resolve()` is currently sync, it is cleaner to do this in `downloader.py` or make `resolve()` async. Let's make the discovery a dedicated async method in `downloader.py` that gets called before qualification. |
+
+*Correction:* To respect the async boundary, T-EXT-007 will handle the logic inside `downloader.py`.
+
+#### T-EXT-007 — Downloader Auto-Discovery Fallback
+| Field | Value |
+|-------|-------|
+| **Target File** | `src/downloader.py` |
+| **Description** | Implement the fallback search when a contract fails to qualify. |
+| **Covers** | F-EXT-040, F-EXT-050, F-EXT-060, F-EXT-070, F-EXT-080 |
+
+**Algo/Logic Steps:**
+1. Modify `_process_request()` in `downloader.py`.
+2. If the initial ticker resolution yields a fallback `SMART/USD` contract (which fails qualification with `QUALIFY_FAILED`):
+3. Instead of immediately blacklisting, `await self._auto_discover_contract(ticker)`.
+4. **`_auto_discover_contract(ticker)` logic**:
+   - `results = await self._gateway.search_contract(ticker)`
+   - Filter `results` where `contract.secType == "STK"`. **(F-EXT-050)**
+   - If empty → Add to `failed_store` with reason "No STK matches found", return `None`. **(F-EXT-080)**
+   - Get `auto_cfg = self._config.get_auto_discovery_config()`.
+   - **Sort/Prioritize** the filtered results:
+     - Assign a score based on `currency_priority` index (lower is better, fallback to 999 if not in list).
+     - Assign a secondary score based on `exchange_priority` index.
+     - Sort by `(curr_score, exch_score)`.
+   - Pick the winner: `best = sorted_results[0]`.
+   - Create `IBKRContract(symbol=best.contract.symbol, exchange=best.contract.primaryExchange or best.contract.exchange, currency=best.contract.currency, sec_type="STK")`.
+   - Call `self._config.update_ticker_map(ticker, new_contract)`. **(F-EXT-070)**
+   - Log explicit `INFO`: `"Auto-discovered {ticker} -> Exchange: {exchange}, Currency: {currency}"`.
+   - Return the new contract.
+5. If auto-discovery succeeds, immediately proceed with the download chunk sequence using the new contract.

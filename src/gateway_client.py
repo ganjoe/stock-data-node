@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 import random
 from typing import Optional
 
-from ib_insync import IB, Contract, util
+from ib_insync import IB, Contract, util, ContractDescription
 
 from models import (
     BatchConfig,
@@ -182,6 +182,22 @@ class GatewayClient(IGatewayClient):
             len(qualified), len(contracts),
         )
         return qualified
+
+    async def search_contract(self, symbol: str) -> list[ContractDescription]:
+        """
+        Wraps reqMatchingSymbolsAsync to find contract alternatives. (F-EXT-040)
+        """
+        if not symbol:
+            return []
+            
+        logger.info("Searching IBKR for matching symbols: %s", symbol)
+        try:
+            results = await self._ib.reqMatchingSymbolsAsync(symbol)
+            logger.debug("Found %d matching symbols for %s", len(results), symbol)
+            return results
+        except Exception as exc:
+            logger.warning("Error searching matching symbols for %s: %s", symbol, exc)
+            return []
 
     async def request_historical_bars(
         self,

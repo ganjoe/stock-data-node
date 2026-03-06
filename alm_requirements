@@ -35,3 +35,8 @@ F-IMP-090,Staleness,Timeframe-Aware Staleness Check,"Das System muss pro Timefra
 F-IMP-100,Download,Descending Year Order,"Der Bulk-Downloader muss Jahre absteigend (aktuelles Jahr zuerst → ältestes Jahr) herunterladen, damit nutzbare aktuelle Daten sofort verfügbar sind.",-
 F-IMP-120,Resilience,Crash-Safe Log (try/finally),"Der strukturierte Run-Log muss im finally-Block geschrieben werden, sodass selbst bei KeyboardInterrupt oder unerwartetem Crash ein Partial-Log persistiert wird.",-
 F-IMP-130,UX,Batch Progress Reporting,"Pro Download-Batch muss ein kompakter Fortschrittsbericht ausgegeben werden: Batch-Nummer, Jahr, Anzahl Ticker, übersprungene Ticker, Ergebnisquote, Dauer (z.B. 'Batch 5/31: Year 2022 — 43/45 OK in 4.2s').",-
+F-EXT-040,API,Fallback Search Trigger,"Wenn ein Ticker nicht in ticker_map.json ist, fragt das System sofort über reqMatchingSymbols nach passenden Alternativen, anstatt SMART/USD blind zu testen.",-
+F-EXT-050,Logic,Exchange/Currency Filtering,"Die API-Antwort der Suche wird gefiltert, sodass nur reguläre Aktien (secType=""STK"") berücksichtigt werden.",-
+F-EXT-060,Config,Currency Priority List,"Das System nutzt konfigurierbare Prioritätenlisten für Währungen (USD, EUR, CAD, GBP, JPY) und Börsen aus config/auto_discovery.json zur Auswahl des besten Treffers.",-
+F-EXT-070,State,Auto-Mapping Persistence,"Sobald die Auto-Discovery einen passenden Vertrag ermittelt, wird das Mapping dauerhaft in ticker_map.json gespeichert und im Log protokolliert.",-
+F-EXT-080,State,Final Blacklisting,"Erst wenn die Fallback-Suche keine brauchbare STK-Alternative liefert, wird der Ticker in failed_ticker.json gesperrt und in ticker_map auf SKIP gemappt.",-
