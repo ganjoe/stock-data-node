@@ -59,6 +59,12 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "CORT": {
+    "symbol": "CORT",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
   "COST": {
     "symbol": "COST",
     "exchange": "NASDAQ",

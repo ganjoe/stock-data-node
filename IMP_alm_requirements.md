@@ -1518,6 +1518,11 @@ The following requirements govern the **Optional Ticker Map** feature (T-EXT-001
 | F-CFG-030 | Explicit Alias Mapping | The `ticker_map.json` is used primarily for exceptions: differing currencies/exchanges (e.g., EUR at IBIS) or as an alias-mapping where a search term (Key) maps to an actual IBKR symbol (Field `symbol`). | T-EXT-001 |
 | F-ERR-010 | API-Driven Blacklisting | A ticker is only added to `failed_ticker.json` (blacklisted) when an API attempt (e.g., contract qualification or download) explicitly fails (e.g., invalid symbol / no definition found). | T-EXT-002 |
 | F-ERR-020 | Historical Data Errors | If `ib_insync` emits an `errorEvent` during a historical data request (e.g., Error 162: No market data permissions, 10090: pacing), the error must be captured and raised as an exception to immediately halt the download sequence for that ticker, preventing useless iterative queries for empty periods. | - |
+| F-ERR-030 | Invalid Contract (Error 200) | Occurs when the IBKR API does not know the ticker (e.g., delisting, wrong exchange/currency). The system must abort the download immediately on Error 200 and add the ticker to the blacklist (`failed_ticker.json`). | - |
+| F-ERR-040 | API Validation (Error 321) | Occurs when the API request is semantically incorrect (e.g., invalid combination of BarSize and Duration). The system must abort on Error 321 and log the error to avoid infinite loops with incorrect parameters. | - |
+| F-ERR-050 | Pacing Violation (Error 10090) | Occurs when IBKR's hard rate limits are violated. The system must NOT blacklist the ticker, but must abort the current chunk, wait explicitly (backoff) for several seconds, and then retry. | - |
+| F-ERR-060 | No Data For Period (Error 164) | Occurs specifically before an IPO or on holidays where no data exists. The system should treat this period as successfully parsed (empty), but after multiple consecutive failures, abort the historical (Pre-IPO) download. | - |
+| F-ERR-070 | Connection Lost (Error 1100) | Occurs when the connection between TWS/Gateway and IBKR servers drops. The downloader must pause (suspend) until Error 1102 (Connection Restored) is received. No tickers should fail just because the connection was temporarily lost. | - |
 
 ---
 
@@ -1699,6 +1704,35 @@ The following requirements govern the **Enhanced Visual Logging** (F-LOG-030 thr
 1. **Audit**: Search for all `logger.*` calls that include timestamp variables.
 2. **Transform**: For any variable that is a Unix timestamp (float/int), wrap it in formatting logic:
    - Use `datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")`.
+
+---
+
+### T-019 — Gateway Client Enhanced Error Hooks
+| Field | Value |
+|-------|-------|
+| **Target File** | `src/gateway_client.py` |
+| **Description** | Intercept `errorEvent` during download and raise typed exception payloads or retry indicators. |
+| **Covers** | F-ERR-020, F-ERR-030, F-ERR-040, F-ERR-050, F-ERR-060, F-ERR-070 |
+
+**Algo/Logic Steps:**
+1. In `_request_historical_bars`, dynamically append an inline `on_error` handler to `self._ib.errorEvent`.
+2. Map IBKR error codes to structured python errors (e.g. `RuntimeError` prefixed with the specific code).
+   - `162` (No Permissions), `200` (No security definition), `321` (API request invalid).
+   - `10090` (Pacing violation).
+   - `164` (No data for period).
+3. If error 1100/1101/1102 (Connectivity) is raised globally, `gateway_client` must be resilient without crashing.
+
+### T-020 — Downloader Error Categorization & Handling
+| Field | Value |
+|-------|-------|
+| **Target File** | `src/downloader.py` |
+| **Description** | Catch exceptions from `GatewayClient`, categorize them explicitly, and trigger the correct control flow (suspend, backoff, abort, empty-success). |
+| **Covers** | F-ERR-020, F-ERR-030, F-ERR-040, F-ERR-050, F-ERR-060, F-ERR-070 |
+
+**Algo/Logic Steps:**
+1. Add `ErrorCategory.INVALID_CONTRACT` (for 200/321) -> blacklists ticker immediately.
+2. Add `ErrorCategory.PACING_VIOLATION` (for 10090) -> NO blacklist. Trigger `rate_limiter.backoff(10 seconds)` and retry chunk.
+3. Catch "164 No Data": Treat as successful empty chunk, but if `chunk_ok` exceeds bounds with zero bars total, abort early (Pre-IPO fast-fail).
 3. **Verify**: Check `downloader.py` (delta logs), `gateway_client.py` (request logs), and `failed_ticker_store.py` (blacklisting notifications).
 
 **Edge Cases:**

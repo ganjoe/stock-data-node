@@ -53,6 +53,7 @@ class ErrorCategory(str, Enum):
     TIMEOUT = "TIMEOUT"
     PACING = "PACING"
     CANCELLED = "CANCELLED"
+    INVALID_CONTRACT = "INVALID_CONTRACT"
     UNKNOWN = "UNKNOWN"
 
 

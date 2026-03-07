@@ -69,15 +69,17 @@ def classify_error(error_msg: str) -> ErrorCategory:
 
     msg = error_msg.lower()
 
-    if "qualify" in msg or "no security definition" in msg or "ambiguous contract" in msg or "invalid contract" in msg:
+    if "error 200" in msg or "error 321" in msg or "invalid contract" in msg or "no security definition" in msg:
+        return ErrorCategory.INVALID_CONTRACT
+    if "qualify" in msg or "ambiguous contract" in msg:
         return ErrorCategory.QUALIFY_FAILED
-    if "no data" in msg or "hmds" in msg or "keine daten" in msg or "ergab keine" in msg or "no historical data" in msg:
+    if "error 164" in msg or "no data" in msg or "hmds" in msg or "keine daten" in msg or "ergab keine" in msg or "no historical data" in msg:
         return ErrorCategory.NO_DATA
-    if "permission" in msg or "not allowed" in msg or "abonnement" in msg:
+    if "error 162" in msg or "permission" in msg or "not allowed" in msg or "abonnement" in msg:
         return ErrorCategory.NO_PERMISSIONS
     if "timeout" in msg:
         return ErrorCategory.TIMEOUT
-    if "pacing" in msg or "violation" in msg or "too many requests" in msg or "max number of" in msg:
+    if "error 10090" in msg or "pacing" in msg or "violation" in msg or "too many requests" in msg or "max number of" in msg:
         return ErrorCategory.PACING
     if "cancelled" in msg or "query cancelled" in msg:
         return ErrorCategory.CANCELLED
@@ -287,6 +289,23 @@ class Downloader:
                         "❌ Permission error for %s/%s: %s — stopping",
                         request.ticker, request.timeframe, result.error
                     )
+                    chunk_fail += 1
+                    request.status = TickerStatus.FAILED
+                    break
+
+                elif category == ErrorCategory.INVALID_CONTRACT:
+                    logger.error(
+                        "❌ Invalid contract error for %s/%s: %s — adding to blacklist and stopping",
+                        request.ticker, request.timeframe, result.error
+                    )
+                    self._failed_store.add(FailedTickerEntry(
+                        ticker=request.ticker,
+                        reason=result.error or "Invalid Contract",
+                        timestamp=datetime.now(timezone.utc).isoformat(),
+                        source="downloader",
+                    ))
+                    if hasattr(self._config, "register_unmapped_ticker"):
+                        self._config.register_unmapped_ticker(request.ticker)
                     chunk_fail += 1
                     request.status = TickerStatus.FAILED
                     break

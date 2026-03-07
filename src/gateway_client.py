@@ -62,6 +62,21 @@ class GatewayClient(IGatewayClient):
         self._config = config
         self._ib = IB()
         self._market_data_type: MarketDataType = MarketDataType.DELAYED
+        
+        # Connection suspension logic (F-ERR-070)
+        self._connection_active = asyncio.Event()
+        self._connection_active.set()
+        self._ib.errorEvent += self._global_error_handler
+
+    def _global_error_handler(self, reqId: int, errorCode: int, errorString: str, contract: object) -> None:
+        if errorCode == 1100:
+            if self._connection_active.is_set():
+                logger.warning("⚠️ Connection between Gateway and IBKR lost (Error 1100). Suspending API queries...")
+                self._connection_active.clear()
+        elif errorCode == 1102:
+            if not self._connection_active.is_set():
+                logger.info("✅ Connection between Gateway and IBKR restored (Error 1102). Resuming API queries...")
+                self._connection_active.set()
 
     async def connect(self) -> None:
         """Connects to the active IB Gateway endpoint. Raises ConnectionError on failure."""
@@ -148,6 +163,9 @@ class GatewayClient(IGatewayClient):
         Qualifies all contracts in a single IBKR batch call.
         Returns only successfully qualified contracts (conId != 0). (F-IMP-040)
         """
+        if not self._connection_active.is_set():
+            logger.debug("Waiting for IBKR connection to be restored before qualifying contracts...")
+            await self._connection_active.wait()
         if not contracts:
             return {}
 
@@ -190,6 +208,9 @@ class GatewayClient(IGatewayClient):
         if not symbol:
             return []
             
+        if not self._connection_active.is_set():
+            logger.debug("Waiting for IBKR connection to be restored before searching contract...")
+            await self._connection_active.wait()
         logger.info("Searching IBKR for matching symbols: %s", symbol)
         try:
             results = await self._ib.reqMatchingSymbolsAsync(symbol)
@@ -239,6 +260,10 @@ class GatewayClient(IGatewayClient):
             "Requesting historical bars: %s / %s | end=%s | duration=%s | barSize=%s",
             contract.symbol, timeframe, readable_end, duration_str, bar_size
         )
+
+        if not self._connection_active.is_set():
+            logger.debug("Waiting for IBKR connection to be restored before historical data request...")
+            await self._connection_active.wait()
 
         captured_error: str | None = None
 
