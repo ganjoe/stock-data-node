@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging
 import re
+import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -43,6 +44,7 @@ class FileWatcher:
         failed_store: IFailedTickerStore,
     ) -> None:
         self._watch_dir = Path(watch_dir)
+        self._backup_dir = Path("data/watchlists")
         self._queue = queue
         self._resolver = resolver
         self._config = config
@@ -66,6 +68,9 @@ class FileWatcher:
 
         logger.info("File watcher: found %d file(s) in watch dir", len(txt_files))
 
+        # Ensure backup directory exists
+        self._backup_dir.mkdir(parents=True, exist_ok=True)
+
         # First check if we need to clean up any processing files that no longer exist
         existing_files = set(self._watch_dir.glob("*.txt"))
         self._processing_files = {f for f in self._processing_files if f in existing_files}
@@ -80,6 +85,14 @@ class FileWatcher:
                 if filename.startswith("failed_"):
                     # Process recovered failed files if any
                     pass # TODO: Implement recovery logic for failed files
+
+                # Backup file (F-BACKUP-010)
+                try:
+                    dest = self._backup_dir / filename
+                    shutil.copy2(f, dest)
+                    logger.info("✅ Backed up %s to %s", filename, dest)
+                except Exception as exc:
+                    logger.error("Failed to backup file %s: %s", filename, exc)
 
                 logger.info("── Scanning: %s", f.name)
                 try:
