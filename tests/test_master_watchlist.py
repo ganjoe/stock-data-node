@@ -58,7 +58,7 @@ class TestMasterWatchlist(unittest.TestCase):
         self.assertTrue(all_json.exists())
         
         with open(all_json, "r") as f:
-            data = json.load(f)
+            data = f.read().splitlines()
         
         self.assertEqual(data, ["AAPL", "MSFT", "TSLA"])
 
@@ -74,7 +74,7 @@ class TestMasterWatchlist(unittest.TestCase):
         
         all_json = self.watchlist_dir / "all.json"
         with open(all_json, "r") as f:
-            data = json.load(f)
+            data = f.read().splitlines()
         
         self.assertEqual(data, ["AAPL", "NVDA"])
 

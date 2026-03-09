@@ -373,7 +373,7 @@ class Downloader:
             tmp_path = file_path.with_suffix(".tmp")
             
             with open(tmp_path, "w", encoding="utf-8") as f:
-                json.dump(tickers, f, indent=2)
+                f.write("\n".join(tickers))
             os.replace(tmp_path, file_path)
             logger.debug("✅ Updated master watchlist all.json with %d tickers.", len(tickers))
         except Exception as e:
