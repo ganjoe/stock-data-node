@@ -5,7 +5,6 @@
             "period": "D",
             "type": "SMA",
             "color": "red",
-            "name": "MA10",
             "mode": "absolute",
             "style": "solid",
             "pane": "price",
@@ -17,7 +16,6 @@
             "period": "D",
             "type": "SMA",
             "color": "yellow",
-            "name": "MA20",
             "mode": "absolute",
             "style": "solid",
             "pane": "price",
@@ -29,7 +27,6 @@
             "period": "D",
             "type": "SMA",
             "color": "green",
-            "name": "MA50",
             "mode": "absolute",
             "style": "solid",
             "pane": "price",
@@ -41,7 +38,6 @@
             "period": "D",
             "type": "SMA",
             "color": "blue",
-            "name": "MA100",
             "mode": "absolute",
             "style": "solid",
             "pane": "price",
@@ -53,7 +49,6 @@
             "period": "D",
             "type": "SMA",
             "color": "purple",
-            "name": "MA150",
             "mode": "absolute",
             "style": "solid",
             "pane": "price",
@@ -65,25 +60,20 @@
             "period": "D",
             "type": "SMA",
             "color": "orange",
-            "name": "MA200",
             "mode": "absolute",
             "style": "solid",
             "pane": "price",
             "chart_type": "line",
             "thickness": 2
         },
-        "stochastic": {
-            "stoch_14_3": {
-                "window": 14,
-                "period": "D",
-                "type": "RSI",
-                "color": "red",
-                "name": "RSI14",
-                "style": "solid",
-                "pane": "price",
-                "chart_type": "line",
-                "thickness": 2
-            },
+        "stoch_14_3": {
+            "window": 14,
+            "period": "D",
+            "color": "red",
+            "style": "solid",
+            "pane": "price",
+            "chart_type": "line",
+            "thickness": 2,
             "stoch_smooth": {
                 "window": 3,
                 "period": "D",
@@ -95,41 +85,35 @@
                 "thickness": 2
             }
         },
-        "bollinger_band": {
-            "bb_20": {
-                "window": 20,
-                "period": "D",
-                "type": "BOLLINGER_BAND",
+        "bb_20": {
+            "window": 20,
+            "period": "D",
+            "type": "BOLLINGER_BAND",
+            "color": "red",
+            "style": "solid",
+            "pane": "price",
+            "chart_type": "line",
+            "thickness": 2,
+            "upper": {
                 "color": "red",
                 "style": "solid",
+                "thickness": 2
+            },
+            "lower": {
+                "color": "red",
+                "style": "solid",
+                "thickness": 2
+            },
+            "average": {
+                "color": "blue",
+                "style": "dashed",
+                "thickness": 2
+            },
+            "bandwidth": {
+                "color": "green",
+                "style": "solid",
                 "pane": "price",
-                "chart_type": "line",
-                "thickness": 2,
-                "upper": {
-                    "name": "Upper Band",
-                    "color": "red",
-                    "style": "solid",
-                    "thickness": 2
-                },
-                "lower": {
-                    "name": "Lower Band",
-                    "color": "red",
-                    "style": "solid",
-                    "thickness": 2
-                },
-                "average": {
-                    "name": "Average",
-                    "color": "blue",
-                    "style": "dashed",
-                    "thickness": 2
-                },
-                "bandwidth": {
-                    "name": "Bandwidth",
-                    "color": "green",
-                    "style": "solid",
-                    "pane": "separate",
-                    "thickness": 2
-                }
+                "thickness": 2
             }
         }
     }
