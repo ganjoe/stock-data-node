@@ -54,10 +54,10 @@ class TestMasterWatchlist(unittest.TestCase):
         
         self.downloader._update_master_watchlist()
         
-        all_json = self.watchlist_dir / "all.json"
-        self.assertTrue(all_json.exists())
+        all_txt = self.watchlist_dir / "all.txt"
+        self.assertTrue(all_txt.exists())
         
-        with open(all_json, "r") as f:
+        with open(all_txt, "r") as f:
             data = f.read().splitlines()
         
         self.assertEqual(data, ["AAPL", "MSFT", "TSLA"])
@@ -72,8 +72,8 @@ class TestMasterWatchlist(unittest.TestCase):
         (self.parquet_dir / "NVDA").mkdir()
         self.downloader._update_master_watchlist()
         
-        all_json = self.watchlist_dir / "all.json"
-        with open(all_json, "r") as f:
+        all_txt = self.watchlist_dir / "all.txt"
+        with open(all_txt, "r") as f:
             data = f.read().splitlines()
         
         self.assertEqual(data, ["AAPL", "NVDA"])

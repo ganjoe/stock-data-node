@@ -43,5 +43,5 @@ F-EXT-060,Config,Currency Priority List,"Das System nutzt konfigurierbare Priori
 F-EXT-070,State,Auto-Mapping Persistence,"Sobald die Auto-Discovery einen passenden Vertrag ermittelt, wird das Mapping dauerhaft in ticker_map.json gespeichert und im Log protokolliert.",-
 F-EXT-080,State,Final Blacklisting,"Erst wenn die Fallback-Suche keine brauchbare STK-Alternative liefert, wird der Ticker in failed_ticker.json gesperrt und in ticker_map auf SKIP gemappt.",-
 F-LOG-070,Logging,Human-Readable Time,"Logs im Terminal dürfen keine Unix-Timestamps roh ausgeben. Alle Zeitangaben müssen in ein menschenlesbares Format (z.B. YYYY-MM-DD HH:MM:SS) konvertiert werden.",-
-F-DAT-030,Data,Dynamic Master Watchlist,Das System muss nach jedem Download-Batch automatisch eine all.json im konfigurierten Watchlist-Verzeichnis erstellen/aktualisieren welche alle im Parquet-Verzeichnis existierenden Ticker-Ordner als JSON-Array auflistet.,-
-F-DAT-040,Data,Atomic Watchlist Write,Der Schreibvorgang der all.json muss atomar erfolgen (Write-to-Temp dann Rename) um Konflikte mit lesenden Services zu vermeiden.,-
+F-DAT-030,Data,Dynamic Master Watchlist,Das System muss nach jedem Download-Batch automatisch eine all.txt im konfigurierten Watchlist-Verzeichnis erstellen/aktualisieren welche alle im Parquet-Verzeichnis existierenden Ticker-Ordner als Liste auflistet.,-
+F-DAT-040,Data,Atomic Watchlist Write,Der Schreibvorgang der all.txt muss atomar erfolgen (Write-to-Temp dann Rename) um Konflikte mit lesenden Services zu vermeiden.,-

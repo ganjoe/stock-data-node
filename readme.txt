@@ -95,5 +95,11 @@ Befehl:
 Dies prüft alle Parquet-Dateien im `data/`-Ordner und lädt die neuesten 
 Kerzen seit dem letzten Download-Punkt inkrementell nach.
 
+--------------------------------------------------------------------------------
+8. PERMISSION
+--------------------------------------------------------------------------------
+
+sudo chmod -R 777 /home/daniel/stock-data-node/data/parquet
+
 ================================================================================
 Viel Erfolg mein Freund!

@@ -369,13 +369,13 @@ class Downloader:
             tickers = sorted([f.name for f in parquet_dir.iterdir() if f.is_dir()])
             
             watchlist_dir.mkdir(parents=True, exist_ok=True)
-            file_path = watchlist_dir / "all.json"
+            file_path = watchlist_dir / "all.txt"
             tmp_path = file_path.with_suffix(".tmp")
             
             with open(tmp_path, "w", encoding="utf-8") as f:
                 f.write("\n".join(tickers))
             os.replace(tmp_path, file_path)
-            logger.debug("✅ Updated master watchlist all.json with %d tickers.", len(tickers))
+            logger.debug("✅ Updated master watchlist all.txt with %d tickers.", len(tickers))
         except Exception as e:
             logger.error("❌ Failed to update all.json: %s", e)
             # cleanup tmp file if it exists
