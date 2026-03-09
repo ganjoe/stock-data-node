@@ -1,4 +1,5 @@
 {
     "parquet_dir": "data/parquet",
-    "watch_dir": "watch"
+    "watch_dir": "watch",
+    "watchlist_dir": "data/watchlists"
 }

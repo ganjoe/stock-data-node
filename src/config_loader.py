@@ -212,6 +212,7 @@ class ConfigLoader(IConfigLoader):
         self._paths_config = PathsConfig(
             parquet_dir=str(base_dir / raw["parquet_dir"]),
             watch_dir=str(base_dir / raw["watch_dir"]),
+            watchlist_dir=str(base_dir / raw.get("watchlist_dir", "data/watchlists")),
         )
         self._file_mtimes[str(path)] = path.stat().st_mtime
         logger.debug("Loaded paths.json")

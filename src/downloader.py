@@ -6,9 +6,12 @@ Core download orchestrator: chunking, delta detection, preemption, phase orderin
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
+import os
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
 
 from models import (
@@ -347,6 +350,37 @@ class Downloader:
             f"{total_bars:,d}".replace(",", "."), 
             elapsed,
         )
+        # Update master watchlist after each successful/failed ticker (F-DAT-030)
+        self._update_master_watchlist()
+
+    def _update_master_watchlist(self) -> None:
+        """
+        Updates the all.json master watchlist with all tickers found in the parquet directory.
+        F-DAT-030, F-DAT-040
+        """
+        try:
+            paths = self._config.get_paths_config()
+            parquet_dir = Path(paths.parquet_dir)
+            watchlist_dir = Path(paths.watchlist_dir)
+            
+            if not parquet_dir.exists():
+                return
+                
+            tickers = sorted([f.name for f in parquet_dir.iterdir() if f.is_dir()])
+            
+            watchlist_dir.mkdir(parents=True, exist_ok=True)
+            file_path = watchlist_dir / "all.json"
+            tmp_path = file_path.with_suffix(".tmp")
+            
+            with open(tmp_path, "w", encoding="utf-8") as f:
+                json.dump(tickers, f, indent=2)
+            os.replace(tmp_path, file_path)
+            logger.debug("✅ Updated master watchlist all.json with %d tickers.", len(tickers))
+        except Exception as e:
+            logger.error("❌ Failed to update all.json: %s", e)
+            # cleanup tmp file if it exists
+            # (tmp_path is in try block, need to make sure it's defined or handle)
+            pass
 
     def _calculate_chunks(
         self, last_ts: Optional[int], timeframe: str

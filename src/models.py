@@ -93,6 +93,7 @@ class PathsConfig:
     """Loaded from config/paths.json. (F-CFG-020)"""
     parquet_dir: str     # e.g. "/app/data/parquet"
     watch_dir: str       # e.g. "/app/watch"
+    watchlist_dir: str   # e.g. "/app/data/watchlists"
 
 
 @dataclass(frozen=True)
