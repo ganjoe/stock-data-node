@@ -51,8 +51,9 @@ Beispiel:
   AAPL MSFT GOOG
 
 Schritt 3:
-Der Container erkennt die Datei sofort, liest sie ein und löscht sie danach.
-Er reiht die Ticker automatisch in die Download-Warteschlange ein.
+Der Container erkennt die Datei sofort, liest sie ein und verschiebt sie nach watchlists/. und löscht die ursprüngliche Datei.
+Er reiht die Ticker automatisch in die Download-Warteschlange ein. 
+
 
 --------------------------------------------------------------------------------
 5. DIE OPTIONALE TICKER MAP (ticker_map.json)
