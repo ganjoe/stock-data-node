@@ -352,6 +352,47 @@ class Downloader:
         )
         # Update master watchlist after each successful/failed ticker (F-DAT-030)
         self._update_master_watchlist()
+        
+        # Trigger feature calculation after download batch (F-API-020)
+        # We trigger after each ticker, but the JobManager will ignore it if it's already running.
+        self._trigger_feature_calculation()
+
+    def _trigger_feature_calculation(self) -> None:
+        """
+        Triggers the feature calculation process via the JobManager.
+        F-API-020: Automatic start after download.
+        """
+        try:
+            from src.features.job_manager import JobManager
+            from src.features.config_parser import FeatureConfigParser, ProcessingContext
+            from src.features.calculator import TechnicalCalculator
+            from src.features.parquet_io import ParquetStorage
+            from src.features.processor import FeatureProcessor
+
+            job_manager = JobManager()
+            
+            def run_feature_pipeline():
+                paths = self._config.get_paths_config()
+                config_parser = FeatureConfigParser(str(Path(self._config.config_dir) / "features.json"))
+                features = config_parser.parse()
+                
+                ctx = ProcessingContext(
+                    thread_count=paths.processing_threads, 
+                    data_dir=paths.parquet_dir,
+                    timeframes=["1D"],
+                    features=features
+                )
+                
+                storage = ParquetStorage(ctx.data_dir)
+                calculator = TechnicalCalculator()
+                processor = FeatureProcessor(ctx, storage, calculator)
+                
+                tickers = storage.get_available_tickers()
+                processor.process_all_tickers(tickers)
+
+            job_manager.start_feature_calculation(run_feature_pipeline)
+        except Exception as e:
+            logger.error(f"Failed to auto-trigger feature calculation: {e}")
 
     def _update_master_watchlist(self) -> None:
         """

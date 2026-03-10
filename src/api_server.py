@@ -12,9 +12,15 @@ from pathlib import Path
 if TYPE_CHECKING:
     from file_watcher import FileWatcher
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, BackgroundTasks
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+
+from src.features.job_manager import JobManager
+from src.features.config_parser import FeatureConfigParser, ProcessingContext, FeatureType
+from src.features.calculator import TechnicalCalculator
+from src.features.parquet_io import ParquetStorage
+from src.features.processor import FeatureProcessor
 
 from models import (
     DownloadPriority,
@@ -173,6 +179,51 @@ def create_api(
             status_code=status.HTTP_202_ACCEPTED,
             content={"status": "accepted", "tickers_evaluated": count}
         )
+
+    @app.post("/features/calculate")
+    async def trigger_feature_calculation(background_tasks: BackgroundTasks) -> JSONResponse:
+        """
+        Manually triggers the feature calculation process.
+        Returns 202 if started, 409 if already running. (F-API-010, F-SYS-030)
+        """
+        job_manager = JobManager()
+        
+        def run_feature_pipeline():
+            # Setup context from config
+            paths = config.get_paths_config()
+            config_parser = FeatureConfigParser(str(Path(config.config_dir) / "features.json"))
+            features = config_parser.parse()
+            
+            # Note: thread_count could be moved to a config file eventually
+            ctx = ProcessingContext(
+                thread_count=paths.processing_threads, 
+                data_dir=paths.parquet_dir,
+                timeframes=["1D"], # Default focus
+                features=features
+            )
+            
+            storage = ParquetStorage(ctx.data_dir)
+            calculator = TechnicalCalculator()
+            processor = FeatureProcessor(ctx, storage, calculator)
+            
+            tickers = storage.get_available_tickers()
+            logger.info("Starting feature calculation for %d tickers", len(tickers))
+            results = processor.process_all_tickers(tickers)
+            success_count = sum(1 for r in results if r.success)
+            logger.info("Feature calculation finished: %d/%d successful", success_count, len(results))
+
+        success = job_manager.start_feature_calculation(run_feature_pipeline)
+        
+        if success:
+            return JSONResponse(
+                status_code=status.HTTP_202_ACCEPTED,
+                content={"status": "Job started in background"}
+            )
+        else:
+            return JSONResponse(
+                status_code=status.HTTP_409_CONFLICT,
+                content={"status": "Ignored", "detail": "A feature calculation process is already running."}
+            )
 
     @app.get("/status", response_model=StatusResponse)
     async def get_status() -> StatusResponse:

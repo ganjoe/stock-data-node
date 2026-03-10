@@ -1,5 +1,6 @@
 {
     "parquet_dir": "data/parquet",
     "watch_dir": "watch",
-    "watchlist_dir": "data/watchlists"
+    "watchlist_dir": "data/watchlists",
+    "processing_threads": 4
 }

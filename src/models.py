@@ -94,6 +94,7 @@ class PathsConfig:
     parquet_dir: str     # e.g. "/app/data/parquet"
     watch_dir: str       # e.g. "/app/watch"
     watchlist_dir: str   # e.g. "/app/data/watchlists"
+    processing_threads: int = 4
 
 
 @dataclass(frozen=True)
