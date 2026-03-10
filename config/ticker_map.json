@@ -2363,6 +2363,12 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "SKIN": {
+    "symbol": "SKIN",
+    "exchange": "NASDAQ",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
   "SLDB": {
     "symbol": "SLDB",
     "exchange": "NASDAQ",
