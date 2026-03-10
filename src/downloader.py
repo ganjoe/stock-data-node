@@ -34,32 +34,9 @@ from models import (
 
 logger = logging.getLogger(__name__)
 
-# Chunk size per timeframe (larger chunks = fewer IBKR API calls for coarse timeframes)
-CHUNK_DURATION: dict[str, int] = {
-    "1m":  86400 * 1,        # 1 day
-    "5m":  86400 * 7,        # 1 week
-    "15m": 86400 * 14,       # 2 weeks
-    "30m": 86400 * 14,       # 2 weeks
-    "1h":  86400 * 30,       # 1 month
-    "4h":  86400 * 90,       # 3 months
-    "1D":  86400 * 365,      # 1 year  (IBKR handles up to 1Y of daily bars per request)
-    "1W":  86400 * 365 * 5,  # 5 years
-    "1M":  86400 * 365 * 10, # 10 years
-    "default": 86400 * 30,   # fallback
-}
+# Logger is already initialized above
 
-# Max history lookback per timeframe (seconds)
-MAX_HISTORY_LOOKBACK: dict[str, int] = {
-    "1m":  86400 * 30,
-    "5m":  86400 * 90,
-    "15m": 86400 * 180,
-    "30m": 86400 * 180,
-    "1h":  86400 * 365,
-    "4h":  86400 * 365 * 2,
-    "1D":  86400 * 365 * 20,
-    "1W":  86400 * 365 * 20,
-    "1M":  86400 * 365 * 20,
-}
+# Lookback removed, now in config
 
 
 def classify_error(error_msg: str) -> ErrorCategory:
@@ -363,11 +340,11 @@ class Downloader:
         F-API-020: Automatic start after download.
         """
         try:
-            from src.features.job_manager import JobManager
-            from src.features.config_parser import FeatureConfigParser, ProcessingContext
-            from src.features.calculator import TechnicalCalculator
-            from src.features.parquet_io import ParquetStorage
-            from src.features.processor import FeatureProcessor
+            from features.job_manager import JobManager
+            from features.config_parser import FeatureConfigParser, ProcessingContext
+            from features.calculator import TechnicalCalculator
+            from features.parquet_io import ParquetStorage
+            from features.processor import FeatureProcessor
 
             job_manager = JobManager()
             
@@ -433,7 +410,10 @@ class Downloader:
         access to current data. (F-IMP-100)
         """
         now = int(time.time())
-        lookback = MAX_HISTORY_LOOKBACK.get(timeframe, 86400 * 365)
+        dl_cfg = self._config.get_downloader_config()
+        
+        # Determine lookback
+        lookback = dl_cfg.max_history_lookback.get(timeframe, 86400 * 365)
 
         if last_ts is not None:
             start = last_ts + 1
@@ -443,7 +423,8 @@ class Downloader:
         if start >= now:
             return []  # Already up to date
 
-        chunk_size = CHUNK_DURATION.get(timeframe, CHUNK_DURATION["default"])
+        # Determine chunk size
+        chunk_size = dl_cfg.chunk_duration.get(timeframe, dl_cfg.chunk_duration.get("default", 2592000))
         chunks: list[DownloadChunk] = []
         chunk_start = start
 

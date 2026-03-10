@@ -16,11 +16,11 @@ from fastapi import FastAPI, HTTPException, status, BackgroundTasks
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from src.features.job_manager import JobManager
-from src.features.config_parser import FeatureConfigParser, ProcessingContext, FeatureType
-from src.features.calculator import TechnicalCalculator
-from src.features.parquet_io import ParquetStorage
-from src.features.processor import FeatureProcessor
+from features.job_manager import JobManager
+from features.config_parser import FeatureConfigParser, ProcessingContext, FeatureType
+from features.calculator import TechnicalCalculator
+from features.parquet_io import ParquetStorage
+from features.processor import FeatureProcessor
 
 from models import (
     DownloadPriority,
@@ -189,14 +189,14 @@ def create_api(
         job_manager = JobManager()
         
         def run_feature_pipeline():
-            # Setup context from config
+            # Use settings from config file
+            settings = config.get_settings_config()
             paths = config.get_paths_config()
             config_parser = FeatureConfigParser(str(Path(config.config_dir) / "features.json"))
             features = config_parser.parse()
             
-            # Note: thread_count could be moved to a config file eventually
             ctx = ProcessingContext(
-                thread_count=paths.processing_threads, 
+                thread_count=settings.processing_threads, 
                 data_dir=paths.parquet_dir,
                 timeframes=["1D"], # Default focus
                 features=features

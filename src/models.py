@@ -81,6 +81,7 @@ class GatewayConfig:
     """Loaded from config/gateway.json. (F-CFG-010)"""
     live: GatewayEndpoint
     paper: GatewayEndpoint
+    api: GatewayEndpoint
     mode: str   # "live" | "paper"
 
     @property
@@ -94,7 +95,22 @@ class PathsConfig:
     parquet_dir: str     # e.g. "/app/data/parquet"
     watch_dir: str       # e.g. "/app/watch"
     watchlist_dir: str   # e.g. "/app/data/watchlists"
-    processing_threads: int = 4
+
+
+@dataclass(frozen=True)
+class SettingsConfig:
+    """Loaded from config/settings.json. (F-CFG-030)"""
+    file_watcher_interval: float
+    gateway_connect_timeout: int
+    market_data_type_wait: float
+    market_data_snapshot_wait: float
+    processing_threads: int
+    
+    # Batching parameters (adapt to market data permissions)
+    live_max_concurrent: int = 20
+    live_pacing_delay: float = 0.1
+    delayed_max_concurrent: int = 1
+    delayed_pacing_delay: float = 3.0
 
 
 @dataclass(frozen=True)
@@ -120,6 +136,13 @@ class BatchConfig:
     max_concurrent: int       # Live=20, Delayed=1
     base_pacing_delay: float  # Live=0.1, Delayed=3.0, Fallback=5.0
     description: str          # Human-readable label
+
+
+@dataclass(frozen=True)
+class DownloaderConfig:
+    """Loaded from config/downloader.json. (F-CFG-030)"""
+    chunk_duration: dict[str, int]
+    max_history_lookback: dict[str, int]
 
 
 # ─── Domain Objects ──────────────────────────────────────────────
@@ -197,12 +220,22 @@ class FailedTickerEntry:
 
 class IConfigLoader(ABC):
     """Loads and hot-reloads configuration. (F-CFG-010/020/030/040)"""
+    
+    @property
+    @abstractmethod
+    def config_dir(self) -> str: ...
 
     @abstractmethod
     def get_gateway_config(self) -> GatewayConfig: ...
 
     @abstractmethod
     def get_paths_config(self) -> PathsConfig: ...
+
+    @abstractmethod
+    def get_settings_config(self) -> SettingsConfig: ...
+
+    @abstractmethod
+    def get_downloader_config(self) -> DownloaderConfig: ...
 
     @abstractmethod
     def get_ticker_map(self) -> dict[str, IBKRContract]: ...

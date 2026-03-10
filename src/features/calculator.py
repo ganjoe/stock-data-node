@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from typing import List
-from src.features.config_parser import FeatureConfig, FeatureType
+from features.config_parser import FeatureConfig, FeatureType
 
 class TechnicalCalculator:
     def calculate_features(self, df: pd.DataFrame, configs: List[FeatureConfig]) -> pd.DataFrame:

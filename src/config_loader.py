@@ -17,6 +17,8 @@ from models import (
     IBKRContract,
     IConfigLoader,
     PathsConfig,
+    SettingsConfig,
+    DownloaderConfig,
 )
 
 logger = logging.getLogger(__name__)
@@ -37,6 +39,8 @@ class ConfigLoader(IConfigLoader):
 
         self._gateway_config: Optional[GatewayConfig] = None
         self._paths_config: Optional[PathsConfig] = None
+        self._settings_config: Optional[SettingsConfig] = None
+        self._downloader_config: Optional[DownloaderConfig] = None
         self._auto_discovery_config: Optional[AutoDiscoveryConfig] = None
         self._ticker_map: dict[str, IBKRContract] = {}
 
@@ -44,6 +48,10 @@ class ConfigLoader(IConfigLoader):
         self._file_mtimes: dict[str, float] = {}
 
         self._load_all()
+        
+    @property
+    def config_dir(self) -> str:
+        return str(self._config_dir)
 
     # ─── Public Interface ─────────────────────────────────────────
 
@@ -56,6 +64,16 @@ class ConfigLoader(IConfigLoader):
         if self._paths_config is None:
             self._load_paths()
         return self._paths_config  # type: ignore[return-value]
+
+    def get_settings_config(self) -> SettingsConfig:
+        if self._settings_config is None:
+            self._load_settings()
+        return self._settings_config  # type: ignore[return-value]
+
+    def get_downloader_config(self) -> DownloaderConfig:
+        if self._downloader_config is None:
+            self._load_downloader()
+        return self._downloader_config  # type: ignore[return-value]
 
     def get_auto_discovery_config(self) -> AutoDiscoveryConfig:
         if self._auto_discovery_config is None:
@@ -156,6 +174,8 @@ class ConfigLoader(IConfigLoader):
         files = {
             "gateway": self._config_dir / "gateway.json",
             "paths": self._config_dir / "paths.json",
+            "settings": self._config_dir / "settings.json",
+            "downloader": self._config_dir / "downloader.json",
             "ticker_map": self._config_dir / "ticker_map.json",
             "auto_discovery": self._config_dir / "auto_discovery.json",
         }
@@ -169,6 +189,10 @@ class ConfigLoader(IConfigLoader):
                     self._load_gateway()
                 elif key == "paths":
                     self._load_paths()
+                elif key == "settings":
+                    self._load_settings()
+                elif key == "downloader":
+                    self._load_downloader()
                 elif key == "ticker_map":
                     self._load_ticker_map()
                 elif key == "auto_discovery":
@@ -179,6 +203,8 @@ class ConfigLoader(IConfigLoader):
     def _load_all(self) -> None:
         self._load_gateway()
         self._load_paths()
+        self._load_settings()
+        self._load_downloader()
         self._load_auto_discovery()
         self._load_ticker_map()
 
@@ -194,6 +220,7 @@ class ConfigLoader(IConfigLoader):
         self._gateway_config = GatewayConfig(
             live=GatewayEndpoint(host=raw["live"]["host"], port=raw["live"]["port"]),
             paper=GatewayEndpoint(host=raw["paper"]["host"], port=raw["paper"]["port"]),
+            api=GatewayEndpoint(host=raw["api"]["host"], port=raw["api"]["port"]),
             mode=raw["mode"],
         )
         self._file_mtimes[str(path)] = path.stat().st_mtime
@@ -213,10 +240,65 @@ class ConfigLoader(IConfigLoader):
             parquet_dir=str(base_dir / raw["parquet_dir"]),
             watch_dir=str(base_dir / raw["watch_dir"]),
             watchlist_dir=str(base_dir / raw.get("watchlist_dir", "data/watchlists")),
-            processing_threads=raw.get("processing_threads", 4),
         )
         self._file_mtimes[str(path)] = path.stat().st_mtime
         logger.debug("Loaded paths.json")
+
+    def _load_settings(self) -> None:
+        path = self._config_dir / "settings.json"
+        if not path.exists():
+            # Provide sensible defaults if settings.json is missing
+            self._settings_config = SettingsConfig(
+                file_watcher_interval=5.0,
+                gateway_connect_timeout=20,
+                market_data_type_wait=0.5,
+                market_data_snapshot_wait=2.0,
+                processing_threads=4,
+            )
+            return
+
+        with open(path, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+        self._settings_config = SettingsConfig(
+            file_watcher_interval=float(raw.get("file_watcher_interval", 5.0)),
+            gateway_connect_timeout=int(raw.get("gateway_connect_timeout", 20)),
+            market_data_type_wait=float(raw.get("market_data_type_wait", 0.5)),
+            market_data_snapshot_wait=float(raw.get("market_data_snapshot_wait", 2.0)),
+            processing_threads=int(raw.get("processing_threads", 4)),
+            live_max_concurrent=int(raw.get("live_max_concurrent", 20)),
+            live_pacing_delay=float(raw.get("live_pacing_delay", 0.1)),
+            delayed_max_concurrent=int(raw.get("delayed_max_concurrent", 1)),
+            delayed_pacing_delay=float(raw.get("delayed_pacing_delay", 3.0)),
+        )
+        self._file_mtimes[str(path)] = path.stat().st_mtime
+        logger.debug("Loaded settings.json")
+
+    def _load_downloader(self) -> None:
+        path = self._config_dir / "downloader.json"
+        if not path.exists():
+            # Provide sensible defaults if downloader.json is missing
+            self._downloader_config = DownloaderConfig(
+                chunk_duration={
+                    "1m": 86400, "5m": 604800, "15m": 1209600, "30m": 1209600,
+                    "1h": 2592000, "4h": 7776000, "1D": 31536000, "1W": 157680000,
+                    "1M": 315360000, "default": 2592000
+                },
+                max_history_lookback={
+                    "1m": 2592000, "5m": 7776000, "15m": 15552000, "30m": 15552000,
+                    "1h": 31536000, "4h": 63072000, "1D": 630720000, "1W": 630720000,
+                    "1M": 630720000
+                }
+            )
+            return
+
+        with open(path, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+        self._downloader_config = DownloaderConfig(
+            chunk_duration=raw.get("chunk_duration", {}),
+            max_history_lookback=raw.get("max_history_lookback", {}),
+        )
+        self._file_mtimes[str(path)] = path.stat().st_mtime
+        logger.debug("Loaded downloader.json")
 
     def _load_auto_discovery(self) -> None:
         path = self._config_dir / "auto_discovery.json"

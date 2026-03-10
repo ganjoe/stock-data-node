@@ -83,20 +83,44 @@ ein Download für diesen Ticker erfolgreich ist, löscht das Script ihn automati
 wieder von der Blacklist!).
 
 --------------------------------------------------------------------------------
-7. API / UPDATES (Staleness Checks)
+7. TICKER UPDATES (Staleness Checks)
 --------------------------------------------------------------------------------
-Das System hat einen internen Timer für Staleness-Checks, um fehlende Daten 
-automatisch nachzuladen. Du kannst diesen Scan aber auch jederzeit manuell 
-über die API auslösen:
+Das System hat einen internen Timer, um fehlende Daten automatisch nachzuladen. 
+Du kannst diesen Scan aber auch jederzeit manuell über die API auslösen:
 
-Befehl:
+Befehl (Alle Ticker updaten):
   curl -X POST http://localhost:8002/trigger-staleness
 
-Dies prüft alle Parquet-Dateien im `data/`-Ordner und lädt die neuesten 
-Kerzen seit dem letzten Download-Punkt inkrementell nach.
+Dies prüft alle Parquet-Dateien und lädt die neuesten Kerzen nach.
 
 --------------------------------------------------------------------------------
-8. PERMISSION
+8. FEATURE-BERECHNUNG (Features manuell auslösen)
+--------------------------------------------------------------------------------
+Nachdem die Daten heruntergeladen wurden, berechnet das System normalerweise 
+automatisch technische Indikatoren (RS-Line, Bollinger Bands, EMA, etc.). 
+Du kannst diesen Prozess aber auch manuell über die API triggern:
+
+Befehl (Manuelle Feature-Berechnung):
+  curl -X POST http://localhost:8002/features/calculate
+
+Dies startet die Berechnung im Hintergrund. Falls bereits eine Berechnung läuft, 
+antwortet die API mit einem Fehler (409 Conflict).
+
+--------------------------------------------------------------------------------
+10. PORT-PROBLEME (Port 8002 belegt?)
+--------------------------------------------------------------------------------
+Falls beim Start die Fehlermeldung "address already in use" erscheint, 
+läuft wahrscheinlich noch ein alter Prozess im Hintergrund. 
+Du kannst ihn mit diesem Skript automatisch beenden:
+
+Befehl (Port freigeben):
+  ./.venv/bin/python src/kill_server.py
+
+Das Skript liest automatisch den Port aus der `config/gateway.json` 
+und beendet den belegenden Prozess.
+
+--------------------------------------------------------------------------------
+11. PERMISSION
 --------------------------------------------------------------------------------
 
 sudo chmod -R 777 /home/daniel/stock-data-node/data/parquet

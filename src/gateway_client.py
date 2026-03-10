@@ -18,6 +18,7 @@ from models import (
     BatchConfig,
     GatewayConfig,
     IBKRContract,
+    IConfigLoader,
     IGatewayClient,
     MarketDataType,
     OHLCVBar,
@@ -58,7 +59,7 @@ class GatewayClient(IGatewayClient):
     market data type detection, and historical bar downloads.
     """
 
-    def __init__(self, config: GatewayConfig) -> None:
+    def __init__(self, config: IConfigLoader) -> None:
         self._config = config
         self._ib = IB()
         self._market_data_type: MarketDataType = MarketDataType.DELAYED
@@ -80,10 +81,12 @@ class GatewayClient(IGatewayClient):
 
     async def connect(self) -> None:
         """Connects to the active IB Gateway endpoint. Raises ConnectionError on failure."""
-        endpoint = self._config.active_endpoint
+        gw_config = self._config.get_gateway_config()
+        settings = self._config.get_settings_config()
+        endpoint = gw_config.active_endpoint
         logger.info(
             "🌐 Connecting to IB Gateway at %s:%d (mode=%s)…",
-            endpoint.host, endpoint.port, self._config.mode
+            endpoint.host, endpoint.port, gw_config.mode
         )
         try:
             client_id = random.randint(1, 9999)
@@ -91,7 +94,7 @@ class GatewayClient(IGatewayClient):
                 host=endpoint.host,
                 port=endpoint.port,
                 clientId=client_id,
-                timeout=20,
+                timeout=settings.gateway_connect_timeout,
             )
             logger.info(
                 "✅ Connected to IB Gateway at %s:%d (clientId=%d)",
@@ -120,17 +123,17 @@ class GatewayClient(IGatewayClient):
         if no live subscription exists. We detect which one is active
         and return an adaptive BatchConfig. (F-CON-020, F-IMP-010/020)
         """
+        settings = self._config.get_settings_config()
         logger.info("── Detecting market data type…")
         # Request Live (IBKR falls back to Delayed automatically)
         self._ib.reqMarketDataType(MarketDataType.LIVE)
-        await asyncio.sleep(0.5)  # brief pause for the setting to propagate
+        await asyncio.sleep(settings.market_data_type_wait)
 
         # Try requesting a small snapshot (SPY is highly liquid, always available)
         spy = Contract(symbol="SPY", secType="STK", exchange="SMART", currency="USD")
         try:
             ticker = self._ib.reqMktData(spy, snapshot=True)
-            await asyncio.sleep(2)  # wait for data
-            self._ib.cancelMktData(spy)
+            await asyncio.sleep(settings.market_data_snapshot_wait)
 
             # If we got a live last price, we have a live subscription
             if ticker.last and ticker.last > 0:
@@ -138,8 +141,8 @@ class GatewayClient(IGatewayClient):
                 logger.info("✅ Market data type: LIVE (real-time)")
                 return BatchConfig(
                     market_data_type=MarketDataType.LIVE,
-                    max_concurrent=20,
-                    base_pacing_delay=0.1,
+                    max_concurrent=settings.live_max_concurrent,
+                    base_pacing_delay=settings.live_pacing_delay,
                     description="Live (real-time)",
                 )
             else:
@@ -151,8 +154,8 @@ class GatewayClient(IGatewayClient):
 
         return BatchConfig(
             market_data_type=MarketDataType.DELAYED,
-            max_concurrent=1,
-            base_pacing_delay=3.0,
+            max_concurrent=settings.delayed_max_concurrent,
+            base_pacing_delay=settings.delayed_pacing_delay,
             description="Delayed (15-min)",
         )
 

@@ -128,8 +128,6 @@ def configure_logging(log_dir: str) -> None:
 
 logger = logging.getLogger(__name__)
 
-FILE_WATCHER_INTERVAL = 5.0   # seconds between watch directory scans
-
 
 async def main() -> None:
     # Determine config root (can be overridden by env var for Docker)
@@ -165,7 +163,7 @@ async def main() -> None:
     resolver     = TickerResolver(config, failed_store)
     queue        = DownloadQueue()
     rate_limiter = AdaptiveRateLimiter()
-    gateway      = GatewayClient(config.get_gateway_config())
+    gateway      = GatewayClient(config)
     downloader   = Downloader(gateway, queue, writer, rate_limiter, config, failed_store)
     watcher      = FileWatcher(paths.watch_dir, queue, resolver, config, failed_store)
     api          = create_api(queue, resolver, config, failed_store, watcher)
@@ -203,24 +201,33 @@ async def main() -> None:
     # ── Background tasks ───────────────────────────────────────
 
     async def file_watcher_loop() -> None:
-        logger.info("ℹ️  File watcher started (interval: %.0fs)", FILE_WATCHER_INTERVAL)
+        interval = config.get_settings_config().file_watcher_interval
+        logger.info("ℹ️  File watcher started (interval: %.0fs)", interval)
         while not shutdown_event.is_set():
             try:
                 watcher.scan_once()
             except Exception as exc:
                 logger.error("File watcher error: %s", exc, exc_info=True)
-            await asyncio.sleep(FILE_WATCHER_INTERVAL)
+            await asyncio.sleep(interval)
 
     async def api_server_loop() -> None:
+        api_cfg = config.get_gateway_config().api
         cfg = uvicorn.Config(
             app=api,
-            host="0.0.0.0",
-            port=8002,
+            host=api_cfg.host,
+            port=api_cfg.port,
             log_level="warning",
         )
         server = uvicorn.Server(cfg)
-        logger.info("ℹ️  REST API listening on http://0.0.0.0:8002")
-        await server.serve()
+        logger.info("ℹ️  REST API listening on http://%s:%d", api_cfg.host, api_cfg.port)
+        try:
+            await server.serve()
+        except OSError as e:
+            if e.errno == 98:
+                logger.critical("❌ Port 8002 is already in use. Please check if another instance (e.g. Docker) is running.")
+            else:
+                logger.error("❌ API server error: %s", e)
+            shutdown_event.set()
 
     async def shutdown_watcher() -> None:
         await shutdown_event.wait()
