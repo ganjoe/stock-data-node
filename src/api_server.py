@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Any
 from pathlib import Path
 
 if TYPE_CHECKING:
@@ -52,6 +52,56 @@ class TickerResponse(BaseModel):
 class StatusResponse(BaseModel):
     queue_size: int
 
+
+# ─── Helpers ─────────────────────────────────────────────────────
+
+def enqueue_staleness_sweep(
+    watcher: Any, config: IConfigLoader, resolver: ITickerResolver, queue: IPriorityQueue
+) -> int:
+    """
+    Scans watch directory first, then parquet directory for all known tickers,
+    checks timeframes, and enqueues them for update.
+    Returns the number of enqueue requests created.
+    """
+    from models import DownloadRequest, DownloadPriority
+    from pathlib import Path
+    
+    # 1. Ingest newly placed watch files
+    watcher.scan_once()
+
+    # 2. Get parquet_dir
+    parquet_dir = config.get_paths_config().parquet_dir
+    p_dir = Path(parquet_dir)
+
+    all_tickers = set()
+    # 3. List all ticker subdirectories
+    if p_dir.exists() and p_dir.is_dir():
+        for item in p_dir.iterdir():
+            if not item.is_dir():
+                continue
+            all_tickers.add(item.name)
+    
+    logger.info("▶️  Triggering staleness sweep for %d ticker(s)", len(all_tickers))
+    count = 0
+    for ticker in all_tickers:
+        if resolver.is_ignored(ticker):
+            continue
+        
+        # 4. Fetch timeframes and enqueue
+        timeframes = config.get_timeframes_for_ticker(ticker)
+        for tf in timeframes:
+            contract = resolver.resolve(ticker)
+            req = DownloadRequest(
+                ticker=ticker,
+                timeframe=tf,
+                priority=DownloadPriority.WATCHER,
+                contract=contract,
+            )
+            queue.enqueue(req)
+            count += 1
+            
+    logger.info("✅ Enqueued %d staleness requests", count)
+    return count
 
 # ─── Factory ─────────────────────────────────────────────────────
 
@@ -137,42 +187,8 @@ def create_api(
         Returns 202 Accepted. (F-API-040)
         """
         logger.info("API: Trigger staleness request received.")
-        # 1. Ingest newly placed watch files
-        watcher.scan_once()
-
-        # 2. Get parquet_dir
-        parquet_dir = config.get_paths_config().parquet_dir
-        p_dir = Path(parquet_dir)
-
-        all_tickers = set()
-        # 3. List all ticker subdirectories
-        if p_dir.exists() and p_dir.is_dir():
-            for item in p_dir.iterdir():
-                if not item.is_dir():
-                    continue
-                all_tickers.add(item.name)
-        
-        logger.info("▶️  API: Triggering staleness check for %d ticker(s)", len(all_tickers))
-        count = 0
-        for ticker in all_tickers:
-            # Only enqueue if the ticker is not explicitly ignored
-            if resolver.is_ignored(ticker):
-                continue
-            
-            # 4. Fetch timeframes and enqueue
-            timeframes = config.get_timeframes_for_ticker(ticker)
-            for tf in timeframes:
-                contract = resolver.resolve(ticker)
-                req = DownloadRequest(
-                    ticker=ticker,
-                    timeframe=tf,
-                    priority=DownloadPriority.WATCHER,
-                    contract=contract,
-                )
-                queue.enqueue(req)
-                count += 1
-        
-        logger.info("✅ API: Enqueued %d staleness requests", count)
+        # Process the sweep
+        count = enqueue_staleness_sweep(watcher, config, resolver, queue)
 
         # 5. Return JSONResponse with 202
         return JSONResponse(

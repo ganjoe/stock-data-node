@@ -95,6 +95,7 @@ class Downloader:
         self._config = config
         self._failed_store = failed_store
         self._running = False
+        self._watchlist_dirty = False
 
     async def run_loop(self) -> None:
         """Main processing loop. Runs until stopped."""
@@ -106,6 +107,9 @@ class Downloader:
 
             request = self._queue.dequeue()
             if request is None:
+                if self._watchlist_dirty:
+                    self._update_master_watchlist()
+                    self._watchlist_dirty = False
                 await asyncio.sleep(1)
                 continue
 
@@ -125,6 +129,7 @@ class Downloader:
             )
             try:
                 await self._process_request(request)
+                self._watchlist_dirty = True
             except Exception as exc:
                 logger.error(
                     "❌ Unexpected error processing %s/%s: %s",
@@ -342,15 +347,14 @@ class Downloader:
         if request.status != TickerStatus.FAILED:
             request.status = TickerStatus.DONE
         logger.info(
-            "📊 %s: %s/%s — %d/%d chunks OK, %d bars, %.1fs",
+            "📊 %s: %s/%s — %d/%d chunks OK, %s bars, %.1fs",
             "✅" if request.status == TickerStatus.DONE else "❌",
             request.ticker, request.timeframe,
             chunk_ok, total_chunks, 
             f"{total_bars:,d}".replace(",", "."), 
             elapsed,
         )
-        # Update master watchlist after each successful/failed ticker (F-DAT-030)
-        self._update_master_watchlist()
+        # Watchlist generation is now deferred until the queue hits 0 (handled in run_loop)
 
     def _update_master_watchlist(self) -> None:
         """
@@ -414,6 +418,14 @@ class Downloader:
 
         if last_ts is not None:
             start = last_ts + 1
+            # If our last timestamp is already starting on or after our effective_now
+            # (e.g. 00:00:00 of today, while effective_now is 23:59:59 of yesterday)
+            # then we shouldn't download anything.
+            if timeframe == "1D":
+                from datetime import datetime as dt, timezone as tz
+                last_dt = dt.fromtimestamp(last_ts, tz=tz.utc)
+                if last_dt.date() >= latest_day:
+                    return []
         else:
             start = effective_now - lookback
 

@@ -232,6 +232,13 @@ async def main() -> None:
     # Run synchronously *before* API or Downloader starts.
     _run_startup_features(config)
 
+    # ── Initial Staleness Sweep ──────────────────────────────
+    from api_server import enqueue_staleness_sweep
+    logger.info("═══════════════════════════════════════════════════════════════")
+    logger.info("  Starting Initial Staleness Sweep")
+    logger.info("═══════════════════════════════════════════════════════════════")
+    enqueue_staleness_sweep(watcher, config, resolver, queue)
+
     # ── Connect to gateway (F-CON-010, F-SYS-030) ─────────────
     try:
         await gateway.connect()
