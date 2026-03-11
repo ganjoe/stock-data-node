@@ -9,7 +9,7 @@
             "style": "solid",
             "pane": "price",
             "chart_type": "line",
-            "thickness": 2
+            "thickness": 1
         },
         "ma_sma_20": {
             "window": 20,
@@ -20,7 +20,7 @@
             "style": "solid",
             "pane": "price",
             "chart_type": "line",
-            "thickness": 2
+            "thickness": 1
         },
         "ma_sma_50": {
             "window": 50,
@@ -31,7 +31,7 @@
             "style": "solid",
             "pane": "price",
             "chart_type": "line",
-            "thickness": 2
+            "thickness": 1
         },
         "ma_sma_100": {
             "window": 100,
@@ -42,7 +42,7 @@
             "style": "solid",
             "pane": "price",
             "chart_type": "line",
-            "thickness": 2
+            "thickness": 1
         },
         "ma_sma_150": {
             "window": 150,
@@ -53,7 +53,7 @@
             "style": "solid",
             "pane": "price",
             "chart_type": "line",
-            "thickness": 2
+            "thickness": 1
         },
         "ma_sma_200": {
             "window": 200,
@@ -64,7 +64,7 @@
             "style": "solid",
             "pane": "price",
             "chart_type": "line",
-            "thickness": 2
+            "thickness": 1
         },
         "stoch_14_3": {
             "window": 14,
@@ -73,7 +73,7 @@
             "style": "solid",
             "pane": "price",
             "chart_type": "line",
-            "thickness": 2,
+            "thickness": 1,
             "stoch_smooth": {
                 "window": 3,
                 "period": "D",

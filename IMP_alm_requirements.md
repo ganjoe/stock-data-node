@@ -1740,3 +1740,146 @@ The following requirements govern the **Enhanced Visual Logging** (F-LOG-030 thr
 - Do not convert the prefix timestamp (handled by `ColoredFormatter`).
 
 ---
+
+
+# IMP_alm_requirements — Implementation Specification
+
+> **Source:** `alm_requirements` (F-IMP-110 - Strict Complete Bars Only)
+> **Author:** Senior Software Architect (AI-Optimized Workflow)
+> **Target:** Junior AI Agents (atomic, isolated tasks)
+> **Language:** Python 3.11+ | **Libraries:** `ib_insync`, `asyncio`, `datetime`, `pytz`
+
+---
+
+## PART 1: The System Skeleton (Shared Context)
+
+> This section defines the **new or modified** data structures and interfaces extending the existing application.
+> This code is **read-only context** for all Junior AI Agents.
+
+### 1.1 Modified Interface: `MarketClock`
+
+The existing `MarketClock` class (in `src/market_clock.py`) currently hardcodes NYSE holidays. To support F-IMP-110 correctly across international markets, the "latest completed trading day" calculation MUST be exchange-aware.
+
+```python
+from datetime import date, datetime
+from collections.abc import Callable
+
+class MarketClock:
+    # Existing constants...
+    
+    @staticmethod
+    def get_latest_completed_trading_day(exchange: str, current_dt: datetime | None = None) -> date:
+        """
+        Returns the most recently fully completed trading day (date) for the given exchange.
+        (F-IMP-110)
+        """
+        ...
+```
+
+---
+
+## PART 2: Implementation Work Orders
+
+---
+
+### T-IMP-009-1 — Exchange-Aware Market Clock Extension 
+
+| Field | Value |
+|-------|-------|
+| **Target File** | `src/market_clock.py` |
+| **Description** | Add the exchange-aware `get_latest_completed_trading_day` method |
+| **Covers** | F-IMP-110 |
+| **Context** | Support basic exchange routing (NYSE/NASDAQ/SMART/ISLAND vs others). |
+
+**Code Stub:**
+
+```python
+import pytz
+from datetime import date, datetime, timedelta
+
+class MarketClock:
+    
+    # Existing properties...
+
+    @staticmethod
+    def get_latest_completed_trading_day(exchange: str, current_dt: datetime | None = None) -> date:
+        """Returns the most recently fully completed trading day for the given exchange."""
+        # TODO: Implement multi-exchange routing (Fallback to NYSE for unknown US exchanges)
+        pass
+```
+
+**Algo/Logic Steps:**
+1. Define a robust exchange configuration mapping inside `MarketClock`:
+   - **US Markets** (SMART, ISLAND, NYSE, NASDAQ, AMEX, ARCA, BATS):
+     - Timezone: `US/Eastern`
+     - Open: `09:30`, Close: `16:00`
+     - Holidays: Existing US holidays (MLK, Presidents Day, Good Friday, Memorial Day, Juneteenth, Independence Day, Labor Day, Thanksgiving, Christmas).
+   - **German Markets** (XETRA, IBIS, FWB):
+     - Timezone: `Europe/Berlin`
+     - Open: `09:00`, Close: `17:30`
+     - Holidays: New Year's Day, Good Friday, Easter Monday, Labour Day (May 1), Christmas Eve, Christmas Day, Boxing Day, New Year's Eve. (Specific dates 2024-2027).
+   - **UK Markets** (LSE):
+     - Timezone: `Europe/London`
+     - Open: `08:00`, Close: `16:30`
+     - Holidays: New Year's Day, Good Friday, Easter Monday, Early May Bank Holiday, Spring Bank Holiday, Summer Bank Holiday, Christmas Eve (early close treated as holiday or half-day, for simplicity we treat early close days as normal days up to close time, but if IBKR cuts off early, we should just use standard close. Actually, to keep it simple and robust, let's treat partial days as normal trading days, the downloader will just get less bars), Christmas Day, Boxing Day.
+   - **Fallback/Unknown**:
+     - Timezone: `UTC`
+     - Open: `00:00`, Close: `23:59`
+     - Holidays: Empty set. Log a `logger.warning("Unknown exchange %s, using 24/7 UTC fallback", exchange)`.
+2. Important: Use `pytz.timezone(tz_name)` which automatically correctly parses daylight saving time (DST) offsets when converting UTC timestamps to local times or vice versa.
+3. If `current_dt` is None, initialize it using `datetime.now(target_timezone)`.
+4. Extract `candidate_date` and `current_time` in the target timezone.
+5. If it's a valid trading day (not weekend, not in exchange's holidays) AND `current_time >= close_time`, return `candidate_date`.
+6. Else, loop backwards one day at a time until a valid trading day is found, and return its date.
+
+---
+
+### T-IMP-009-2 — Staleness Check Update
+
+| Field | Value |
+|-------|-------|
+| **Target File** | `src/staleness.py` |
+| **Description** | Bound the 1D staleness check to the last completed trading day using exchange |
+| **Covers** | F-IMP-110 |
+| **Context** | `is_stale()` must accept `exchange: str` parameter. |
+
+**Code Stub:**
+
+```python
+def is_stale(last_timestamp: int, timeframe: str, exchange: str = "SMART") -> bool:
+    """..."""
+    # TODO: Modify 1D logic to pass exchange to MarketClock
+```
+
+**Algo/Logic Steps:**
+1. Add `exchange: str = "SMART"` to the signature. (Update any callers in `downloader.py` if necessary).
+2. For `1D`: `latest_completed_day = MarketClock.get_latest_completed_trading_day(exchange)`
+3. Return `True` if `last_dt.date() < latest_completed_day`.
+
+---
+
+### T-IMP-009-3 — Downloader Chunk Boundary Update
+
+| Field | Value |
+|-------|-------|
+| **Target File** | `src/downloader.py` |
+| **Description** | Pass exchange to staleness check and bounding logic |
+| **Covers** | F-IMP-110 |
+
+**Code Stub:**
+
+```python
+    def _calculate_chunks(
+        self, last_ts: Optional[int], timeframe: str, exchange: str
+    ) -> list[DownloadChunk]:
+        """..."""
+        # TODO: Accept exchange string, use it for effective_now bounding
+```
+
+**Algo/Logic Steps:**
+1. Update `_calculate_chunks` to accept `exchange`.
+2. Update callers of `_calculate_chunks` (e.g. `_process_request` passes `request.contract.exchange`).
+3. If `timeframe == "1D"`, fetch `latest_completed_day = MarketClock.get_latest_completed_trading_day(exchange)`.
+4. Calculate `end_of_completed_day` using the correct timezone for that exchange (from MarketClock helper). Convert to UTC timestamp.
+5. Set `effective_now` to this timestamp. All chunk boundaries use `effective_now` instead of `now`.
+6. Update the `is_stale()` call in `_finish_ticker_download` or `_process_request` to pass `request.contract.exchange`.

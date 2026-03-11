@@ -5,6 +5,7 @@ Timeframe-aware staleness check for cached market data. (F-IMP-090)
 from __future__ import annotations
 
 from datetime import datetime, time
+from market_clock import MarketClock
 
 
 # Staleness thresholds in seconds, per timeframe
@@ -21,7 +22,7 @@ _STALENESS_THRESHOLDS: dict[str, int | None] = {
 }
 
 
-def is_stale(last_timestamp: int, timeframe: str) -> bool:
+def is_stale(last_timestamp: int, timeframe: str, exchange: str = "SMART") -> bool:
     """
     Checks if cached data is stale given the last bar's unix timestamp.
 
@@ -33,10 +34,10 @@ def is_stale(last_timestamp: int, timeframe: str) -> bool:
     now = datetime.now()
     last_dt = datetime.fromtimestamp(last_timestamp)
 
-    # Daily: date-based check
+    # Daily: date-based check against the latest COMPLETED trading day
     if timeframe == "1D":
-        today_midnight = datetime.combine(now.date(), time.min)
-        return last_dt < today_midnight
+        latest_completed_day = MarketClock.get_latest_completed_trading_day(exchange=exchange)
+        return last_dt.date() < latest_completed_day
 
     # Lookup threshold
     threshold = _STALENESS_THRESHOLDS.get(timeframe)

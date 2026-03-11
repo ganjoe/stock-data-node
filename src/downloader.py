@@ -141,10 +141,10 @@ class Downloader:
     async def _process_request(self, request: DownloadRequest) -> None:
         """Processes one DownloadRequest with chunking, preemption, and batch progress."""
         request.status = TickerStatus.DOWNLOADING
-        request_start = time.monotonic()
-        chunk_ok = 0
-        chunk_fail = 0
-        total_bars = 0
+        request_start = time.monotonic() # Metrics
+        chunk_ok: int = 0
+        chunk_fail: int = 0
+        total_bars: int = 0
 
         if not self._gateway.is_connected():
             logger.error("❌ Gateway disconnected — re-queuing %s/%s", request.ticker, request.timeframe)
@@ -181,7 +181,9 @@ class Downloader:
         else:
             logger.info("ℹ️  Full download for %s/%s (no existing data)", request.ticker, request.timeframe)
 
-        chunks = self._calculate_chunks(last_ts, request.timeframe)
+        chunks: list[DownloadChunk] = self._calculate_chunks(
+            last_ts=last_ts, timeframe=request.timeframe, exchange=request.contract.exchange
+        )
         if not chunks:
             logger.info("✅ No chunks to download for %s/%s — already up to date.", request.ticker, request.timeframe)
             request.status = TickerStatus.DONE
@@ -251,7 +253,7 @@ class Downloader:
                         if hasattr(self._config, "register_unmapped_ticker"):
                             self._config.register_unmapped_ticker(request.ticker)
                         
-                        chunk_fail += 1
+                        chunk_fail = chunk_fail + 1
                         request.status = TickerStatus.FAILED
                         break
 
@@ -271,7 +273,7 @@ class Downloader:
                             "ℹ️ No data for %s/%s chunk %d/%d — skipping (not a permanent error)",
                             request.ticker, request.timeframe, i + 1, len(chunks)
                         )
-                        chunk_fail += 1
+                        chunk_fail = chunk_fail + 1
                         continue
 
                 elif category == ErrorCategory.NO_PERMISSIONS:
@@ -279,7 +281,7 @@ class Downloader:
                         "❌ Permission error for %s/%s: %s — stopping",
                         request.ticker, request.timeframe, result.error
                     )
-                    chunk_fail += 1
+                    chunk_fail = chunk_fail + 1
                     request.status = TickerStatus.FAILED
                     break
 
@@ -296,7 +298,17 @@ class Downloader:
                     ))
                     if hasattr(self._config, "register_unmapped_ticker"):
                         self._config.register_unmapped_ticker(request.ticker)
-                    chunk_fail += 1
+                    chunk_fail = chunk_fail + 1
+                    request.status = TickerStatus.FAILED
+                    break
+
+                elif category == ErrorCategory.TIMEOUT:
+                    # Target behavior: Skip entire ticker on TIMEOUT instead of just chunk
+                    logger.error(
+                        "❌ TIMEOUT error for %s/%s: %s — skipping remaining chunks for this ticker",
+                        request.ticker, request.timeframe, result.error
+                    )
+                    chunk_fail = chunk_fail + 1
                     request.status = TickerStatus.FAILED
                     break
 
@@ -305,18 +317,18 @@ class Downloader:
                         "❌ %s error for %s/%s: %s — skipping chunk",
                         category.value, request.ticker, request.timeframe, result.error
                     )
-                    chunk_fail += 1
+                    chunk_fail = chunk_fail + 1
                     continue
 
             self._rate_limiter.report_success()
 
             if result.bars:
                 self._writer.append_bars(request.ticker, request.timeframe, result.bars)
-                chunk_ok += 1
-                total_bars += len(result.bars)
+                chunk_ok = chunk_ok + 1
+                total_bars = total_bars + len(result.bars)
             else:
                 logger.debug("Empty chunk for %s/%s (no new bars)", request.ticker, request.timeframe)
-                chunk_ok += 1  # empty but successful
+                chunk_ok = chunk_ok + 1  # empty but successful
 
         # Batch progress reporting (F-IMP-130)
         elapsed = time.monotonic() - request_start
@@ -330,7 +342,7 @@ class Downloader:
         if request.status != TickerStatus.FAILED:
             request.status = TickerStatus.DONE
         logger.info(
-            "📊 %s: %s/%s — %d/%d chunks OK, %s bars, %.1fs",
+            "📊 %s: %s/%s — %d/%d chunks OK, %d bars, %.1fs",
             "✅" if request.status == TickerStatus.DONE else "❌",
             request.ticker, request.timeframe,
             chunk_ok, total_chunks, 
@@ -370,7 +382,7 @@ class Downloader:
             pass
 
     def _calculate_chunks(
-        self, last_ts: Optional[int], timeframe: str
+        self, last_ts: Optional[int], timeframe: str, exchange: str
     ) -> list[DownloadChunk]:
         """
         Splits the time range [start, now] into chunks.
@@ -380,6 +392,22 @@ class Downloader:
         """
         now = int(time.time())
         dl_cfg = self._config.get_downloader_config()
+
+        # F-IMP-110: Bound effective current time to the end of the last completed trading day for 1D
+        if timeframe == "1D":
+            from datetime import datetime as dt, time as dt_time
+            from market_clock import MarketClock
+            
+            latest_day = MarketClock.get_latest_completed_trading_day(exchange=exchange)
+            tz, _, _, _ = MarketClock._get_exchange_config(exchange)
+            
+            end_of_day_dt = tz.localize(dt.combine(latest_day, dt_time(23, 59, 59)))
+            effective_now = int(end_of_day_dt.timestamp())
+            
+            # If our local clock is behind the market clock (e.g. testing), don't go into the future
+            effective_now = min(now, effective_now)
+        else:
+            effective_now = now
         
         # Determine lookback
         lookback = dl_cfg.max_history_lookback.get(timeframe, 86400 * 365)
@@ -387,9 +415,9 @@ class Downloader:
         if last_ts is not None:
             start = last_ts + 1
         else:
-            start = now - lookback
+            start = effective_now - lookback
 
-        if start >= now:
+        if start >= effective_now:
             return []  # Already up to date
 
         # Determine chunk size, capped by max_chunk_size (F-OPT-040)
@@ -400,9 +428,9 @@ class Downloader:
         chunks: list[DownloadChunk] = []
         chunk_start = start
 
-        while chunk_start < now:
-            chunk_end = min(chunk_start + chunk_size, now)
-            is_final = (chunk_end >= now)
+        while chunk_start < effective_now:
+            chunk_end = min(chunk_start + chunk_size, effective_now)
+            is_final = (chunk_end >= effective_now)
             chunks.append(DownloadChunk(
                 ticker="",  # filled by caller
                 timeframe=timeframe,

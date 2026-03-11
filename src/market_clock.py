@@ -21,8 +21,8 @@ class MarketClock:
     OPEN_TIME = time(9, 30)
     CLOSE_TIME = time(16, 0)
 
-    # NYSE Holidays (hardcoded for robustness, 2024-2027)
-    HOLIDAYS: set[date] = {
+    # US Holidays (NYSE/NASDAQ) (2024-2027)
+    US_HOLIDAYS: set[date] = {
         # 2024
         date(2024, 1, 1),    # New Year's Day
         date(2024, 1, 15),   # MLK Day
@@ -69,7 +69,107 @@ class MarketClock:
         date(2027, 12, 24),  # Christmas Day (observed)
     }
 
+    # German Holidays (XETRA, IBIS, FWB) (2024-2027)
+    GERMAN_HOLIDAYS: set[date] = {
+        # 2024
+        date(2024, 1, 1), date(2024, 3, 29), date(2024, 4, 1), 
+        date(2024, 5, 1), date(2024, 12, 24), date(2024, 12, 25), 
+        date(2024, 12, 26), date(2024, 12, 31),
+        # 2025
+        date(2025, 1, 1), date(2025, 4, 18), date(2025, 4, 21), 
+        date(2025, 5, 1), date(2025, 12, 24), date(2025, 12, 25), 
+        date(2025, 12, 26), date(2025, 12, 31),
+        # 2026
+        date(2026, 1, 1), date(2026, 4, 3), date(2026, 4, 6), 
+        date(2026, 5, 1), date(2026, 12, 24), date(2026, 12, 25), 
+        date(2026, 12, 26), date(2026, 12, 31),
+        # 2027
+        date(2027, 1, 1), date(2027, 3, 26), date(2027, 3, 29), 
+        date(2027, 5, 1), date(2027, 12, 24), date(2027, 12, 25), 
+        date(2027, 12, 26), date(2027, 12, 31),
+    }
+
+    # UK Holidays (LSE) (2024-2027)
+    UK_HOLIDAYS: set[date] = {
+        # 2024
+        date(2024, 1, 1), date(2024, 3, 29), date(2024, 4, 1),
+        date(2024, 5, 6), date(2024, 5, 27), date(2024, 8, 26),
+        date(2024, 12, 25), date(2024, 12, 26),
+        # 2025
+        date(2025, 1, 1), date(2025, 4, 18), date(2025, 4, 21),
+        date(2025, 5, 5), date(2025, 5, 26), date(2025, 8, 25),
+        date(2025, 12, 24), date(2025, 12, 25), date(2025, 12, 26), date(2025, 12, 31),
+        # 2026
+        date(2026, 1, 1), date(2026, 4, 3), date(2026, 4, 6),
+        date(2026, 5, 4), date(2026, 5, 25), date(2026, 8, 31),
+        date(2026, 12, 24), date(2026, 12, 25), date(2026, 12, 28),
+        # 2027
+        date(2027, 1, 1), date(2027, 3, 26), date(2027, 3, 29),
+        date(2027, 5, 3), date(2027, 5, 31), date(2027, 8, 30),
+        date(2027, 12, 24), date(2027, 12, 27), date(2027, 12, 28), date(2027, 12, 31),
+    }
+
+    HOLIDAYS = US_HOLIDAYS  # backwards compatibility for get_status
+
     MAX_HOLIDAY_YEAR = 2027
+
+    @staticmethod
+    def _get_exchange_config(exchange: str) -> tuple[pytz.BaseTzInfo, time, time, set[date]]:
+        """Returns (timezone, open_time, close_time, holidays) for an exchange."""
+        import logging
+        logger = logging.getLogger(__name__)
+
+        exchange = exchange.upper().strip()
+        
+        # US Markets
+        if exchange in {"SMART", "ISLAND", "NYSE", "NASDAQ", "AMEX", "ARCA", "BATS", ""}:
+            return pytz.timezone("US/Eastern"), time(9, 30), time(16, 0), MarketClock.US_HOLIDAYS
+        
+        # German Markets
+        if exchange in {"XETRA", "IBIS", "FWB"}:
+            return pytz.timezone("Europe/Berlin"), time(9, 0), time(17, 30), MarketClock.GERMAN_HOLIDAYS
+            
+        # UK Markets
+        if exchange in {"LSE"}:
+            return pytz.timezone("Europe/London"), time(8, 0), time(16, 30), MarketClock.UK_HOLIDAYS
+
+        # Fallback for unknown
+        logger.warning("⚠️ Unknown exchange '%s' — using 24/7 UTC fallback for MarketClock", exchange)
+        return pytz.timezone("UTC"), time(0, 0), time(23, 59, 59), set()
+
+    @staticmethod
+    def get_latest_completed_trading_day(exchange: str, current_dt: datetime | None = None) -> date:
+        """
+        Returns the most recently fully completed trading day (date) for the given exchange.
+        (F-IMP-110)
+        """
+        tz, _, close_time, holidays = MarketClock._get_exchange_config(exchange)
+        
+        if current_dt is None:
+            current_dt = datetime.now(tz)
+        elif current_dt.tzinfo is None:
+            current_dt = tz.localize(current_dt)
+        else:
+            current_dt = current_dt.astimezone(tz)
+
+        candidate_date = current_dt.date()
+        current_time = current_dt.time()
+
+        # If today is a trading day and market has already closed, today is fully completed
+        if candidate_date.weekday() < 5 and candidate_date not in holidays:
+            if current_time >= close_time:
+                return candidate_date
+
+        # Otherwise, search backwards for the most recent completed trading day
+        # Limit search to 30 days to avoid infinite loops
+        candidate_dt = current_dt - timedelta(days=1)
+        for _ in range(30):
+            c_date = candidate_dt.date()
+            if c_date.weekday() < 5 and c_date not in holidays:
+                return c_date
+            candidate_dt -= timedelta(days=1)
+            
+        return (current_dt - timedelta(days=1)).date()  # Fallback
 
     @staticmethod
     def get_status() -> dict:
