@@ -125,5 +125,28 @@ und beendet den belegenden Prozess.
 
 sudo chmod -R 777 /home/daniel/stock-data-node/data/parquet
 
+--------------------------------------------------------------------------------
+12. PERFORMANCE TUNING (F-OPT-060, F-OPT-070)
+--------------------------------------------------------------------------------
+Für optimale Bulk-Downloads empfehlen wir folgende Einstellungen:
+
+JVM Heap-Speicher (IB Gateway):
+  Setze den JVM Heap-Speicher auf mindestens 4096 MB (-Xmx4096m).
+  In der IB Gateway Konfiguration oder als Docker Environment Variable:
+    JAVA_HEAP_SIZE=4096
+
+Logging-Level:
+  Für Massendaten-Downloads kann das Logging-Level in config/settings.json
+  auf "INFO" gesetzt werden (default), um CPU-Overhead zu minimieren:
+    "bulk_log_level": "INFO"
+
+Concurrency-Tuning:
+  Die Parallelität wird dynamisch verwaltet (Dynamic Semaphore Throttling).
+  Start-Werte in config/settings.json:
+    "delayed_max_concurrent": 15    (für Free/Delayed Data)
+    "live_max_concurrent": 20       (für Live Data)
+  Bei Pacing-Fehlern wird die Parallelität automatisch reduziert und
+  nach erfolgreichen Requests schrittweise wieder erhöht.
+
 ================================================================================
 Viel Erfolg mein Freund!

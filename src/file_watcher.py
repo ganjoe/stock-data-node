@@ -119,11 +119,21 @@ class FileWatcher:
         failed_tickers: list[str] = []
         enqueued_tickers: list[str] = []
 
+        # PRE-PASS: Create all directories first so they are not lost if download fails
+        paths_cfg = self._config.get_paths_config()
+        valid_tickers = []
         for ticker in tickers:
             if self._resolver.is_ignored(ticker):
                 logger.debug("Skipping unresolved/blacklisted ticker %s from file", ticker)
                 continue
-                
+            
+            # Create the ticker directory proactively
+            ticker_dir = Path(paths_cfg.parquet_dir) / ticker
+            ticker_dir.mkdir(parents=True, exist_ok=True)
+            valid_tickers.append(ticker)
+
+        # ENQUEUE PASS
+        for ticker in valid_tickers:
             contract = self._resolver.resolve(ticker)
             # Proceed even if contract is None (triggering Auto-Discovery in downloader)
 

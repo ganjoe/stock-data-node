@@ -7,6 +7,7 @@ from __future__ import annotations
 import asyncio
 import calendar
 import logging
+import time
 from datetime import date as date_type
 from datetime import datetime, timezone
 import random
@@ -63,6 +64,7 @@ class GatewayClient(IGatewayClient):
         self._config = config
         self._ib = IB()
         self._market_data_type: MarketDataType = MarketDataType.DELAYED
+        self._last_activity_time: float = time.monotonic()  # (F-OPT-050) Watchdog tracking
         
         # Connection suspension logic (F-ERR-070)
         self._connection_active = asyncio.Event()
@@ -100,6 +102,7 @@ class GatewayClient(IGatewayClient):
                 "✅ Connected to IB Gateway at %s:%d (clientId=%d)",
                 endpoint.host, endpoint.port, client_id
             )
+            self._last_activity_time = time.monotonic()  # (F-OPT-050)
         except Exception as exc:
             msg = (
                 f"Cannot connect to IB Gateway at {endpoint.host}:{endpoint.port}. "
@@ -278,16 +281,23 @@ class GatewayClient(IGatewayClient):
 
         self._ib.errorEvent += on_error
         
+        settings = self._config.get_settings_config()
+        
         try:
-            bars = await self._ib.reqHistoricalDataAsync(
-                contract=ib_contract,
-                endDateTime=end_str,
-                durationStr=duration_str,
-                barSizeSetting=bar_size,
-                whatToShow="TRADES",
-                useRTH=True,   # Regular Trading Hours only
-                formatDate=1,  # String dates — more compatible across bar sizes
+            bars = await asyncio.wait_for(
+                self._ib.reqHistoricalDataAsync(
+                    contract=ib_contract,
+                    endDateTime=end_str,
+                    durationStr=duration_str,
+                    barSizeSetting=bar_size,
+                    whatToShow="TRADES",
+                    useRTH=True,   # Regular Trading Hours only
+                    formatDate=1,  # String dates — more compatible across bar sizes
+                ),
+                timeout=settings.historical_data_timeout
             )
+        except asyncio.TimeoutError:
+            raise RuntimeError(f"Timeout: HistData request for {contract.symbol} took longer than {settings.historical_data_timeout}s")
         finally:
             self._ib.errorEvent -= on_error
 
@@ -314,7 +324,32 @@ class GatewayClient(IGatewayClient):
             ))
 
         logger.debug("Received %d bars for %s/%s", len(result), contract.symbol, timeframe)
+        self._last_activity_time = time.monotonic()  # (F-OPT-050)
         return result
+
+    async def ensure_connected(self) -> None:
+        """
+        Proactively checks connection health and reconnects if stale. (F-OPT-050)
+        Called before each download request to detect zombie connections.
+        """
+        if not self._ib.isConnected():
+            logger.warning("⚠️ Connection lost — attempting reconnect...")
+            await self.connect()
+            return
+
+        settings = self._config.get_settings_config()
+        idle_time = time.monotonic() - self._last_activity_time
+
+        if idle_time > settings.connection_watchdog_interval:
+            logger.info("⚠️ Connection idle for %.0fs — sending heartbeat...", idle_time)
+            try:
+                self._ib.reqCurrentTime()
+                self._last_activity_time = time.monotonic()
+                logger.debug("Heartbeat OK — connection is alive.")
+            except Exception as exc:
+                logger.warning("❌ Connection is stale (%s) — reconnecting...", exc)
+                self._ib.disconnect()
+                await self.connect()
 
     @staticmethod
     def _bar_date_to_timestamp(bar_date: object) -> int | None:

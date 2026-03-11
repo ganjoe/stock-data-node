@@ -99,7 +99,7 @@ class PathsConfig:
 
 @dataclass(frozen=True)
 class SettingsConfig:
-    """Loaded from config/settings.json. (F-CFG-030)"""
+    """Loaded from config/settings.json. (F-CFG-030, F-OPT-020/030/050/070)"""
     file_watcher_interval: float
     gateway_connect_timeout: int
     market_data_type_wait: float
@@ -109,8 +109,24 @@ class SettingsConfig:
     # Batching parameters (adapt to market data permissions)
     live_max_concurrent: int = 20
     live_pacing_delay: float = 0.1
-    delayed_max_concurrent: int = 1
-    delayed_pacing_delay: float = 3.0
+    delayed_max_concurrent: int = 15          # (F-OPT-020) raised from 1
+    delayed_pacing_delay: float = 0.5         # (F-OPT-020) lowered from 3.0, dynamic throttling covers safety
+
+    # Dynamic Semaphore Throttling (F-OPT-020)
+    throttle_recovery_threshold: int = 5      # successful requests before increasing semaphore by 1
+    throttle_min_concurrent: int = 1          # floor: never go below this
+
+    # Identical Request Debounce (F-OPT-030)
+    request_debounce_seconds: float = 15.0    # minimum interval for identical requests
+
+    # Idle Connection Watchdog (F-OPT-050)
+    connection_watchdog_interval: float = 600.0  # seconds (10 min)
+
+    # Performance-Optimized Logging (F-OPT-070)
+    bulk_log_level: str = "INFO"
+
+    # Configurable Request Timeout (F-OPT-080)
+    historical_data_timeout: float = 30.0
 
 
 @dataclass(frozen=True)
@@ -140,9 +156,19 @@ class BatchConfig:
 
 @dataclass(frozen=True)
 class DownloaderConfig:
-    """Loaded from config/downloader.json. (F-CFG-030)"""
+    """Loaded from config/downloader.json. (F-CFG-030, F-OPT-040)"""
     chunk_duration: dict[str, int]
     max_history_lookback: dict[str, int]
+    max_chunk_size: dict[str, int] = field(default_factory=dict)  # (F-OPT-040) max seconds per request per timeframe
+
+
+@dataclass(frozen=True)
+class RequestFingerprint:
+    """Unique identifier for an API request, used for debounce tracking. (F-OPT-030)"""
+    symbol: str
+    timeframe: str
+    start_ts: int
+    end_ts: int
 
 
 # ─── Domain Objects ──────────────────────────────────────────────
@@ -272,7 +298,7 @@ class IConfigLoader(ABC):
 
 
 class IGatewayClient(ABC):
-    """Manages IBKR Gateway connection. (F-CON-010/020)"""
+    """Manages IBKR Gateway connection. (F-CON-010/020, F-OPT-050)"""
 
     @abstractmethod
     async def connect(self) -> None: ...
@@ -306,6 +332,11 @@ class IGatewayClient(ABC):
     @abstractmethod
     async def search_contract(self, symbol: str) -> list[ContractDescription]:
         """Wraps reqMatchingSymbolsAsync to find contract alternatives. (F-EXT-040)"""
+        ...
+
+    @abstractmethod
+    async def ensure_connected(self) -> None:
+        """Proactively checks connection health and reconnects if stale. (F-OPT-050)"""
         ...
 
 
@@ -366,11 +397,11 @@ class IParquetWriter(ABC):
 
 
 class IRateLimiter(ABC):
-    """Adaptive rate limiting with backoff. (F-FNC-050, F-IMP-010/020)"""
+    """Adaptive rate limiting with backoff and dynamic throttling. (F-FNC-050, F-IMP-010/020, F-OPT-020/030)"""
 
     @abstractmethod
-    def configure(self, config: BatchConfig) -> None:
-        """Applies BatchConfig pacing and concurrency settings. (F-IMP-020)"""
+    def configure(self, config: BatchConfig, settings: Optional[SettingsConfig] = None) -> None:
+        """Applies BatchConfig pacing/concurrency AND optional SettingsConfig throttle params. (F-IMP-020, F-OPT-020)"""
         ...
 
     @abstractmethod
@@ -380,12 +411,22 @@ class IRateLimiter(ABC):
 
     @abstractmethod
     def report_pacing_error(self) -> None:
-        """Triggers exponential backoff."""
+        """Reduces semaphore AND doubles delay. (F-OPT-020)"""
         ...
 
     @abstractmethod
     def report_success(self) -> None:
-        """Resets backoff on successful request."""
+        """Increments semaphore after N consecutive successes. (F-OPT-020)"""
+        ...
+
+    @abstractmethod
+    def check_debounce(self, fingerprint: RequestFingerprint) -> bool:
+        """Returns True if the request should be BLOCKED (sent too recently). (F-OPT-030)"""
+        ...
+
+    @abstractmethod
+    def record_request(self, fingerprint: RequestFingerprint) -> None:
+        """Records that a request was sent (for debounce tracking). (F-OPT-030)"""
         ...
 
 

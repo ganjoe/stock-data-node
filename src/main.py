@@ -129,6 +129,62 @@ def configure_logging(log_dir: str) -> None:
 logger = logging.getLogger(__name__)
 
 
+def _run_startup_features(config: ConfigLoader) -> None:
+    """
+    F-LC-020: Run a synchronous feature calculation pass on all existing 
+    data before the main async loops (REST API, Download queue) start.
+    This guarantees that features are up to date before any Staleness-cron can fire.
+    """
+    logger.info("═══════════════════════════════════════════════════════════════")
+    logger.info("  Starting Initial Feature Calculation (F-LC-020)")
+    logger.info("═══════════════════════════════════════════════════════════════")
+    
+    try:
+        from features.config_parser import FeatureConfigParser, ProcessingContext
+        from features.calculator import TechnicalCalculator
+        from features.parquet_io import ParquetStorage
+        from features.processor import FeatureProcessor
+
+        paths = config.get_paths_config()
+        settings_cfg = config.get_settings_config()
+        
+        config_parser = FeatureConfigParser(str(Path(config.config_dir) / "features.json"))
+        features_list = config_parser.parse()
+        
+        if not features_list:
+            logger.info("ℹ️  No features defined in features.json. Skipping.")
+            return
+
+        ctx = ProcessingContext(
+            thread_count=settings_cfg.processing_threads,  # Fixed: processing_threads comes from settings, not paths
+            data_dir=paths.parquet_dir,
+            timeframes=["1D"],
+            features=features_list
+        )
+        
+        storage = ParquetStorage(ctx.data_dir)
+        tickers = storage.get_available_tickers()
+        
+        if not tickers:
+            logger.info("ℹ️  No data available yet. Skipping feature calculation.")
+            return
+            
+        logger.info("▶️  Calculating features for %d ticker(s) with %d thread(s)...", 
+                    len(tickers), ctx.thread_count)
+                    
+        calculator = TechnicalCalculator()
+        processor = FeatureProcessor(ctx, storage, calculator)
+        
+        # This is a blocking call, which is correct here (startup phase).
+        results = processor.process_all_tickers(tickers)
+        success_count = sum(1 for r in results if r)
+        
+        logger.info("✅ Initial feature calculation finished: %d/%d successful", success_count, len(tickers))
+
+    except Exception as exc:
+        logger.error("❌ Failed to run initial feature calculation: %s", exc, exc_info=True)
+
+
 async def main() -> None:
     # Determine config root (can be overridden by env var for Docker)
     base_dir = Path(os.environ.get("APP_BASE_DIR", Path(__file__).parent.parent))
@@ -172,6 +228,10 @@ async def main() -> None:
     checker = StartupChecker(paths, writer)
     checker.run_all_checks()
 
+    # ── Initial Feature Calculation (F-LC-020) ───────────────
+    # Run synchronously *before* API or Downloader starts.
+    _run_startup_features(config)
+
     # ── Connect to gateway (F-CON-010, F-SYS-030) ─────────────
     try:
         await gateway.connect()
@@ -181,11 +241,17 @@ async def main() -> None:
 
     # ── Detect market data type (F-CON-020, F-IMP-010/020) ────────
     batch_config = await gateway.detect_market_data_type()
-    rate_limiter.configure(batch_config)
+    settings = config.get_settings_config()
+    rate_limiter.configure(batch_config, settings)
     logger.info(
         "ℹ️  Market data config: %s (concurrent=%d, pacing=%.1fs)",
         batch_config.description, batch_config.max_concurrent, batch_config.base_pacing_delay,
     )
+
+    # ── Performance-Optimized Logging (F-OPT-070) ──────────────
+    bulk_level = getattr(logging, settings.bulk_log_level.upper(), logging.INFO)
+    logging.getLogger("ib_insync").setLevel(bulk_level)
+    logger.info("ℹ️  Bulk logging level set to %s", settings.bulk_log_level)
 
     # ── Signal handling ────────────────────────────────────────
     loop = asyncio.get_running_loop()

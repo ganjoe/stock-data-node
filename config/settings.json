@@ -6,6 +6,12 @@
     "processing_threads": 4,
     "live_max_concurrent": 20,
     "live_pacing_delay": 0.1,
-    "delayed_max_concurrent": 1,
-    "delayed_pacing_delay": 3.0
+    "delayed_max_concurrent": 15,
+    "delayed_pacing_delay": 0.5,
+    "throttle_recovery_threshold": 5,
+    "throttle_min_concurrent": 1,
+    "request_debounce_seconds": 15.0,
+    "connection_watchdog_interval": 600.0,
+    "bulk_log_level": "INFO",
+    "historical_data_timeout": 3.0
 }

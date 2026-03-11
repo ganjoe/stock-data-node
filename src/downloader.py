@@ -29,6 +29,7 @@ from models import (
     IPriorityQueue,
     IRateLimiter,
     OHLCVBar,
+    RequestFingerprint,
     TickerStatus,
 )
 
@@ -106,6 +107,15 @@ class Downloader:
             request = self._queue.dequeue()
             if request is None:
                 await asyncio.sleep(1)
+                continue
+
+            # Connection Watchdog (F-OPT-050): check health before each request
+            try:
+                await self._gateway.ensure_connected()
+            except ConnectionError as exc:
+                logger.error("❌ Watchdog reconnect failed: %s — re-queuing %s", exc, request.ticker)
+                self._queue.enqueue(request)
+                await asyncio.sleep(5)
                 continue
 
             logger.info(
@@ -329,47 +339,6 @@ class Downloader:
         )
         # Update master watchlist after each successful/failed ticker (F-DAT-030)
         self._update_master_watchlist()
-        
-        # Trigger feature calculation after download batch (F-API-020)
-        # We trigger after each ticker, but the JobManager will ignore it if it's already running.
-        self._trigger_feature_calculation()
-
-    def _trigger_feature_calculation(self) -> None:
-        """
-        Triggers the feature calculation process via the JobManager.
-        F-API-020: Automatic start after download.
-        """
-        try:
-            from features.job_manager import JobManager
-            from features.config_parser import FeatureConfigParser, ProcessingContext
-            from features.calculator import TechnicalCalculator
-            from features.parquet_io import ParquetStorage
-            from features.processor import FeatureProcessor
-
-            job_manager = JobManager()
-            
-            def run_feature_pipeline():
-                paths = self._config.get_paths_config()
-                config_parser = FeatureConfigParser(str(Path(self._config.config_dir) / "features.json"))
-                features = config_parser.parse()
-                
-                ctx = ProcessingContext(
-                    thread_count=paths.processing_threads, 
-                    data_dir=paths.parquet_dir,
-                    timeframes=["1D"],
-                    features=features
-                )
-                
-                storage = ParquetStorage(ctx.data_dir)
-                calculator = TechnicalCalculator()
-                processor = FeatureProcessor(ctx, storage, calculator)
-                
-                tickers = storage.get_available_tickers()
-                processor.process_all_tickers(tickers)
-
-            job_manager.start_feature_calculation(run_feature_pipeline)
-        except Exception as e:
-            logger.error(f"Failed to auto-trigger feature calculation: {e}")
 
     def _update_master_watchlist(self) -> None:
         """
@@ -423,8 +392,11 @@ class Downloader:
         if start >= now:
             return []  # Already up to date
 
-        # Determine chunk size
+        # Determine chunk size, capped by max_chunk_size (F-OPT-040)
         chunk_size = dl_cfg.chunk_duration.get(timeframe, dl_cfg.chunk_duration.get("default", 2592000))
+        if dl_cfg.max_chunk_size:
+            max_size = dl_cfg.max_chunk_size.get(timeframe, dl_cfg.max_chunk_size.get("default", chunk_size))
+            chunk_size = min(chunk_size, max_size)
         chunks: list[DownloadChunk] = []
         chunk_start = start
 
@@ -457,6 +429,26 @@ class Downloader:
                 is_delta=False,
                 error="No contract available",
             )
+
+        # Request debounce (F-OPT-030): skip if identical request sent too recently
+        fingerprint = RequestFingerprint(
+            symbol=contract.symbol,
+            timeframe=chunk.timeframe,
+            start_ts=chunk.start_ts,
+            end_ts=chunk.end_ts,
+        )
+        if self._rate_limiter.check_debounce(fingerprint):
+            logger.debug(
+                "⏭️ Debounce: skipping duplicate request for %s/%s",
+                contract.symbol, chunk.timeframe,
+            )
+            return DownloadResult(
+                ticker=chunk.ticker,
+                timeframe=chunk.timeframe,
+                bars=[],
+                is_delta=False,
+            )
+
         try:
             bars = await self._gateway.request_historical_bars(
                 contract=contract,
@@ -464,6 +456,7 @@ class Downloader:
                 start_ts=chunk.start_ts,
                 end_ts=chunk.end_ts,
             )
+            self._rate_limiter.record_request(fingerprint)
             return DownloadResult(
                 ticker=chunk.ticker,
                 timeframe=chunk.timeframe,
@@ -471,6 +464,7 @@ class Downloader:
                 is_delta=True,
             )
         except Exception as exc:
+            self._rate_limiter.record_request(fingerprint)
             return DownloadResult(
                 ticker=chunk.ticker,
                 timeframe=chunk.timeframe,

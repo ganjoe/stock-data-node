@@ -267,8 +267,19 @@ class ConfigLoader(IConfigLoader):
             processing_threads=int(raw.get("processing_threads", 4)),
             live_max_concurrent=int(raw.get("live_max_concurrent", 20)),
             live_pacing_delay=float(raw.get("live_pacing_delay", 0.1)),
-            delayed_max_concurrent=int(raw.get("delayed_max_concurrent", 1)),
-            delayed_pacing_delay=float(raw.get("delayed_pacing_delay", 3.0)),
+            delayed_max_concurrent=int(raw.get("delayed_max_concurrent", 15)),
+            delayed_pacing_delay=float(raw.get("delayed_pacing_delay", 0.5)),
+            # F-OPT-020: Dynamic Semaphore Throttling
+            throttle_recovery_threshold=int(raw.get("throttle_recovery_threshold", 5)),
+            throttle_min_concurrent=int(raw.get("throttle_min_concurrent", 1)),
+            # F-OPT-030: Identical Request Debounce
+            request_debounce_seconds=float(raw.get("request_debounce_seconds", 15.0)),
+            # F-OPT-050: Idle Connection Watchdog
+            connection_watchdog_interval=float(raw.get("connection_watchdog_interval", 600.0)),
+            # F-OPT-070: Performance-Optimized Logging
+            bulk_log_level=str(raw.get("bulk_log_level", "INFO")),
+            # F-OPT-080: Configurable Request Timeout
+            historical_data_timeout=float(raw.get("historical_data_timeout", 30.0)),
         )
         self._file_mtimes[str(path)] = path.stat().st_mtime
         logger.debug("Loaded settings.json")
@@ -296,6 +307,7 @@ class ConfigLoader(IConfigLoader):
         self._downloader_config = DownloaderConfig(
             chunk_duration=raw.get("chunk_duration", {}),
             max_history_lookback=raw.get("max_history_lookback", {}),
+            max_chunk_size=raw.get("max_chunk_size", {}),
         )
         self._file_mtimes[str(path)] = path.stat().st_mtime
         logger.debug("Loaded downloader.json")
