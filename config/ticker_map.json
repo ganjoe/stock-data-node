@@ -41,6 +41,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "AACT.U": null,
   "AAL": {
     "symbol": "AAL",
     "exchange": "NASDAQ",
@@ -767,6 +768,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "AIIA.U": null,
   "AIMUF": {
     "symbol": "AIMUF",
     "exchange": "PINK",
@@ -1133,6 +1135,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "ALUB.U": null,
   "ALUS": {
     "symbol": "ALUB U",
     "exchange": "NYSE",
@@ -1721,6 +1724,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "ARCKU": null,
   "ARCO": {
     "symbol": "ARCO",
     "exchange": "NYSE",
@@ -1853,6 +1857,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "ARRWU": null,
   "ARRY": {
     "symbol": "ARRY",
     "exchange": "NASDAQ",
@@ -2033,6 +2038,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "ASZ.U": null,
   "ATAC": {
     "symbol": "ATAC.SPC",
     "exchange": "CORPACT",
@@ -2189,6 +2195,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "AUGX": null,
   "AUNA": {
     "symbol": "AUNA",
     "exchange": "NYSE",
@@ -2225,6 +2232,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "AVACU": null,
   "AVAH": {
     "symbol": "AVAH",
     "exchange": "NASDAQ",
@@ -2267,6 +2275,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "AVHIU": null,
   "AVIR": {
     "symbol": "AVIR",
     "exchange": "NASDAQ",
@@ -2381,6 +2390,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "AXH.U": null,
   "AXIN": {
     "symbol": "AXIN",
     "exchange": "NASDAQ",
@@ -2795,6 +2805,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "BCSS.U": null,
   "BDC": {
     "symbol": "BDCIU",
     "exchange": "NASDAQ",
@@ -2862,6 +2873,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "BEBE.U": null,
   "BEEP": {
     "symbol": "BEEP",
     "exchange": "NASDAQ",
@@ -2910,6 +2922,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "BF.A": null,
   "BF.B": {
     "symbol": "205",
     "exchange": "SEHK",
@@ -3054,6 +3067,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "BIII.U": null,
   "BILL": {
     "symbol": "TBIL",
     "exchange": "NASDAQ",
@@ -3330,6 +3344,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "BMAC.U": null,
   "BMBL": {
     "symbol": "BMBL",
     "exchange": "NASDAQ",
@@ -3534,6 +3549,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "BRD.U": null,
   "BRKA": {
     "symbol": "BRKA",
     "exchange": "MEXI",
@@ -3768,6 +3784,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "BWAQU": null,
   "BWB": {
     "symbol": "BWB",
     "exchange": "NASDAQ",
@@ -4884,6 +4901,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "CLBR.U": null,
   "CLBT": {
     "symbol": "CLBT",
     "exchange": "NASDAQ",
@@ -4920,6 +4938,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "CLII": null,
   "CLMB": {
     "symbol": "CLMB",
     "exchange": "NASDAQ",
@@ -5622,6 +5641,8 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "CRD.A": null,
+  "CRD.B": null,
   "CRDF": {
     "symbol": "CRDF",
     "exchange": "NASDAQ",
@@ -5640,6 +5661,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "CRECU": null,
   "CRGY": {
     "symbol": "CRGY",
     "exchange": "NYSE",
@@ -5652,6 +5674,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "CRHM": null,
   "CRI": {
     "symbol": "CRIS",
     "exchange": "NASDAQ",
@@ -6036,6 +6059,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "CVCY": null,
   "CVE": {
     "symbol": "CVE",
     "exchange": "NYSE",
@@ -6060,6 +6084,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "CVII.U": null,
   "CVLG": {
     "symbol": "CVLG",
     "exchange": "NYSE",
@@ -6132,6 +6157,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "CWEN.A": null,
   "CWH": {
     "symbol": "CWH",
     "exchange": "NYSE",
@@ -6715,6 +6741,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "DMYQ.U": null,
   "DNA": {
     "symbol": "SONM",
     "exchange": "NASDAQ",
@@ -6901,6 +6928,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "DSEY": null,
   "DSGN": {
     "symbol": "DSGN",
     "exchange": "NASDAQ",
@@ -7861,6 +7889,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "EVAC.U": null,
   "EVC": {
     "symbol": "EVCM",
     "exchange": "NASDAQ",
@@ -7879,6 +7908,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "EVE.U": null,
   "EVER": {
     "symbol": "EVER",
     "exchange": "NASDAQ",
@@ -8065,6 +8095,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "EXTN": null,
   "EXTR": {
     "symbol": "EXTR",
     "exchange": "NASDAQ",
@@ -8107,6 +8138,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "FACT.U": null,
   "FACTU": {
     "symbol": "FACTU",
     "exchange": "NASDAQ",
@@ -8257,6 +8289,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "FCRS.U": null,
   "FCX": {
     "symbol": "FCXG",
     "exchange": "NASDAQ",
@@ -8269,6 +8302,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "FDEF": null,
   "FDMT": {
     "symbol": "FDMT",
     "exchange": "NASDAQ",
@@ -8383,6 +8417,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "FFNW": null,
   "FFWM": {
     "symbol": "FFWM",
     "exchange": "NYSE",
@@ -8581,6 +8616,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "FLME.U": null,
   "FLNA": {
     "symbol": "FLNA",
     "exchange": "NASDAQ",
@@ -8827,6 +8863,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "FRBNU": null,
   "FRD": {
     "symbol": "FRD",
     "exchange": "NASDAQ",
@@ -9019,6 +9056,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "FTW.U": null,
   "FUBO": {
     "symbol": "FUBO",
     "exchange": "NYSE",
@@ -9157,6 +9195,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "GAMCU": null,
   "GANX": {
     "symbol": "GANX",
     "exchange": "NASDAQ",
@@ -9319,6 +9358,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "GEF-B": null,
   "GEHC": {
     "symbol": "GEHC",
     "exchange": "NASDAQ",
@@ -9463,6 +9503,8 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "GIA.U": null,
+  "GIAF": null,
   "GIB": {
     "symbol": "GIBO",
     "exchange": "NASDAQ",
@@ -9565,6 +9607,8 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "GLED.U": null,
+  "GLEO": null,
   "GLIBA": {
     "symbol": "GLIBA",
     "exchange": "NASDAQ",
@@ -9859,6 +9903,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "GRAF.U": null,
   "GRAL": {
     "symbol": "GRAL",
     "exchange": "NASDAQ",
@@ -10064,6 +10109,7 @@
     "sec_type": "STK"
   },
   "GTN-A": null,
+  "GTPBU": null,
   "GTX": {
     "symbol": "GTX",
     "exchange": "NASDAQ",
@@ -10406,6 +10452,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "HIIIU": null,
   "HIMS": {
     "symbol": "HIMZ",
     "exchange": "NASDAQ",
@@ -10520,6 +10567,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "HMST": null,
   "HNGE": {
     "symbol": "HNGE",
     "exchange": "NYSE",
@@ -10922,6 +10970,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "HYAC.U": null,
   "HYLN": {
     "symbol": "HYLN",
     "exchange": "AMEX",
@@ -11102,6 +11151,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "IEADDD": null,
   "IEAGU": {
     "symbol": "IEAGU",
     "exchange": "NASDAQ",
@@ -11174,6 +11224,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "IIII": null,
   "IIIN": {
     "symbol": "IIIN",
     "exchange": "NYSE",
@@ -11325,6 +11376,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "INAQU": null,
   "INBK": {
     "symbol": "INBK",
     "exchange": "NASDAQ",
@@ -11541,6 +11593,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "IOTS": null,
   "IOVA": {
     "symbol": "IOVA",
     "exchange": "NASDAQ",
@@ -11607,6 +11660,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "IPVA.U": null,
   "IQV": {
     "symbol": "IQV",
     "exchange": "NYSE",
@@ -11625,6 +11679,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "IRAB.U": null,
   "IRD": {
     "symbol": "IRD",
     "exchange": "NASDAQ",
@@ -11787,6 +11842,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "IVCPU": null,
   "IVCUF": {
     "symbol": "IVCUF",
     "exchange": "PINK",
@@ -11817,6 +11873,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "IXAQU": null,
   "J": {
     "symbol": "JEPQ",
     "exchange": "NASDAQ",
@@ -11835,6 +11892,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "JACS.U": null,
   "JAKK": {
     "symbol": "JAKK",
     "exchange": "NASDAQ",
@@ -11847,6 +11905,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "JATT.U": null,
   "JAZZ": {
     "symbol": "JAZZ",
     "exchange": "NASDAQ",
@@ -11937,6 +11996,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "JENA.U": null,
   "JFB": {
     "symbol": "JFB",
     "exchange": "NASDAQ",
@@ -11979,6 +12039,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "JMACU": null,
   "JMG": {
     "symbol": "JMG",
     "exchange": "AMEX",
@@ -12105,6 +12166,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "KCAC.U": null,
   "KCHV": {
     "symbol": "KCHV",
     "exchange": "NASDAQ",
@@ -12519,6 +12581,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "KRSP.U": null,
   "KRT": {
     "symbol": "KRT",
     "exchange": "NASDAQ",
@@ -12633,6 +12696,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "KYCHU": null,
   "KYIV": {
     "symbol": "KYIV",
     "exchange": "NASDAQ",
@@ -12843,6 +12907,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "LCW.U": null,
   "LDI": {
     "symbol": "LDI",
     "exchange": "NYSE",
@@ -12909,6 +12974,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "LEN.B": null,
   "LENZ": {
     "symbol": "LENZ",
     "exchange": "NASDAQ",
@@ -12939,6 +13005,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "LFLYD": null,
   "LFMD": {
     "symbol": "LFMD",
     "exchange": "NASDAQ",
@@ -12963,6 +13030,8 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "LGF.A": null,
+  "LGF.B": null,
   "LGIH": {
     "symbol": "LGIH",
     "exchange": "NASDAQ",
@@ -12999,6 +13068,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "LGV.U": null,
   "LH": {
     "symbol": "LH",
     "exchange": "NYSE",
@@ -13011,6 +13081,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "LIBYU": null,
   "LIF": {
     "symbol": "LIF",
     "exchange": "NASDAQ",
@@ -14265,6 +14336,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "MJCO": null,
   "MKC": {
     "symbol": "MKC",
     "exchange": "NYSE",
@@ -14481,6 +14553,8 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "MOG.A": null,
+  "MOG.B": null,
   "MOH": {
     "symbol": "MOH",
     "exchange": "NYSE",
@@ -14739,6 +14813,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "MTAL.U": null,
   "MTB": {
     "symbol": "MTB",
     "exchange": "NYSE",
@@ -14943,6 +15018,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "MZYX.U": null,
   "NABL": {
     "symbol": "NABL",
     "exchange": "NYSE",
@@ -15525,6 +15601,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "NPABU": null,
   "NPAC": {
     "symbol": "NPAC",
     "exchange": "NASDAQ",
@@ -15874,6 +15951,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "NWAX.U": null,
   "NWBI": {
     "symbol": "NWBI",
     "exchange": "NASDAQ",
@@ -16774,6 +16852,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "PAII.U": null,
   "PAL": {
     "symbol": "PAL",
     "exchange": "NASDAQ",
@@ -16954,6 +17033,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "PCPL": null,
   "PCRX": {
     "symbol": "PCRX",
     "exchange": "NASDAQ",
@@ -17140,6 +17220,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "PFDRU": null,
   "PFE": {
     "symbol": "PFE",
     "exchange": "NYSE",
@@ -17278,6 +17359,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "PICC.U": null,
   "PICS": {
     "symbol": "PICS",
     "exchange": "NASDAQ",
@@ -17596,6 +17678,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "PONOU": null,
   "POOL": {
     "symbol": "POOL",
     "exchange": "NASDAQ",
@@ -17716,6 +17799,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "PRBM.U": null,
   "PRCH": {
     "symbol": "PRCH",
     "exchange": "NASDAQ",
@@ -17740,6 +17824,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "PRFT": null,
   "PRG": {
     "symbol": "PRGS",
     "exchange": "NASDAQ",
@@ -18076,6 +18161,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "PWSC": null,
   "PXED": {
     "symbol": "PXED",
     "exchange": "NYSE",
@@ -18610,6 +18696,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "RFACU": null,
   "RFAI": {
     "symbol": "RFAI",
     "exchange": "NASDAQ",
@@ -18988,6 +19075,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "ROT.U": null,
   "RPAY": {
     "symbol": "RPAY",
     "exchange": "NASDAQ",
@@ -19174,6 +19262,8 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "RWGE": null,
+  "RWODU": null,
   "RWT": {
     "symbol": "RWT",
     "exchange": "NYSE",
@@ -19294,6 +19384,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "SAC.U": null,
   "SAFE": {
     "symbol": "SAFT",
     "exchange": "NASDAQ",
@@ -19397,6 +19488,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "SBBX": null,
   "SBC": {
     "symbol": "SBC",
     "exchange": "NASDAQ",
@@ -19463,12 +19555,14 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "SBXD.U": null,
   "SBXE": {
     "symbol": "SBXE",
     "exchange": "NYSE",
     "currency": "USD",
     "sec_type": "STK"
   },
+  "SBXE.U": null,
   "SCCO": {
     "symbol": "SCCO",
     "exchange": "NYSE",
@@ -20327,6 +20421,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "SNII.U": null,
   "SNOW": {
     "symbol": "LITM",
     "exchange": "NASDAQ",
@@ -20441,6 +20536,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "SOUL.U": null,
   "SOUN": {
     "symbol": "SOUN",
     "exchange": "NASDAQ",
@@ -21071,6 +21167,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "SWCH": null,
   "SWIM": {
     "symbol": "SWIM",
     "exchange": "NASDAQ",
@@ -21955,6 +22052,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "TRAD.U": null,
   "TRAK": {
     "symbol": "TRAK",
     "exchange": "NYSE",
@@ -22009,6 +22107,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "TRIL--D": null,
   "TRIN": {
     "symbol": "TRIN",
     "exchange": "NASDAQ",
@@ -22339,6 +22438,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "TWNI.U": null,
   "TWO": {
     "symbol": "TTWO",
     "exchange": "NASDAQ",
@@ -22886,6 +22986,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "VACI.U": null,
   "VAL": {
     "symbol": "VALU",
     "exchange": "NASDAQ",
@@ -23306,6 +23407,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "VSACU": null,
   "VSAT": {
     "symbol": "VSAT",
     "exchange": "NASDAQ",
@@ -23498,6 +23600,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "WARR.U": null,
   "WASH": {
     "symbol": "WASH",
     "exchange": "NASDAQ",
@@ -23894,6 +23997,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "WNNR.U": null,
   "WOLF": {
     "symbol": "WOLF",
     "exchange": "NYSE",
@@ -23918,6 +24022,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "WPAC.U": null,
   "WPC": {
     "symbol": "WPC",
     "exchange": "NYSE",
@@ -24008,6 +24113,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "WSO.B": null,
   "WSR": {
     "symbol": "WSR",
     "exchange": "NYSE",
@@ -24158,6 +24264,8 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "XFINU": null,
+  "XFLH.U": null,
   "XHR": {
     "symbol": "XHR",
     "exchange": "NYSE",
@@ -24302,6 +24410,7 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "YCY.U": null,
   "YDDL": {
     "symbol": "YDDL",
     "exchange": "NASDAQ",

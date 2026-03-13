@@ -47,10 +47,9 @@ class FeatureConfigParser:
         
         for feature_id, params in features.items():
             f_type_str = params.get("type", "UNKNOWN")
-            f_type: FeatureType = FeatureType.UNKNOWN
             try:
                 # Type safe conversion from string to enum
-                f_type = FeatureType(f_type_str)
+                f_type = FeatureType(f_type_str.upper())
             except ValueError:
                 f_type = FeatureType.UNKNOWN
                 
