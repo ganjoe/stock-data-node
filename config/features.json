@@ -115,6 +115,15 @@
                 "pane": "price",
                 "thickness": 2
             }
+        },
+        "min_criteria": {
+            "type": "bool",
+            "color": "white",
+            "style": "solid",
+            "pane": "indicator",
+            "chart_type": "line",
+            "thickness": 1,
+            "mode": "binary"
         }
     }
 }

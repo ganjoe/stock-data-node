@@ -200,11 +200,8 @@ class Downloader:
         )
 
         for i, chunk in enumerate(chunks):
-            # Preemption check (F-FNC-020): only WATCHER-priority can be preempted by API
-            if (
-                request.priority == DownloadPriority.WATCHER
-                and self._queue.has_higher_priority_waiting(request.priority)
-            ):
+            # Preemption check (F-FNC-020): any lower-priority task can be preempted by a higher-priority one
+            if self._queue.has_higher_priority_waiting(request.priority):
                 logger.info(
                     "⚡ Preempting %s/%s at chunk %d/%d — higher-priority request waiting",
                     request.ticker, request.timeframe, i + 1, len(chunks)

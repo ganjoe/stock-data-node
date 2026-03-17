@@ -94,7 +94,7 @@ def enqueue_staleness_sweep(
             req = DownloadRequest(
                 ticker=ticker,
                 timeframe=tf,
-                priority=DownloadPriority.WATCHER,
+                priority=DownloadPriority.STALENESS,
                 contract=contract,
             )
             queue.enqueue(req)

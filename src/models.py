@@ -28,6 +28,7 @@ class DownloadPriority(IntEnum):
     """Queue priority levels. Lower value = higher priority."""
     API = 1        # REST-API requests (highest)
     WATCHER = 2    # File-watcher requests
+    STALENESS = 3  # Background staleness sweeps (lowest)
 
 
 class TickerStatus(str, Enum):
