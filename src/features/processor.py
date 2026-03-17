@@ -1,7 +1,8 @@
 import logging
 import traceback
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from typing import List, Optional
+from typing import List, Optional, Dict
+import pandas as pd
 from dataclasses import dataclass
 
 from features.config_parser import FeatureConfig, ProcessingContext
@@ -20,6 +21,7 @@ class TickerProcessResult:
     success: bool
     data_points: int = 0
     error_message: Optional[str] = None
+    cross_sectional_data: Optional[Dict[str, pd.Series]] = None
 
 class FeatureProcessor:
     def __init__(self, context: ProcessingContext, storage: ParquetStorage, calculator: TechnicalCalculator):
@@ -75,7 +77,66 @@ class FeatureProcessor:
             logger.warning(f"   • Failed tickers    : {len(failed_results)}")
         logger.info("═══════════════════════════════════════════════════════════════")
                     
+        # --- PASS 2 & 3: Cross-Sectional Ranking ---
+        self._process_cross_sectional_features(results)
+        
         return results
+
+    def _process_cross_sectional_features(self, results: List[TickerProcessResult]) -> None:
+        """
+        Gathers all raw cross-sectional data extracted from the parallel phase,
+        computes percentiles centrally, and then injects them back into the parquet files.
+        """
+        # Dictionary structure: {timeframe: {feature_id_raw: {ticker: pd.Series}}}
+        cs_data_by_tf: Dict[str, Dict[str, Dict[str, pd.Series]]] = {}
+        
+        for r in results:
+            if r.success and r.cross_sectional_data:
+                tf = r.timeframe
+                if tf not in cs_data_by_tf:
+                    cs_data_by_tf[tf] = {}
+                
+                for col_name, series in r.cross_sectional_data.items():
+                    if col_name not in cs_data_by_tf[tf]:
+                        cs_data_by_tf[tf][col_name] = {}
+                    cs_data_by_tf[tf][col_name][r.ticker] = series
+        
+        for tf, features in cs_data_by_tf.items():
+            for feature_raw_col, ticker_series_dict in features.items():
+                # E.g., feature_raw_col = 'ibd_rs_raw', target_col = 'ibd_rs'
+                target_col = feature_raw_col.replace("_raw", "")
+                
+                # Build an aligned DataFrame where index is datetime/date, columns are TICKERS
+                central_df = pd.DataFrame(ticker_series_dict)
+                
+                # Cross-sectional ranking per row (date)
+                # Formula for percentile: (rank - 1) / (N - 1) * 98 + 1
+                # Where rank is 1 to N. This maps rank 1 to 1, and rank N to 99.
+                # If N=1, just assign 50.
+                
+                N = len(central_df.columns)
+                if N <= 1:
+                    rating_df = pd.DataFrame(50, index=central_df.index, columns=central_df.columns)
+                else:
+                    # rank(method='average') returns ranks 1 to N
+                    rank_df = central_df.rank(axis=1, na_option='bottom')
+                    rating_df = ((rank_df - 1) / (N - 1) * 98 + 1).round().clip(1, 99).astype("Int64")
+                
+                logger.info(f"⚙️  Injecting cross-sectional feature '{target_col}' into {len(central_df.columns)} tickers for timeframe {tf}...")
+                
+                # Quick pass to inject back into parquet
+                for ticker in central_df.columns:
+                    try:
+                        df = self.storage.load_ticker_data(ticker, f"{tf}_features")
+                        
+                        # rating_df[ticker] is aligned by timestamp index. 
+                        # We map these values back to the df based on its 'timestamp' column.
+                        ticker_ratings = rating_df[ticker].dropna()
+                        df[target_col] = df['timestamp'].map(ticker_ratings).astype("Int64")
+                        
+                        self.storage.save_ticker_features(ticker, tf, df)
+                    except Exception as e:
+                        logger.error(f"Failed to inject {target_col} for {ticker}: {e}")
 
     def _process_single_ticker(self, ticker: str) -> List[TickerProcessResult]:
         """The atomic unit of work executed by worker threads/processes."""
@@ -89,11 +150,22 @@ class FeatureProcessor:
                 # 2. Calculate Features
                 df_with_features = self.calculator.calculate_features(df, self.context.features)
                 
-                # 3. Save Data
+                # Extract cross-sectional data (columns ending with '_raw') BEFORE saving
+                cs_data = {}
+                raw_cols = [c for c in df_with_features.columns if c.endswith("_raw")]
+                for col in raw_cols:
+                    # Index the series by timestamp so cross-sectional alignment works properly across all tickers
+                    series = df_with_features[col].copy()
+                    if 'timestamp' in df_with_features.columns:
+                        series.index = df_with_features['timestamp']
+                    cs_data[col] = series
+                    df_with_features.drop(columns=[col], inplace=True)
+                
+                # 3. Save Data (without raw columns)
                 self.storage.save_ticker_features(ticker, tf, df_with_features)
                 
                 pts = len(df_with_features) if df_with_features is not None else 0
-                ticker_results.append(TickerProcessResult(ticker, tf, True, data_points=pts))
+                ticker_results.append(TickerProcessResult(ticker, tf, True, data_points=pts, cross_sectional_data=cs_data))
                 # Removed per-ticker logging to reduce noise
                 
             except Exception as e:

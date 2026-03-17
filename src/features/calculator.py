@@ -21,6 +21,8 @@ class TechnicalCalculator:
                 df = self._calc_bb(df, config)
             elif config.feature_type == FeatureType.STOCHASTIC:
                 df = self._calc_stoch(df, config)
+            elif config.feature_type == FeatureType.IBD_RS:
+                df = self._calc_ibd_rs_raw(df, config)
             else:
                 # F-PRC-047: Other features are stubs
                 df = self._calc_stubs(df, config)
@@ -107,4 +109,29 @@ class TechnicalCalculator:
         return df
         
     def _calc_stubs(self, df: pd.DataFrame, config: FeatureConfig) -> pd.DataFrame:
+        return df
+
+    def _calc_ibd_rs_raw(self, df: pd.DataFrame, config: FeatureConfig) -> pd.DataFrame:
+        """Calculates the raw ROC score for IBD RS rating."""
+        if len(df) < 1:
+            df[f"{config.feature_id}_raw"] = 0.0
+            return df
+            
+        # P_Heute = Aktie.Schlusskurs[Heute]
+        # P_N = Aktie.Schlusskurs[Vor_N_Tagen]
+        # ROC_N = ((P_Heute - P_N) / P_N) * 100
+        # pandas pct_change(periods=N) * 100 computes exactly this.
+        
+        roc_63 = df['close'].pct_change(periods=63) * 100
+        roc_126 = df['close'].pct_change(periods=126) * 100
+        roc_189 = df['close'].pct_change(periods=189) * 100
+        roc_252 = df['close'].pct_change(periods=252) * 100
+        
+        # Raw_Score = (2 * ROC_63) + ROC_126 + ROC_189 + ROC_252
+        # Use fillna(0) so early records (e.g. day 100) at least get a partial score
+        # rather than being entirely NaN, although typically require 252 days for full accuracy.
+        raw_score = (2 * roc_63.fillna(0)) + roc_126.fillna(0) + roc_189.fillna(0) + roc_252.fillna(0)
+        
+        # We append '_raw' because processor.py will pull this out and compute the cross-sectional rank
+        df[f"{config.feature_id}_raw"] = raw_score.values
         return df

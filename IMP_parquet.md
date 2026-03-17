@@ -50,6 +50,16 @@ To prevent ingestion of poisoned data on startup or after power failure:
   - Verifies file readability via `pq.read_table(filepath)` for every `.parquet` file.
   - Automatically deletes structurally corrupted Parquet files, extracts the ticker name, and appends it to `<watch_dir>/_recovery.txt` to trigger an automatic re-download.
 
+# Output: Calculated feature data
+
+`/data/parquet/<ticker>/<timeframe>_features.parquet`
+
+- Created by `ParquetStorage.save_ticker_features`.
+- Overwrites the entire file.
+- Contains identical length and index as the raw data `timeframe.parquet`, with extra columns added.
+- Example columns added: `ma_sma_10`, `ma_sma_50`, `ma_ema_20`.
+- **Note on Cross-Sectional Features:** Features like `ibd_rs` are initially returned as in-memory pandas Series (`_raw`) over IPC without saving. The main thread aggregates them, ranks them to `1-99`, and then injects the final `ibd_rs` column sequentially via a quick secondary read/write pass across the affected tickers.
+
 ## 6. Incremental Coverage Checking
 Scans Parquet structure to ensure data is filled:
 - **Logic (`check_year_coverage`):** Iterates Parquet rows, buckets by year, and ensures a threshold of >200 bars per year is passed. The current year is routinely skipped and checked.

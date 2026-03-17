@@ -9,7 +9,7 @@ Features are defined in `features.json` and parsed into functional components, s
 - **Logic:**
   - Extracts `type`, `window`, and `period` for calculations.
   - Skips visual properties like `color`, `style`, `pane`, `chart_type`.
-  - Maps to `FeatureType` enum (`SMA`, `EMA`, `BOLLINGER_BAND`, `STOCHASTIC`). Unrecognized parameters go into `additional_params`.
+  - Maps to `FeatureType` enum (`SMA`, `EMA`, `BOLLINGER_BAND`, `STOCHASTIC`, `IBD_RS`). Unrecognized parameters go into `additional_params`.
 
 ## 2. Technical Calculator & Backfilling
 Applies technical indicators to the DataFrame loaded from parquet using pandas rolling logic.
@@ -47,3 +47,13 @@ Feature calculation is manually triggered via the API.
 - **Logic:**
   - Triggers the background task using `job_manager.start_feature_calculation(...)`.
   - Returns `202 Accepted` if started, `409 Conflict` if currently running.
+
+## 7. Cross-Sectional Feature Processing
+Certain features (like IBD RS Rating) require data across all tickers on a given date to compute percentiles/ranks.
+- **Target File:** `src/features/processor.py` & `src/features/calculator.py`
+- **Logic:**
+  - **Pass 1:** Per-ticker calculation in `calculator.py` appends temporary hidden columns ending in `_raw` (e.g. `ibd_rs_raw`).
+  - **Memory Transfer:** `processor.py` extracts these `_raw` columns into individual Pandas Series and returns them via `TickerProcessResult.cross_sectional_data` over IPC. It explicitly drops the `_raw` columns before saving the feature parquet to disk.
+  - **Pass 2:** Central `processor` main loop (`_process_cross_sectional_features`) aggregates all raw series into a single matrix.
+  - **Ranking:** Computes the cross-sectional percentile via `.rank(pct=True, axis=1)`.
+  - **Pass 3:** Injects the resulting bounded integer rank (1-99) back into the saved parquet feature files.

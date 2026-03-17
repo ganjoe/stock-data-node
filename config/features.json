@@ -124,6 +124,14 @@
             "chart_type": "line",
             "thickness": 1,
             "mode": "binary"
+        },
+        "ibd_rs_rating": {
+            "type": "IBD_RS",
+            "color": "blue",
+            "style": "solid",
+            "pane": "indicator",
+            "chart_type": "line",
+            "thickness": 2
         }
     }
 }
