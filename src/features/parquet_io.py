@@ -9,16 +9,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Canonical schema — all parquet files must conform to this
-OHLCV_SCHEMA = pa.schema([
-    ("timestamp", pa.int64()),
-    ("open",      pa.float64()),
-    ("high",      pa.float64()),
-    ("low",       pa.float64()),
-    ("close",     pa.float64()),
-    ("volume",    pa.float64()),
-])
-
 
 class ParquetStorage:
     def __init__(self, base_data_dir: str):
@@ -32,15 +22,23 @@ class ParquetStorage:
             raise FileNotFoundError(f"Source file not found: {file_path}")
             
         table = pq.read_table(str(file_path))
-        return table.to_pandas()
+        df = table.to_pandas()
+        # Reset index to ensure timestamp is a column (not an index)
+        # Rename 'index' or 'level_0' to 'timestamp' if present
+        if 'index' in df.columns:
+            df = df.rename(columns={'index': 'timestamp'})
+        elif 'level_0' in df.columns:
+            df = df.rename(columns={'level_0': 'timestamp'})
+        return df.reset_index(drop=True)
 
     def save_ticker_features(self, ticker: str, timeframe: str, df: pd.DataFrame) -> None:
         """Saves to /data/parquet/<ticker>/<timeframe>_features.parquet (atomic write via temp file + rename)"""
         output_dir = self.base_dir / ticker
         output_dir.mkdir(parents=True, exist_ok=True)
         
-        # Convert DataFrame to PyArrow Table
-        table = pa.Table.from_pandas(df, schema=OHLCV_SCHEMA, preserve_index=False)
+        # Convert DataFrame to PyArrow Table without schema restriction
+        # This allows feature columns to be included
+        table = pa.Table.from_pandas(df, preserve_index=False)
         
         output_path = output_dir / f"{timeframe}_features.parquet"
         tmp_path = output_path.with_suffix(".parquet.tmp")

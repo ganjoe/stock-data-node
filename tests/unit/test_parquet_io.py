@@ -2,45 +2,95 @@ import pytest
 import pandas as pd
 from unittest.mock import patch, MagicMock
 from pathlib import Path
-from src.features.parquet_io import ParquetStorage
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+# Import from src/features/ (not src.features/)
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+from features.parquet_io import ParquetStorage
+
 
 @pytest.fixture
 def storage(tmp_path):
     return ParquetStorage(str(tmp_path))
 
-def test_load_ticker_data_exists(storage):
-    # Setup - mock read_parquet
-    test_df = pd.DataFrame({'a': [1]})
+
+def test_load_ticker_data_exists(storage, tmp_path):
+    """Test loading existing parquet file."""
+    ticker_dir = tmp_path / "AAPL"
+    ticker_dir.mkdir()
     
-    with patch("pandas.read_parquet", return_value=test_df):
-        with patch("pathlib.Path.exists", return_value=True):
-            df = storage.load_ticker_data("AAPL", "1D")
-            assert df.equals(test_df)
+    # Create a real parquet file using pyarrow with OHLCV schema
+    df = pd.DataFrame({
+        'timestamp': [1704067200, 1704153600, 1704240000],
+        'open': [100.0, 110.0, 120.0],
+        'high': [105.0, 115.0, 125.0],
+        'low': [95.0, 105.0, 115.0],
+        'close': [100.0, 110.0, 120.0],
+        'volume': [1000, 1100, 1200]
+    })
+    table = pa.Table.from_pandas(df)
+    pq.write_table(table, str(ticker_dir / "1D.parquet"))
+    
+    result_df = storage.load_ticker_data("AAPL", "1D")
+    assert len(result_df) == 3
+    assert "close" in result_df.columns
+
 
 def test_load_ticker_data_missing(storage):
-    with patch("pathlib.Path.exists", return_value=False):
-        with pytest.raises(FileNotFoundError):
-            storage.load_ticker_data("MISSING", "1D")
+    """Test loading non-existent parquet file."""
+    with pytest.raises(FileNotFoundError):
+        storage.load_ticker_data("MISSING", "1D")
+
 
 def test_save_ticker_features(storage, tmp_path):
-    df = pd.DataFrame({'f': [1.0]})
-    # We don't really need to mock to_parquet if we use tmp_path and check files
-    # but mock is faster and cleaner for isolation.
+    """Test saving features to parquet with atomic write."""
+    df = pd.DataFrame({
+        'timestamp': [1704067200, 1704153600],
+        'open': [100.0, 110.0],
+        'high': [105.0, 115.0],
+        'low': [95.0, 105.0],
+        'close': [100.0, 110.0],
+        'volume': [1000, 1100]
+    })
     
-    ticker_dir = Path(storage.base_dir) / "AAPL"
+    storage.save_ticker_features("AAPL", "1D", df)
     
-    with patch("pandas.DataFrame.to_parquet") as mock_to:
-        storage.save_ticker_features("AAPL", "1D", df)
-        
-        # Check that directory was created (via real filesystem since we used tmp_path or mock it too)
-        assert ticker_dir.exists()
-        mock_to.assert_called_once()
-        
+    # Verify file was created
+    output_path = Path(storage.base_dir) / "AAPL" / "1D_features.parquet"
+    assert output_path.exists()
+    
+    # Verify content using pyarrow
+    table = pq.read_table(str(output_path))
+    result_df = table.to_pandas()
+    assert len(result_df) == 2
+    assert "close" in result_df.columns
+
+
+def test_save_ticker_features_creates_dir(storage, tmp_path):
+    """Test that save creates ticker directory if it doesn't exist."""
+    df = pd.DataFrame({
+        'timestamp': [1704067200],
+        'open': [100.0],
+        'high': [105.0],
+        'low': [95.0],
+        'close': [100.0],
+        'volume': [1000]
+    })
+    
+    storage.save_ticker_features("NEW_TICKER", "1D", df)
+    
+    ticker_dir = Path(storage.base_dir) / "NEW_TICKER"
+    assert ticker_dir.exists()
+
+
 def test_get_available_tickers(storage, tmp_path):
+    """Test getting list of available tickers."""
     # Create some dummy directories
     (tmp_path / "AAPL").mkdir()
     (tmp_path / "TSLA").mkdir()
-    (tmp_path / "other.txt").touch() # Should be ignored (is file)
+    (tmp_path / "other.txt").touch()  # Should be ignored (is file)
     
     tickers = storage.get_available_tickers()
     assert "AAPL" in tickers

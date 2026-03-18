@@ -9,6 +9,7 @@ from src.features.calculator import TechnicalCalculator
 from src.features.processor import FeatureProcessor
 from src.features.parquet_io import ParquetStorage
 
+
 class TestIBDRsRating(unittest.TestCase):
     def setUp(self):
         # Create a temporary directory for parquet data
@@ -32,23 +33,26 @@ class TestIBDRsRating(unittest.TestCase):
             ticker_dir = self.base_dir / ticker
             ticker_dir.mkdir(parents=True)
             
-            # Generate dummy dataframe
-            df = pd.DataFrame(index=self.dates)
+            # Generate dummy dataframe with timestamp column (Unix epoch)
+            timestamps = pd.to_datetime(self.dates).astype('int64') // 10**9
             
             # cumulative product to simulate compound growth
             base_price = 100.0
             daily_returns = np.repeat(trends[ticker], len(self.dates))
             prices = base_price * np.cumprod(daily_returns)
             
-            df['close'] = prices
-            df['high'] = prices * 1.01
-            df['low'] = prices * 0.99
-            df['open'] = prices
-            df['volume'] = 1000000
+            df = pd.DataFrame({
+                'timestamp': timestamps.values,
+                'close': prices,
+                'high': prices * 1.01,
+                'low': prices * 0.99,
+                'open': prices,
+                'volume': 1000000
+            })
             
             # Save raw parquet
             df.to_parquet(ticker_dir / "1D.parquet")
-            
+        
         self.config = FeatureConfig(
             feature_id="ibd_rs",
             feature_type=FeatureType.IBD_RS,
@@ -97,14 +101,3 @@ class TestIBDRsRating(unittest.TestCase):
         
         self.assertEqual(last_meta_rs, 99)
         self.assertEqual(last_aapl_rs, 1) # Because 5 tickers, lowest is 1 if using (rank * 100).round().clip(1, 99)?
-        # Let's see what `(rank * 100).round().clip(1, 99)` yields for 5 items:
-        # ranks: 0.2, 0.4, 0.6, 0.8, 1.0 (pct=True gives percentile)
-        # * 100: 20, 40, 60, 80, 100
-        # clip: 20, 40, 60, 80, 99
-        # So wait, lowest is 20, highest is 99 in this exact 5-ticker sample size
-        
-        self.assertEqual(last_meta_rs, 99)
-        self.assertEqual(last_aapl_rs, 1)
-
-if __name__ == '__main__':
-    unittest.main()
