@@ -62,7 +62,7 @@ Certain features (like IBD RS Rating) require data across all tickers on a given
 Evaluates stock against Stan Weinstein/Mark Minervini trend template criteria using 8 conditions.
 - **Target File:** `src/features/calculator.py` (`_calc_minervini_trend`) & `config/features.json`
 - **Logic:**
-  - Calculates three output columns: `minervini_score` (0-8 points), `minervini_percent` (0-100%), `minervini_trend_template` (boolean).
+  - Calculates two output columns: `minervini_score` (0-8 points), `minervini_trend_template` (boolean).
   - **Condition 1:** Current price > SMA_150 AND price > SMA_200
   - **Condition 2:** SMA_150 > SMA_200 (bullish MA alignment)
   - **Condition 3:** SMA_200 trending upward (> value from 20 trading days ago)
