@@ -16,7 +16,6 @@ from fastapi import FastAPI, HTTPException, status, BackgroundTasks
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from features.job_manager import JobManager
 from features.config_parser import FeatureConfigParser, ProcessingContext, FeatureType
 from features.calculator import TechnicalCalculator
 from features.parquet_io import ParquetStorage
@@ -196,50 +195,9 @@ def create_api(
             content={"status": "accepted", "tickers_evaluated": count}
         )
 
-    @app.post("/features/calculate")
-    async def trigger_feature_calculation(background_tasks: BackgroundTasks) -> JSONResponse:
-        """
-        Manually triggers the feature calculation process.
-        Returns 202 if started, 409 if already running. (F-API-010, F-SYS-030)
-        """
-        job_manager = JobManager()
-        
-        def run_feature_pipeline():
-            # Use settings from config file
-            settings = config.get_settings_config()
-            paths = config.get_paths_config()
-            config_parser = FeatureConfigParser(str(Path(config.config_dir) / "features.json"))
-            features = config_parser.parse()
-            
-            ctx = ProcessingContext(
-                thread_count=settings.processing_threads, 
-                data_dir=paths.parquet_dir,
-                timeframes=["1D"], # Default focus
-                features=features
-            )
-            
-            storage = ParquetStorage(ctx.data_dir)
-            calculator = TechnicalCalculator()
-            processor = FeatureProcessor(ctx, storage, calculator)
-            
-            tickers = storage.get_available_tickers()
-            logger.info("Starting feature calculation for %d tickers", len(tickers))
-            results = processor.process_all_tickers(tickers)
-            success_count = sum(1 for r in results if r.success)
-            logger.info("Feature calculation finished: %d/%d successful", success_count, len(results))
-
-        success = job_manager.start_feature_calculation(run_feature_pipeline)
-        
-        if success:
-            return JSONResponse(
-                status_code=status.HTTP_202_ACCEPTED,
-                content={"status": "Job started in background"}
-            )
-        else:
-            return JSONResponse(
-                status_code=status.HTTP_409_CONFLICT,
-                content={"status": "Ignored", "detail": "A feature calculation process is already running."}
-            )
+    # Feature routes are now in src/features/routes_features.py
+    from features.routes_features import register_feature_routes
+    register_feature_routes(app)
 
     @app.get("/status", response_model=StatusResponse)
     async def get_status() -> StatusResponse:
