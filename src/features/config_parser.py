@@ -10,6 +10,7 @@ class FeatureType(str, Enum):
     BOLLINGER_BAND = "BOLLINGER_BAND"
     STOCHASTIC = "STOCHASTIC"
     IBD_RS = "IBD_RS"
+    MINERVINI_TREND = "MINERVINI_TREND"
     UNKNOWN = "UNKNOWN"
 
 @dataclass

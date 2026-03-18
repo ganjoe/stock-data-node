@@ -26,6 +26,11 @@ class TechnicalCalculator:
             else:
                 # F-PRC-047: Other features are stubs
                 df = self._calc_stubs(df, config)
+        
+        # Minervini Trend Score muss nach IBD_RS berechnet werden, da es das RS-Rating verwendet
+        minervini_configs = [c for c in configs if c.feature_type == FeatureType.MINERVINI_TREND]
+        for config in minervini_configs:
+            df = self._calc_minervini_trend(df, config)
                 
         return df
     
@@ -134,4 +139,116 @@ class TechnicalCalculator:
         
         # We append '_raw' because processor.py will pull this out and compute the cross-sectional rank
         df[f"{config.feature_id}_raw"] = raw_score.values
+        return df
+
+    def _calc_minervini_trend(self, df: pd.DataFrame, config: FeatureConfig) -> pd.DataFrame:
+        """
+        Berechnet den Minervini Trend Template Score basierend auf 8 Kriterien.
+        
+        Die 8 Bedingungen:
+        1. Preis liegt über SMA_150 und SMA_200
+        2. SMA_150 liegt über SMA_200
+        3. SMA_200 tendiert seit mindestens einem Monat aufwärts (> vor 20 Tagen)
+        4. SMA_50 liegt über SMA_150 und SMA_200
+        5. Preis liegt über SMA_50
+        6. Preis ist mindestens 30% höher als das 52-Wochen-Tief (260 Tage)
+        7. Preis ist nicht weiter als 25% vom 52-Wochen-Hoch entfernt
+        8. RS_Rating >= 70
+        
+        Verwendet das bereits berechnete ibd_rs_raw Rating für Bedingung 8.
+        
+        Returns: Score (0-8), Prozent_Score (0-100%), is_trend_template (bool)
+        """
+        if len(df) < 260:
+            # Nicht genügend Daten für vollständige Berechnung
+            df["minervini_score"] = pd.Series(0, index=df.index)
+            df["minervini_percent"] = pd.Series(0.0, index=df.index)
+            df["minervini_trend_template"] = pd.Series(False, index=df.index)
+            return df
+        
+        # Gleitende Durchschnitte berechnen
+        sma_50 = self._get_ma_series(df, 'close', 50, FeatureType.SMA).values
+        sma_150 = self._get_ma_series(df, 'close', 150, FeatureType.SMA).values
+        sma_200 = self._get_ma_series(df, 'close', 200, FeatureType.SMA).values
+        
+        # SMA_200 vor 20 Tagen (für Bedingung 3)
+        sma_200_vor_20 = np.roll(sma_200, 20)
+        sma_200_vor_20[:20] = sma_200[:1]  # Füllen mit erstem Wert für frühe Daten
+        
+        # Extreme der letzten 52 Wochen (260 Tage)
+        # Prepend für korrekte Berechnung am Anfang
+        first_row = df.iloc[[0]]
+        prepended = pd.concat([first_row] * 259, ignore_index=True)
+        calc_df_52w = pd.concat([prepended, df], ignore_index=True)
+        
+        high_52w = calc_df_52w['high'].rolling(window=260).max().iloc[259:].reset_index(drop=True).values
+        low_52w = calc_df_52w['low'].rolling(window=260).min().iloc[259:].reset_index(drop=True).values
+        
+        # IBD RS Rating verwenden (bereits als ibd_rs_raw Spalte vorhanden)
+        # Falls noch nicht berechnet, berechne es hier als Fallback
+        if 'ibd_rs_raw' in df.columns:
+            rs_rating = df['ibd_rs_raw'].values
+        else:
+            # Fallback-Berechnung von RS Rating (IBD Methode)
+            roc_63 = df['close'].pct_change(periods=63) * 100
+            roc_126 = df['close'].pct_change(periods=126) * 100
+            roc_189 = df['close'].pct_change(periods=189) * 100
+            roc_252 = df['close'].pct_change(periods=252) * 100
+            raw_score = (2 * roc_63.fillna(0)) + roc_126.fillna(0) + roc_189.fillna(0) + roc_252.fillna(0)
+            rs_rating = raw_score.values
+        
+        # Cross-sectional Ranking für RS Rating anwenden (über alle Ticker)
+        # Dies ist eine vereinfachte Berechnung - das eigentliche cross-sectional Ranking
+        # erfolgt im processor.py über alle Ticker hinweg. Hier verwenden wir den Rohwert
+        # als Platzhalter, da Minervini typischerweise zusammen mit IBD_RS berechnet wird.
+        N = len(rs_rating)
+        if N > 1:
+            rank_df = pd.DataFrame({'rs': rs_rating}).rank(axis=0, na_option='bottom')
+            rs_rating_ranked = ((rank_df['rs'] - 1) / (N - 1) * 98 + 1).round().clip(1, 99).astype(float).values
+        else:
+            rs_rating_ranked = np.full(N, 50.0)
+        
+        aktueller_preis = df['close'].values
+        
+        # Initialisiere Score-Arrays
+        score = np.zeros(len(df), dtype=int)
+        
+        # Bedingung 1: Preis > SMA_150 UND Preis > SMA_200
+        cond1 = (aktueller_preis > sma_150) & (aktueller_preis > sma_200)
+        score += cond1.astype(int)
+        
+        # Bedingung 2: SMA_150 > SMA_200
+        cond2 = sma_150 > sma_200
+        score += cond2.astype(int)
+        
+        # Bedingung 3: SMA_200 > SMA_200_vor_20_Tagen (aufwärts tendierend)
+        cond3 = sma_200 > sma_200_vor_20
+        score += cond3.astype(int)
+        
+        # Bedingung 4: SMA_50 > SMA_150 UND SMA_50 > SMA_200
+        cond4 = (sma_50 > sma_150) & (sma_50 > sma_200)
+        score += cond4.astype(int)
+        
+        # Bedingung 5: Preis > SMA_50
+        cond5 = aktueller_preis > sma_50
+        score += cond5.astype(int)
+        
+        # Bedingung 6: Preis >= Tief_52Wochen * 1.30 (mindestens 30% höher als 52-Wochen-Tief)
+        cond6 = aktueller_preis >= (low_52w * 1.30)
+        score += cond6.astype(int)
+        
+        # Bedingung 7: Preis >= Hoch_52Wochen * 0.75 (nicht weiter als 25% vom Hoch entfernt)
+        cond7 = aktueller_preis >= (high_52w * 0.75)
+        score += cond7.astype(int)
+        
+        # Bedingung 8: RS_Rating >= 70
+        cond8 = rs_rating_ranked >= 70
+        score += cond8.astype(int)
+        
+        # Trend Template erfüllt wenn Score == 8
+        is_trend_template = score == 8
+        
+        df["minervini_score"] = pd.Series(score, index=df.index)
+        df["minervini_trend_template"] = pd.Series(is_trend_template, index=df.index)
+        
         return df

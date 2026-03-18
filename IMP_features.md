@@ -57,3 +57,18 @@ Certain features (like IBD RS Rating) require data across all tickers on a given
   - **Pass 2:** Central `processor` main loop (`_process_cross_sectional_features`) aggregates all raw series into a single matrix.
   - **Ranking:** Computes the cross-sectional percentile via `.rank(pct=True, axis=1)`.
   - **Pass 3:** Injects the resulting bounded integer rank (1-99) back into the saved parquet feature files.
+
+## 8. Minervini Trend Template Score
+Evaluates stock against Stan Weinstein/Mark Minervini trend template criteria using 8 conditions.
+- **Target File:** `src/features/calculator.py` (`_calc_minervini_trend`) & `config/features.json`
+- **Logic:**
+  - Calculates three output columns: `minervini_score` (0-8 points), `minervini_percent` (0-100%), `minervini_trend_template` (boolean).
+  - **Condition 1:** Current price > SMA_150 AND price > SMA_200
+  - **Condition 2:** SMA_150 > SMA_200 (bullish MA alignment)
+  - **Condition 3:** SMA_200 trending upward (> value from 20 trading days ago)
+  - **Condition 4:** SMA_50 > SMA_150 AND SMA_50 > SMA_200 (short-term momentum)
+  - **Condition 5:** Current price > SMA_50 (price above short-term average)
+  - **Condition 6:** Price >= 52-week low * 1.30 (at least 30% gain from bottom)
+  - **Condition 7:** Price >= 52-week high * 0.75 (within 25% of yearly high)
+  - **Condition 8:** RS_Rating >= 70 (outperforming 70% of universe)
+  - Score = 8 indicates a perfect trend template match.

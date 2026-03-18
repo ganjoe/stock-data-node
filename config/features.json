@@ -132,6 +132,17 @@
             "pane": "indicator",
             "chart_type": "line",
             "thickness": 2
+        },
+        "minervini_trend_score": {
+            "type": "MINERVINI_TREND",
+            "color": "cyan",
+            "style": "solid",
+            "pane": "indicator",
+            "chart_type": "line",
+            "thickness": 2,
+            "mode": "binary",
+            "threshold": 70,
+            "description": "Minervini Trend Template Score - evaluates 8 trend conditions"
         }
     }
 }
