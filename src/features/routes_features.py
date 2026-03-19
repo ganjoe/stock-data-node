@@ -1,7 +1,8 @@
 """
 routes_features.py — Feature Calculation API Routes (F-API-010, F-SYS-030)
 """
-from fastapi import FastAPI, BackgroundTasks, JSONResponse, status
+from fastapi import FastAPI, BackgroundTasks, status
+from fastapi.responses import JSONResponse
 
 from features.job_manager import JobManager
 from features.config_parser import FeatureConfigParser, ProcessingContext, FeatureType

@@ -116,33 +116,16 @@
                 "thickness": 2
             }
         },
-        "min_criteria": {
-            "type": "bool",
-            "color": "white",
-            "style": "solid",
-            "pane": "indicator",
-            "chart_type": "line",
-            "thickness": 1,
-            "mode": "binary"
-        },
-        "ibd_rs_rating": {
-            "type": "IBD_RS",
-            "color": "blue",
-            "style": "solid",
-            "pane": "indicator",
-            "chart_type": "line",
-            "thickness": 2
-        },
-        "minervini_trend_score": {
-            "type": "MINERVINI_TREND",
-            "color": "cyan",
-            "style": "solid",
-            "pane": "indicator",
-            "chart_type": "line",
-            "thickness": 2,
-            "mode": "binary",
-            "threshold": 70,
-            "description": "Minervini Trend Template Score - evaluates 8 trend conditions"
-        }
+        "ibd_rs": {
+        "window": 1,
+        "period": "D",
+        "type": "IBD_RS",
+        "color": "cyan",
+        "mode": "absolute",
+        "style": "solid",
+        "pane": "abs",
+        "chart_type": "line",
+        "thickness": 1
+}
     }
 }
