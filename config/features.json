@@ -127,7 +127,7 @@
             "chart_type": "line",
             "thickness": 1
         },
-        "minervini": {
+        "minervini_score": {
             "window": 1,
             "period": "D",
             "type": "MINERVINI_TREND",
@@ -136,21 +136,17 @@
             "style": "solid",
             "pane": "abs",
             "chart_type": "line",
-            "thickness": 1,
-            "score": {
-                "color": "lime",
-                "style": "solid",
-                "pane": "abs",
-                "chart_type": "line",
-                "thickness": 2
-            },
-            "trend_template": {
-                "color": "gold",
-                "style": "solid",
-                "pane": "abs",
-                "chart_type": "line",
-                "thickness": 1
-            }
+            "thickness": 2
+        },
+        "minervini_trend_template": {
+            "window": 1,
+            "period": "D",
+            "color": "gold",
+            "mode": "absolute",
+            "style": "solid",
+            "pane": "abs",
+            "chart_type": "line",
+            "thickness": 1
         }
     }
 }
