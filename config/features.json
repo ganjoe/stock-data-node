@@ -117,15 +117,40 @@
             }
         },
         "ibd_rs": {
-        "window": 1,
-        "period": "D",
-        "type": "IBD_RS",
-        "color": "cyan",
-        "mode": "absolute",
-        "style": "solid",
-        "pane": "abs",
-        "chart_type": "line",
-        "thickness": 1
-}
+            "window": 1,
+            "period": "D",
+            "type": "IBD_RS",
+            "color": "cyan",
+            "mode": "absolute",
+            "style": "solid",
+            "pane": "abs",
+            "chart_type": "line",
+            "thickness": 1
+        },
+        "minervini": {
+            "window": 1,
+            "period": "D",
+            "type": "MINERVINI_TREND",
+            "color": "lime",
+            "mode": "absolute",
+            "style": "solid",
+            "pane": "abs",
+            "chart_type": "line",
+            "thickness": 1,
+            "score": {
+                "color": "lime",
+                "style": "solid",
+                "pane": "abs",
+                "chart_type": "line",
+                "thickness": 2
+            },
+            "trend_template": {
+                "color": "gold",
+                "style": "solid",
+                "pane": "abs",
+                "chart_type": "line",
+                "thickness": 1
+            }
+        }
     }
 }
