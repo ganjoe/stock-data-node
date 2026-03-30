@@ -3,7 +3,7 @@
     "gateway_connect_timeout": 20,
     "market_data_type_wait": 0.5,
     "market_data_snapshot_wait": 2.0,
-    "processing_threads": 4,
+    "processing_threads": 16,
     "live_max_concurrent": 20,
     "live_pacing_delay": 0.1,
     "delayed_max_concurrent": 15,
