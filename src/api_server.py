@@ -16,10 +16,7 @@ from fastapi import FastAPI, HTTPException, status, BackgroundTasks
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from features.config_parser import FeatureConfigParser, ProcessingContext, FeatureType
-from features.calculator import TechnicalCalculator
-from features.parquet_io import ParquetStorage
-from features.processor import FeatureProcessor
+
 
 from models import (
     DownloadPriority,
@@ -195,9 +192,6 @@ def create_api(
             content={"status": "accepted", "tickers_evaluated": count}
         )
 
-    # Feature routes are now in src/features/routes_features.py
-    from features.routes_features import register_feature_routes
-    register_feature_routes(app)
 
     @app.get("/status", response_model=StatusResponse)
     async def get_status() -> StatusResponse:

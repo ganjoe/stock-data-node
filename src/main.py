@@ -12,6 +12,8 @@ import signal
 import sys
 import os
 import re
+import urllib.request
+import urllib.error
 from pathlib import Path
 
 import uvicorn
@@ -129,60 +131,39 @@ def configure_logging(log_dir: str) -> None:
 logger = logging.getLogger(__name__)
 
 
-def _run_startup_features(config: ConfigLoader) -> None:
+# ─── Feature Service Integration ─────────────────────────────────
+
+FEATURE_SERVICE_URL = os.environ.get(
+    "FEATURE_SERVICE_URL", "http://localhost:8003/features/calculate"
+)
+FEATURE_SERVICE_TIMEOUT = int(os.environ.get("FEATURE_SERVICE_TIMEOUT", "600"))
+
+
+def _trigger_feature_service(label: str) -> bool:
     """
-    F-LC-020: Run a synchronous feature calculation pass on all existing 
-    data before the main async loops (REST API, Download queue) start.
-    This guarantees that features are up to date before any Staleness-cron can fire.
+    Triggers feature calculation via HTTP POST to the stock-data-features service.
+    Returns True on success, False on error (non-blocking to the download pipeline).
     """
     logger.info("═══════════════════════════════════════════════════════════════")
-    logger.info("  Starting Initial Feature Calculation (F-LC-020)")
+    logger.info("  %s — Triggering Feature Service", label)
     logger.info("═══════════════════════════════════════════════════════════════")
-    
     try:
-        from features.config_parser import FeatureConfigParser, ProcessingContext
-        from features.calculator import TechnicalCalculator
-        from features.parquet_io import ParquetStorage
-        from features.processor import FeatureProcessor
-
-        paths = config.get_paths_config()
-        settings_cfg = config.get_settings_config()
-        
-        config_parser = FeatureConfigParser(str(Path(config.config_dir) / "features.json"))
-        features_list = config_parser.parse()
-        
-        if not features_list:
-            logger.info("ℹ️  No features defined in features.json. Skipping.")
-            return
-
-        ctx = ProcessingContext(
-            thread_count=settings_cfg.processing_threads,  # Fixed: processing_threads comes from settings, not paths
-            data_dir=paths.parquet_dir,
-            timeframes=["1D"],
-            features=features_list
-        )
-        
-        storage = ParquetStorage(ctx.data_dir)
-        tickers = storage.get_available_tickers()
-        
-        if not tickers:
-            logger.info("ℹ️  No data available yet. Skipping feature calculation.")
-            return
-            
-        logger.info("▶️  Calculating features for %d ticker(s) with %d thread(s)...", 
-                    len(tickers), ctx.thread_count)
-                    
-        calculator = TechnicalCalculator()
-        processor = FeatureProcessor(ctx, storage, calculator)
-        
-        # This is a blocking call, which is correct here (startup phase).
-        results = processor.process_all_tickers(tickers)
-        success_count = sum(1 for r in results if r)
-        
-        logger.info("✅ Initial feature calculation finished: %d/%d successful", success_count, len(tickers))
-
+        req = urllib.request.Request(FEATURE_SERVICE_URL, method="POST")
+        with urllib.request.urlopen(req, timeout=FEATURE_SERVICE_TIMEOUT) as resp:
+            status_code = resp.getcode()
+            body = resp.read().decode("utf-8")
+            if status_code in (200, 202):
+                logger.info("✅ Feature service accepted: %s", body)
+                return True
+            else:
+                logger.warning("⚠️  Feature service responded %d: %s", status_code, body)
+                return False
+    except urllib.error.URLError as exc:
+        logger.error("❌ Could not reach feature service at %s: %s — continuing anyway", FEATURE_SERVICE_URL, exc)
+        return False
     except Exception as exc:
-        logger.error("❌ Failed to run initial feature calculation: %s", exc, exc_info=True)
+        logger.error("❌ Feature service error: %s — continuing anyway", exc)
+        return False
 
 
 async def main() -> None:
@@ -229,8 +210,8 @@ async def main() -> None:
     checker.run_all_checks()
 
     # ── Initial Feature Calculation (F-LC-020) ───────────────
-    # Run synchronously *before* API or Downloader starts.
-    _run_startup_features(config)
+    # Trigger feature service *before* API or Downloader starts.
+    _trigger_feature_service("Initial Feature Calculation (F-LC-020)")
 
     # ── Initial Staleness Sweep ──────────────────────────────
     from api_server import enqueue_staleness_sweep
@@ -240,12 +221,9 @@ async def main() -> None:
     enqueue_staleness_sweep(watcher, config, resolver, queue)
 
     # ── Cycle-Complete Callback (F-LC-011, F-LC-012) ─────────
-    # After every download cycle: recalculate features, then restart downloads.
+    # After every download cycle: trigger feature service, then restart downloads.
     async def _on_download_cycle_complete() -> None:
-        logger.info("═══════════════════════════════════════════════════════════════")
-        logger.info("  Post-Cycle Feature Calculation (F-LC-011)")
-        logger.info("═══════════════════════════════════════════════════════════════")
-        _run_startup_features(config)
+        _trigger_feature_service("Post-Cycle Feature Calculation (F-LC-011)")
 
         logger.info("═══════════════════════════════════════════════════════════════")
         logger.info("  Restarting Download Cycle — Staleness Sweep (F-LC-012)")
