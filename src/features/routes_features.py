@@ -22,11 +22,14 @@ def register_feature_routes(app: FastAPI) -> None:
     
     logger = logging.getLogger(__name__)
     
+    from fastapi.responses import StreamingResponse
+    
     @app.post("/features/calculate")
-    async def trigger_feature_calculation(background_tasks: BackgroundTasks) -> JSONResponse:
+    async def trigger_feature_calculation(background_tasks: BackgroundTasks, stream: bool = False):
         """
         Manually triggers the feature calculation process.
         Returns 202 if started, 409 if already running. (F-API-010, F-SYS-030)
+        If stream=True, returns a StreamingResponse with real-time logs.
         """
         job_manager = JobManager()
         
@@ -38,7 +41,7 @@ def register_feature_routes(app: FastAPI) -> None:
             from config_loader import ConfigLoader
             
             # Determine config path
-            base_dir = Path(__file__).parent.parent
+            base_dir = Path(__file__).parent.parent.parent
             config_dir = str(base_dir / "config")
             
             config = ConfigLoader(config_dir=config_dir, parquet_dir="")
@@ -67,12 +70,21 @@ def register_feature_routes(app: FastAPI) -> None:
 
         from features.processor import FeatureProcessor
         
+        if stream:
+            return StreamingResponse(
+                job_manager.stream_feature_calculation(run_feature_pipeline),
+                media_type="text/plain"
+            )
+        
         success = job_manager.start_feature_calculation(run_feature_pipeline)
         
         if success:
             return JSONResponse(
                 status_code=status.HTTP_202_ACCEPTED,
-                content={"status": "Job started in background"}
+                content={
+                    "status": "Job started in background",
+                    "hint": "Use ?stream=true to see real-time log output in terminal (e.g. curl -N ...?stream=true)"
+                }
             )
         else:
             return JSONResponse(

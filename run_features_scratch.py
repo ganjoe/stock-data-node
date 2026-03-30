@@ -1,11 +1,16 @@
-import logging
-import time
+import sys
 from pathlib import Path
 
-from src.features.config_parser import FeatureConfigParser, ProcessingContext
-from src.features.calculator import TechnicalCalculator
-from src.features.processor import FeatureProcessor
-from src.features.parquet_io import ParquetStorage
+# Add src to sys.path to allow imports from within src
+sys.path.append(str(Path.cwd() / "src"))
+
+import logging
+import time
+
+from features.config_parser import FeatureConfigParser, ProcessingContext
+from features.calculator import TechnicalCalculator
+from features.processor import FeatureProcessor
+from features.parquet_io import ParquetStorage
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 

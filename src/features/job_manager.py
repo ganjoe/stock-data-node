@@ -1,8 +1,19 @@
 import threading
 import logging
-from typing import Callable
+import queue
+from typing import Callable, Generator
 
 logger = logging.getLogger(__name__)
+
+class QueueHandler(logging.Handler):
+    """Logs to a queue so we can stream them to an API response."""
+    def __init__(self, log_queue: queue.Queue):
+        super().__init__()
+        self.log_queue = log_queue
+
+    def emit(self, record):
+        msg = self.format(record)
+        self.log_queue.put(msg)
 
 class JobManager:
     """
@@ -42,6 +53,50 @@ class JobManager:
         
         logger.info("Feature calculation job started in background.")
         return True
+
+    def stream_feature_calculation(self, run_func: Callable, *args, **kwargs) -> Generator[str, None, None]:
+        """
+        Runs the feature calculation and yields log lines in real-time.
+        Requires the job not to be running.
+        """
+        with self._internal_lock:
+            if self._is_running:
+                yield "Error: A feature calculation process is already running.\n"
+                return
+            self._is_running = True
+
+        log_queue = queue.Queue()
+        handler = QueueHandler(log_queue)
+        handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        
+        # Attach to the processor's logger
+        target_logger = logging.getLogger('features.processor')
+        target_logger.addHandler(handler)
+        
+        # Shared stop event for the generator loop
+        done = threading.Event()
+
+        def run_and_signal():
+            try:
+                run_func(*args, **kwargs)
+            except Exception as e:
+                log_queue.put(f"ERROR: {e}")
+            finally:
+                done.set()
+                target_logger.removeHandler(handler)
+                with self._internal_lock:
+                    self._is_running = False
+
+        thread = threading.Thread(target=run_and_signal)
+        thread.start()
+
+        # Yield from queue until done
+        while not done.is_set() or not log_queue.empty():
+            try:
+                msg = log_queue.get(timeout=0.1)
+                yield msg + "\n"
+            except queue.Empty:
+                continue
 
     def _run_wrapper(self, run_func, args, kwargs):
         try:

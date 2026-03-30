@@ -66,21 +66,22 @@
             "chart_type": "line",
             "thickness": 1
         },
-        "stoch_14_3": {
-            "window": 14,
+        "stock_10_1": {
+            "window": 10,
             "period": "D",
+            "type": "STOCHASTIC",
             "color": "red",
             "style": "solid",
-            "pane": "price",
+            "pane": "pct",
             "chart_type": "line",
             "thickness": 1,
-            "stoch_smooth": {
-                "window": 3,
+            "d": {
+                "window": 1,
                 "period": "D",
                 "type": "SMA",
-                "color": "orange",
+                "color": "green",
                 "style": "solid",
-                "pane": "price",
+                "pane": "pct",
                 "chart_type": "line",
                 "thickness": 2
             }
@@ -89,23 +90,23 @@
             "window": 20,
             "period": "D",
             "type": "BOLLINGER_BAND",
-            "color": "red",
+            "color": "white",
             "style": "solid",
             "pane": "price",
             "chart_type": "line",
             "thickness": 2,
             "upper": {
-                "color": "red",
+                "color": "white",
                 "style": "solid",
                 "thickness": 2
             },
             "lower": {
-                "color": "red",
+                "color": "white",
                 "style": "solid",
                 "thickness": 2
             },
-            "average": {
-                "color": "blue",
+            "avg": {
+                "color": "yellow",
                 "style": "dashed",
                 "thickness": 2
             },
@@ -123,7 +124,7 @@
             "color": "cyan",
             "mode": "absolute",
             "style": "solid",
-            "pane": "abs",
+            "pane": "pct_abs",
             "chart_type": "line",
             "thickness": 1
         },

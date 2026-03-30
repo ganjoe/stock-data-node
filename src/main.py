@@ -239,21 +239,45 @@ async def main() -> None:
     logger.info("═══════════════════════════════════════════════════════════════")
     enqueue_staleness_sweep(watcher, config, resolver, queue)
 
+    # ── Cycle-Complete Callback (F-LC-011, F-LC-012) ─────────
+    # After every download cycle: recalculate features, then restart downloads.
+    async def _on_download_cycle_complete() -> None:
+        logger.info("═══════════════════════════════════════════════════════════════")
+        logger.info("  Post-Cycle Feature Calculation (F-LC-011)")
+        logger.info("═══════════════════════════════════════════════════════════════")
+        _run_startup_features(config)
+
+        logger.info("═══════════════════════════════════════════════════════════════")
+        logger.info("  Restarting Download Cycle — Staleness Sweep (F-LC-012)")
+        logger.info("═══════════════════════════════════════════════════════════════")
+        watcher.scan_once()
+        enqueue_staleness_sweep(watcher, config, resolver, queue)
+
+    downloader.set_on_cycle_complete(_on_download_cycle_complete)
+
     # ── Connect to gateway (F-CON-010, F-SYS-030) ─────────────
+    connected = False
     try:
         await gateway.connect()
-    except ConnectionError as exc:
-        logger.critical("Cannot connect to IB Gateway: %s", exc)
-        sys.exit(1)
+        connected = True
+        logger.info("✅ Connected to IB Gateway.")
+    except Exception as exc:
+        logger.warning("⚠️  Cannot connect to IB Gateway: %s. Continuing in API-only mode.", exc)
 
     # ── Detect market data type (F-CON-020, F-IMP-010/020) ────────
-    batch_config = await gateway.detect_market_data_type()
     settings = config.get_settings_config()
-    rate_limiter.configure(batch_config, settings)
-    logger.info(
-        "ℹ️  Market data config: %s (concurrent=%d, pacing=%.1fs)",
-        batch_config.description, batch_config.max_concurrent, batch_config.base_pacing_delay,
-    )
+    if connected:
+        try:
+            batch_config = await gateway.detect_market_data_type()
+            rate_limiter.configure(batch_config, settings)
+            logger.info(
+                "ℹ️  Market data config: %s (concurrent=%d, pacing=%.1fs)",
+                batch_config.description, batch_config.max_concurrent, batch_config.base_pacing_delay,
+            )
+        except Exception as exc:
+            logger.error("❌ Failed to detect market data type: %s", exc)
+    else:
+        logger.info("ℹ️  Skipping market data type detection (no gateway connection).")
 
     # ── Performance-Optimized Logging (F-OPT-070) ──────────────
     bulk_level = getattr(logging, settings.bulk_log_level.upper(), logging.INFO)

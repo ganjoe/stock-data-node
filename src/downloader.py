@@ -12,7 +12,7 @@ import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Coroutine, Optional
 
 from models import (
     DownloadChunk,
@@ -96,6 +96,12 @@ class Downloader:
         self._failed_store = failed_store
         self._running = False
         self._watchlist_dirty = False
+        self._processed_count = 0
+        self._on_cycle_complete: Optional[Callable[[], Coroutine]] = None
+
+    def set_on_cycle_complete(self, callback: Callable[[], Coroutine]) -> None:
+        """Register an async callback invoked when a download cycle completes (queue drained)."""
+        self._on_cycle_complete = callback
 
     async def run_loop(self) -> None:
         """Main processing loop. Runs until stopped."""
@@ -110,6 +116,17 @@ class Downloader:
                 if self._watchlist_dirty:
                     self._update_master_watchlist()
                     self._watchlist_dirty = False
+                # F-LC-011/F-LC-012: Cycle complete detection
+                if self._processed_count > 0 and self._on_cycle_complete:
+                    logger.info("═══════════════════════════════════════════════════════════════")
+                    logger.info("  Download Cycle Complete — %d request(s) processed", self._processed_count)
+                    logger.info("═══════════════════════════════════════════════════════════════")
+                    self._processed_count = 0
+                    try:
+                        await self._on_cycle_complete()
+                    except Exception as exc:
+                        logger.error("❌ Cycle-complete callback failed: %s", exc, exc_info=True)
+                    continue  # Re-check queue immediately (callback may have enqueued new items)
                 await asyncio.sleep(1)
                 continue
 
@@ -130,7 +147,9 @@ class Downloader:
             try:
                 await self._process_request(request)
                 self._watchlist_dirty = True
+                self._processed_count += 1
             except Exception as exc:
+                self._processed_count += 1
                 logger.error(
                     "❌ Unexpected error processing %s/%s: %s",
                     request.ticker, request.timeframe, exc, exc_info=True

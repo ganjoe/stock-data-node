@@ -86,14 +86,19 @@ class TechnicalCalculator:
         df[f"{config.feature_id}_lower"] = (avg_line - (std_dev * 2)).values
         
         # Bandwidth: (Upper - Lower) / Average
-        df[f"{config.feature_id}_bandwidth"] = ((df[f"{config.feature_id}_upper"] - df[f"{config.feature_id}_lower"]) / df[f"{config.feature_id}_avg"]).fillna(0)
+        # F-FEA-040: Protection against division by zero (P=0)
+        avg_vals = df[f"{config.feature_id}_avg"].values
+        safe_avg = np.where(avg_vals == 0, np.nan, avg_vals)
+        
+        df[f"{config.feature_id}_bandwidth"] = ((df[f"{config.feature_id}_upper"].values - df[f"{config.feature_id}_lower"].values) / safe_avg)
+        df[f"{config.feature_id}_bandwidth"] = df[f"{config.feature_id}_bandwidth"].fillna(0)
         
         return df
 
     def _calc_stoch(self, df: pd.DataFrame, config: FeatureConfig) -> pd.DataFrame:
         """Calculates Stochastic %K and %D."""
         window = config.window or 14
-        smooth_conf = config.additional_params.get("stoch_smooth", {})
+        smooth_conf = config.additional_params.get("d", {})
         smooth_window = smooth_conf.get("window", 3)
         smooth_type_str = smooth_conf.get("type", "SMA").upper()
         smooth_type = FeatureType.EMA if smooth_type_str == "EMA" else FeatureType.SMA
@@ -132,10 +137,14 @@ class TechnicalCalculator:
         roc_189 = df['close'].pct_change(periods=189) * 100
         roc_252 = df['close'].pct_change(periods=252) * 100
         
-        # Raw_Score = (2 * ROC_63) + ROC_126 + ROC_189 + ROC_252
-        # Use fillna(0) so early records (e.g. day 100) at least get a partial score
-        # rather than being entirely NaN, although typically require 252 days for full accuracy.
-        raw_score = (2 * roc_63.fillna(0)) + roc_126.fillna(0) + roc_189.fillna(0) + roc_252.fillna(0)
+        # Use fillna(0) and replace inf (from zero prices) with 0.0
+        # F-FEA-050: Robustness against P=0
+        roc_63 = roc_63.replace([np.inf, -np.inf], np.nan).fillna(0)
+        roc_126 = roc_126.fillna(0).replace([np.inf, -np.inf], 0)
+        roc_189 = roc_189.fillna(0).replace([np.inf, -np.inf], 0)
+        roc_252 = roc_252.fillna(0).replace([np.inf, -np.inf], 0)
+        
+        raw_score = (2 * roc_63) + roc_126 + roc_189 + roc_252
         
         # We append '_raw' because processor.py will pull this out and compute the cross-sectional rank
         df[f"{config.feature_id}_raw"] = raw_score.values
@@ -194,7 +203,14 @@ class TechnicalCalculator:
             roc_126 = df['close'].pct_change(periods=126) * 100
             roc_189 = df['close'].pct_change(periods=189) * 100
             roc_252 = df['close'].pct_change(periods=252) * 100
-            raw_score = (2 * roc_63.fillna(0)) + roc_126.fillna(0) + roc_189.fillna(0) + roc_252.fillna(0)
+            
+            # Robustness against inf values
+            roc_63 = roc_63.replace([np.inf, -np.inf], np.nan).fillna(0)
+            roc_126 = roc_126.replace([np.inf, -np.inf], np.nan).fillna(0)
+            roc_189 = roc_189.replace([np.inf, -np.inf], np.nan).fillna(0)
+            roc_252 = roc_252.replace([np.inf, -np.inf], np.nan).fillna(0)
+            
+            raw_score = (2 * roc_63) + roc_126 + roc_189 + roc_252
             rs_rating = raw_score.values
         
         # Cross-sectional Ranking für RS Rating anwenden (über alle Ticker)
