@@ -38,6 +38,21 @@ class ParquetWriter(IParquetWriter):
     def _get_parquet_path(self, ticker: str, timeframe: str) -> Path:
         return self._parquet_dir / ticker / f"{timeframe}.parquet"
 
+    def read_first_timestamp(self, ticker: str, timeframe: str) -> Optional[int]:
+        """Returns the first (oldest) timestamp in the parquet file, or None."""
+        path = self._get_parquet_path(ticker, timeframe)
+        if not path.exists():
+            return None
+        try:
+            table = pq.read_table(str(path), columns=["timestamp"])
+            if table.num_rows == 0:
+                return None
+            timestamps = table.column("timestamp").to_pylist()
+            return int(min(timestamps))
+        except Exception as exc:
+            logger.error("Cannot read first timestamp for %s/%s: %s", ticker, timeframe, exc)
+            return None
+
     def read_last_timestamp(self, ticker: str, timeframe: str) -> Optional[int]:
         """Returns the last (most recent) timestamp in the parquet file, or None."""
         path = self._get_parquet_path(ticker, timeframe)

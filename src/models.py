@@ -377,6 +377,11 @@ class IParquetWriter(ABC):
     """Atomic parquet write operations. (F-DAT-010/020)"""
 
     @abstractmethod
+    def read_first_timestamp(self, ticker: str, timeframe: str) -> Optional[int]:
+        """Returns first timestamp in existing parquet, or None."""
+        ...
+
+    @abstractmethod
     def read_last_timestamp(self, ticker: str, timeframe: str) -> Optional[int]:
         """Returns last timestamp in existing parquet, or None. (F-FNC-030)"""
         ...

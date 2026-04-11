@@ -194,19 +194,21 @@ class Downloader:
                 request.status = TickerStatus.FAILED
                 return
 
-        # Delta detection (F-FNC-030)
+        # Delta & Backfill detection (F-FNC-030)
+        first_ts = self._writer.read_first_timestamp(request.ticker, request.timeframe)
         last_ts = self._writer.read_last_timestamp(request.ticker, request.timeframe)
-        if last_ts:
+        if last_ts and first_ts:
             logger.info(
-                "ℹ️  Delta download for %s/%s (appending from %s)",
+                "ℹ️  Delta/Backfill download for %s/%s (existing data from %s to %s)",
                 request.ticker, request.timeframe,
-                datetime.fromtimestamp(last_ts, tz=timezone.utc).strftime("%d.%m.%Y %H:%M:%S")
+                datetime.fromtimestamp(first_ts, tz=timezone.utc).strftime("%d.%m.%Y"),
+                datetime.fromtimestamp(last_ts, tz=timezone.utc).strftime("%d.%m.%Y")
             )
         else:
             logger.info("ℹ️  Full download for %s/%s (no existing data)", request.ticker, request.timeframe)
 
         chunks: list[DownloadChunk] = self._calculate_chunks(
-            last_ts=last_ts, timeframe=request.timeframe, exchange=request.contract.exchange
+            first_ts=first_ts, last_ts=last_ts, timeframe=request.timeframe, exchange=request.contract.exchange
         )
         if not chunks:
             logger.info("✅ No chunks to download for %s/%s — already up to date.", request.ticker, request.timeframe)
@@ -402,11 +404,11 @@ class Downloader:
             pass
 
     def _calculate_chunks(
-        self, last_ts: Optional[int], timeframe: str, exchange: str
+        self, first_ts: Optional[int], last_ts: Optional[int], timeframe: str, exchange: str
     ) -> list[DownloadChunk]:
         """
         Splits the time range [start, now] into chunks.
-        If last_ts is provided, downloads only from last_ts+1 (delta).
+        Calculates both forward (delta) chunks and backward (backfill) chunks.
         Chunks are returned in descending order (newest first) for faster
         access to current data. (F-IMP-100)
         """
@@ -429,45 +431,49 @@ class Downloader:
         
         # Determine lookback
         lookback = dl_cfg.max_history_lookback.get(timeframe, 86400 * 365)
-
-        if last_ts is not None:
-            start = last_ts + 1
-            # If our last timestamp is already starting on or after our effective_now
-            # (e.g. 00:00:00 of today, while effective_now is 23:59:59 of yesterday)
-            # then we shouldn't download anything.
-            if timeframe == "1D":
-                from datetime import datetime as dt, timezone as tz
-                last_dt = dt.fromtimestamp(last_ts, tz=tz.utc)
-                if last_dt.date() >= latest_day:
-                    return []
-        else:
-            start = effective_now - lookback
-
-        if start >= effective_now:
-            return []  # Already up to date
+        ideal_start = effective_now - lookback
 
         # Determine chunk size, capped by max_chunk_size (F-OPT-040)
         chunk_size = dl_cfg.chunk_duration.get(timeframe, dl_cfg.chunk_duration.get("default", 2592000))
         if dl_cfg.max_chunk_size:
             max_size = dl_cfg.max_chunk_size.get(timeframe, dl_cfg.max_chunk_size.get("default", chunk_size))
             chunk_size = min(chunk_size, max_size)
+
+        def _build_chunks(start_t: int, end_t: int) -> list[DownloadChunk]:
+            res: list[DownloadChunk] = []
+            c_start = start_t
+            while c_start < end_t:
+                c_end = min(c_start + chunk_size, end_t)
+                is_final = (c_end >= effective_now)
+                res.append(DownloadChunk(
+                    ticker="",  # filled by caller
+                    timeframe=timeframe,
+                    start_ts=c_start,
+                    end_ts=c_end,
+                    is_final=is_final,
+                ))
+                c_start = c_end + 1
+            res.reverse()  # Descending order: newest chunks first
+            return res
+
         chunks: list[DownloadChunk] = []
-        chunk_start = start
 
-        while chunk_start < effective_now:
-            chunk_end = min(chunk_start + chunk_size, effective_now)
-            is_final = (chunk_end >= effective_now)
-            chunks.append(DownloadChunk(
-                ticker="",  # filled by caller
-                timeframe=timeframe,
-                start_ts=chunk_start,
-                end_ts=chunk_end,
-                is_final=is_final,
-            ))
-            chunk_start = chunk_end + 1
+        # 1. Forward chunks (delta)
+        forward_start = ideal_start
+        if last_ts is not None:
+            forward_start = last_ts + 1
+            # If our last timestamp is already starting on or after our effective_now
+            if timeframe == "1D":
+                from datetime import datetime as dt, timezone as tz
+                last_dt = dt.fromtimestamp(last_ts, tz=tz.utc)
+                if last_dt.date() >= latest_day:
+                    forward_start = effective_now  # Skip forward fetching
+        
+        chunks.extend(_build_chunks(forward_start, effective_now))
 
-        # Descending order: newest chunks first (F-IMP-100)
-        chunks.reverse()
+        # 2. Backward chunks (backfill)
+        if first_ts is not None and ideal_start < first_ts:
+            chunks.extend(_build_chunks(ideal_start, first_ts - 1))
 
         return chunks
 
