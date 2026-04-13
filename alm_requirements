@@ -55,3 +55,11 @@ F-LC-011,Lifecycle,Post-Cycle Feature Trigger,"Nach Abschluss eines kompletten D
 F-LC-012,Lifecycle,Continuous Download Loop,"Nach Abschluss der Post-Cycle Feature-Berechnung muss das System automatisch einen neuen Download-Zyklus starten (FileWatcher Scan + Staleness Sweep), sodass ein Endlos-Loop entsteht: Download → Features → Download → Features → ...",-
 F-LC-020,Lifecycle,Startup Feature Trigger,"Das System muss beim Anwendungsstart vor dem Beginn automatischer Downloads (Staleness / File-Watcher) einmalig einen HTTP POST an den Feature-Service (stock-data-features) senden. Bei Unerreichbarkeit wird fortgefahren.",main.py
 F-IMP-110,Data,Strict Complete Bars Only,"Das System darf bei historischen Downloads (egal ob 1D, 1h, etc.) niemals offene bzw. noch nicht abgeschlossene Kerzen anfordern und speichern. Es dürfen nur vollendete Perioden importiert werden (z.B. bei 1D max bis zum Ende des letzten vollständigen Handelstages).",-
+F-SCN-010,API,Scanner POST Endpoint,Das System muss einen REST API Endpoint (POST) bereitstellen um einen Scanvorgang synchron für einen bestimmten Scannertyp zu starten.,-
+F-SCN-020,API,Scanner Parameters,Der API Endpoint muss Parameter (z.B. Schwellenwerte wie x) im JSON-Format entgegennehmen und an die Scanner-Logik übergeben.,-
+F-SCN-030,System,Erweiterbare Scanner-Logik,Die Scanner-Architektur muss modular aufgebaut sein um verschiedene Scannertypen unabhängig voneinander implementieren zu können.,-
+F-SCN-040,Data,Parquet Feature Source,Scanner müssen die im data/parquet/ Verzeichnis liegenden Dateien und die darin enthaltenen Feature-Spalten als Datenbasis nutzen.,-
+F-SCN-050,UX,Watchlist File Export,Das Ergebnis eines Scans muss im Verzeichnis data/watchlists/ als <scannername>.txt gespeichert werden. Bestehende Dateien werden überschrieben.,-
+F-SCN-060,UX,Line-Separated Format,Die generierte Watchlist-Datei muss die Ticker-Namen strikt durch Zeilenumbrüche (Enter) getrennt enthalten.,-
+F-SCN-070,Scanner,IBD RS-Rating Scanner,Ein Scanner ibd_rs muss implementiert werden der alle Ticker extrahiert deren rs-rating den Parameter x übersteigt.,-
+F-SCN-080,System,Atomic Scanner Export,Der Export der Scanner-Watchlist-Datei muss atomar erfolgen (Write-to-Temp + Rename) um Konflikte mit parallelen Lesezugriffen zu vermeiden.,-
