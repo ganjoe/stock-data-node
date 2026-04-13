@@ -345,14 +345,24 @@ class Downloader:
                         break
 
                     elif category == ErrorCategory.TIMEOUT:
-                        logger.error(
-                            "❌ TIMEOUT error for %s/%s: %s — skipping remaining chunks for this ticker",
-                            request.ticker, request.timeframe, result.error
+                        # TIMEOUT is treated as transient (gateway overloaded, not a permanent error).
+                        # Retry once after a short pause before giving up on this ticker.
+                        logger.warning(
+                            "⏱️ TIMEOUT for %s/%s chunk %d — retrying once after pause...",
+                            request.ticker, request.timeframe, chunk_index,
                         )
-                        chunk_fail += 1
-                        request.status = TickerStatus.FAILED
-                        abort = True
-                        break
+                        await asyncio.sleep(5.0)
+                        retry = await self._download_chunk_with_limit(batch[i_in_batch], request.contract)
+                        if retry.error:
+                            logger.error(
+                                "❌ TIMEOUT retry also failed for %s/%s: %s — skipping ticker",
+                                request.ticker, request.timeframe, retry.error,
+                            )
+                            chunk_fail += 1
+                            request.status = TickerStatus.FAILED
+                            abort = True
+                            break
+                        result = retry
 
                     else:
                         logger.error(
