@@ -1,0 +1,2012 @@
+[
+  {
+    "ticker": "DCUE",
+    "reason": "Unmapped & Auto-discovery failed",
+    "timestamp": "2026-03-18T22:40:18.647656+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BXRXQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:42:30.690704+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "TOTAR",
+    "reason": "Unmapped & Auto-discovery failed",
+    "timestamp": "2026-03-18T22:43:13.426113+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "IVCBF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:43:13.536961+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "GDSTU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:43:49.029596+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AIIA.RT",
+    "reason": "Unmapped & Auto-discovery failed",
+    "timestamp": "2026-03-18T22:44:16.829444+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "FEAC.U",
+    "reason": "Unmapped & Auto-discovery failed",
+    "timestamp": "2026-03-18T22:45:46.027386+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SCPX",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:46:14.681270+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "EFTR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:47:03.673492+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "HAIUF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:47:27.702790+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "VIVE",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:47:34.266221+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "PIKM",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:47:52.667334+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "LMPX",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:49:10.325650+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ALUR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:49:33.789837+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AOGO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:49:40.297420+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ATACU",
+    "reason": "Unmapped & Auto-discovery failed",
+    "timestamp": "2026-03-18T22:50:07.160234+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "LSBCF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:50:30.557979+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "NNAGU",
+    "reason": "Unmapped & Auto-discovery failed",
+    "timestamp": "2026-03-18T22:51:07.130623+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "NKGN",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:51:16.370044+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ENFY",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:51:20.504450+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CYAN",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:52:00.693314+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "VRPX",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:52:13.819730+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "PSFE.U",
+    "reason": "Unmapped & Auto-discovery failed",
+    "timestamp": "2026-03-18T22:53:34.181482+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ILMNV",
+    "reason": "Unmapped & Auto-discovery failed",
+    "timestamp": "2026-03-18T22:53:42.556684+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BYNO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:53:43.686159+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AVANU",
+    "reason": "Unmapped & Auto-discovery failed",
+    "timestamp": "2026-03-18T22:54:15.614263+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BPT",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T22:58:21.585996+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "LYTHF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:00:22.155965+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CNDA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:01:36.559060+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MSPR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:02:50.241060+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "PTPI",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:05:36.609034+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "IONM",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:07:46.055295+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "KAVL",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:08:51.669873+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "PORT.U",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:20:14.495317+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CMCAU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:21:14.403931+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CREVF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:21:26.908730+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "IXAQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:22:05.415063+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ZAPPF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:23:08.309552+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CIMG",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:24:08.329272+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "PRPH",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:25:41.331177+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "DXST",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:25:47.833833+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "JBR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:26:24.353737+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SNAX",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:26:24.881013+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ATTOF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:27:32.367962+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "RBCN",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:28:38.425284+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "KBNT",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:28:56.906191+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "NBST",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:30:08.321901+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AACT",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:30:50.968765+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "TGAAF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:31:26.443316+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MCAGR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:32:44.339086+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "DMYY",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:33:35.934923+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "KACLF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:33:53.447925+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "THMO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:34:27.474513+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "NIVF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:35:26.977448+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AWIN",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:38:38.574610+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AFIIQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:38:59.529040+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "EBET",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:40:29.410825+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "FORL",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:41:32.339832+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SNOW",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:41:41.837867+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "GDST",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:41:52.449681+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "IMPM",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:43:32.347293+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "TBLT",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:46:48.979527+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CMLSQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:48:53.362497+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "VIAO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:49:32.372682+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AIMUF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:53:02.488403+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "PPYAU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:53:20.353844+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "TPHS",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:55:05.368664+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BBLN",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:55:35.464321+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AIEV",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:56:02.504650+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "HAIAF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:56:20.377323+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ULY",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:56:44.372119+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BCLI",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:56:44.872524+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CLSDQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-18T23:59:29.891320+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ILLR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:06:32.389027+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SUNH",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:08:23.895776+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AQUNU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:08:41.389663+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "VAXX",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:08:50.886234+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "QTRH",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:09:11.925244+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ELMSQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:10:05.373894+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "EMCRF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:11:33.498262+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "LDTCF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:11:42.998018+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AFMDQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:13:05.518692+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "FAAS",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:15:48.385288+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "LSDIF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:17:14.387130+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SRAX",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:17:41.391794+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "WINV",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:19:29.411238+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SMFL",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:23:29.457333+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BSLK",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:25:29.408189+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AEAEU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:26:26.402156+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ANEB",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:26:41.448784+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SOFO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:27:26.406748+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "HLEO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:28:29.913503+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "UTRS",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:29:26.628390+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SGN",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:34:08.461076+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "STIX",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:37:35.429093+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MCOM",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:38:05.412127+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BRSHF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:38:20.924874+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AONC",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:39:14.497480+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "NMRD",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:39:38.429879+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "VINO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:40:11.609833+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MASK",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:41:11.413855+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MCAG",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:41:14.918911+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "GETR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:43:45.025386+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ALSUF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:45:47.423110+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "QIPT",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:46:14.936671+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ACGP",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:46:30.436059+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "GGEI",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:47:45.425402+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ALSAF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:48:41.451353+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "YOTA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:48:51.538530+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "TRVN",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:49:05.535679+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "UBOH",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:49:33.555205+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ATXI",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:50:47.567026+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "EVLO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:50:59.565486+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "XLO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:51:15.079843+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CFLT",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:51:33.593395+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "WVFC",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:51:59.572833+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SONX",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:52:14.536592+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AMPE",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:52:27.045802+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "PCEM",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:52:27.546744+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BACQU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:52:38.624646+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "IGTAU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:52:51.430858+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "IMAQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:53:17.447166+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "STBXF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:53:59.431717+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "EMCUF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:54:47.459248+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ALSTF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:55:14.435167+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "FOXO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:55:14.937871+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ECDA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:55:27.441758+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "STAI",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:55:33.949645+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ORPHA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:56:38.438138+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "FTIIU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:56:38.935354+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ELYS",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:57:59.434489+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "JWSUF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:58:26.951952+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CNGLU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:59:11.440771+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BIMI",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T00:59:32.954012+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "RBZHF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:01:41.483933+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "NBSTU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:02:35.489902+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ALLGF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:03:42.003480+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AZREF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:03:51.621737+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "YGMZF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:04:23.990468+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "IGTA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:04:44.494388+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SBIG",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:04:56.989974+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:05:51.484612+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ZETA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:06:26.627086+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SWSS",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:07:11.599850+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "FNCH",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:07:30.111136+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "RIBT",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:09:02.627733+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "DCFCQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:10:27.110005+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SYRA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:11:26.513706+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "WELUF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:13:38.507759+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "OFED",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:14:15.007643+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "FXLV",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:14:34.020044+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SSKN",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:14:48.096456+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "GME",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:14:53.638811+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "IR.WI",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:16:15.106483+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SING",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:17:00.016100+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MAQCU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:17:00.517099+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CLEUF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:19:11.507386+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AVYA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:19:54.050875+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "UFABQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:20:14.515640+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SANW",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:21:33.020590+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MOTS",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:22:27.625797+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "JWSMF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:23:42.037875+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "USDP",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:24:42.036496+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AIMTF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:24:42.537182+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BRQSF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:25:38.622438+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "GDSTR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:28:48.525786+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "HPCO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:29:24.034186+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CFOR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:29:54.030881+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "TGAUF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:31:02.530187+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ALFIQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:31:03.031505+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "GOEVQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:31:38.537937+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BROGF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:31:39.041967+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "PPHI",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:32:44.576728+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "RAAS",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:34:48.025598+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "PTIX",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:34:57.188253+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ATEK",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:38:20.557523+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SFES",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:40:47.575291+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "GROM",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:41:27.057635+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MCAGU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:41:36.561290+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "VXRT",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:41:54.046756+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "LYRA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:42:20.545905+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "XAGE",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:43:02.540767+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "GPAK",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:44:33.062268+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "TAIT",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:45:20.552167+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AQUNR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:45:35.645869+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CMRA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:47:17.558301+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SKYQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:47:24.061408+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BDRLQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:48:05.547327+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "LOGC",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:49:42.078409+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MAQC",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:52:11.556624+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CERO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:52:35.585815+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "RELV",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:54:24.282829+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ALYAF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:54:51.156563+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SWSSU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:55:20.578871+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "PXMD",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:56:11.558757+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BHATF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:57:54.053818+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SYRS",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:58:08.701190+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "RGLS",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T01:58:24.210781+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "GMBL",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:01:14.567651+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ZIVO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:01:47.570296+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SFRT",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:03:17.574393+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "QVCGB",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:03:24.077995+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SVVC",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:03:33.588066+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CYTOF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:04:53.572703+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "WHLM",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:05:52.071887+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ZEVY",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:06:26.585450+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BACQR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:06:44.679022+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "NVOS",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:08:53.570588+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "VAPO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:09:00.571443+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "PUCK",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:12:54.581643+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "EMWP",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:14:54.089224+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "HBIO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:15:46.106728+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MODV",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:19:29.603516+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "XELA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:22:54.097491+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "HTGMQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:22:57.600156+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MGAM",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:23:11.707731+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ZJYL",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:24:20.710571+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BACQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:25:14.706994+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CLVR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:27:32.627698+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "INTEU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:28:53.591666+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SQZB",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:29:11.602787+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "NXTP",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:30:41.637649+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ROYTL",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:30:42.127977+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "GLBZ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:31:14.602938+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BRCNF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:34:23.623130+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "TIOG",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:35:57.115913+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "YOTAR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:37:42.148536+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "DTEAF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:37:47.746446+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AXAC",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:37:49.248147+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ABPO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:39:52.129485+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "LGMK",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:40:51.329971+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "HEPA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:40:51.826560+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "IMAQR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:41:17.617973+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "DHAI",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:41:24.124861+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "VCNX",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:42:38.631598+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "VIVK",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:42:45.254658+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "WELNF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:43:02.617404+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CRKN",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:45:05.620497+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "VERO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:45:57.140911+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "LKCO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:46:27.136907+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ALPP",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:48:11.645381+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "TTSH",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:51:05.625707+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "RVLPQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:51:42.172731+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ORGS",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:53:59.634988+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "FORLU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:54:20.638454+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ZVSA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:56:59.642845+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "IGTAR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T02:59:38.657424+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ENSV",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:00:27.328780+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "AOGOU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:01:02.267742+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "EMCGF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:02:20.203504+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "IDWM",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:03:02.165873+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "GBNY",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:03:34.664768+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "EGRX",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:06:55.662552+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ASPU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:07:02.171896+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ICCT",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:08:19.681390+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SISI",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:08:28.659503+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "FTII",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:09:08.175319+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SYBX",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:09:29.170816+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "TCCO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:10:22.795005+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "YOTAU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:14:22.696816+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BYNOU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:19:08.294829+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "STAF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:20:31.714093+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "WINVR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:22:25.709838+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "IVCUF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:23:19.732346+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MCLDF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:23:55.683311+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SLNAF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:25:14.218801+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "OMCC",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:25:40.695087+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BPTH",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:29:11.211253+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "PUCKU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:31:43.703163+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "APCX",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:32:29.232354+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "VISL",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:33:11.219865+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "WINVU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:33:52.692995+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MRAI",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:34:05.206906+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "PPYA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:34:22.700097+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "QK",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:39:41.216679+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "POLCQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:39:41.719484+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "JEWL",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:40:31.825591+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "IMAQU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:42:34.708165+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MTTR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:42:36.212041+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BINI",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:43:19.733162+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MOBQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-19T03:44:01.734315+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ZENV",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-20T00:12:04.256851+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "NGD",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-20T08:30:36.155423+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "UOKA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-20T10:05:44.866911+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "TGNA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-25T01:56:36.874891+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BFICQ",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-25T02:15:15.786065+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "EXAS",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-25T02:55:09.890355+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BOXD",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-25T03:32:56.670352+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "DTCK",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-25T10:25:46.425723+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "PELI",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-26T08:29:46.371313+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "PELIU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-26T09:21:13.413341+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "TBMC",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-29T18:03:20.190410+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CHACU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-29T18:19:02.763667+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CMBM",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-29T18:49:08.280149+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CHAC",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-29T19:28:48.940582+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "PELIR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-29T19:30:45.451159+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CHACR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-29T20:35:02.040490+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "TBMCR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-29T21:04:02.432992+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "RILYK",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-30T10:41:40.941978+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MODD",
+    "reason": "Error 200: The contract description specified for MODD is ambiguous.",
+    "timestamp": "2026-03-30T21:45:28.070881+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "JFBR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-03-31T02:12:17.966681+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "GORV",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-03T20:31:18.847703+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "GLDD",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-03T20:32:57.377382+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BLFY",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-03T20:44:03.468061+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "UBFO",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-03T20:55:39.404807+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "OS",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-03T21:36:42.542232+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "VCICU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-03T21:56:57.611549+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ITRM",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-03T22:55:07.131862+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "FFWM",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-03T23:16:13.797050+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BBU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-03T23:37:22.330864+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ONTF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-03T23:40:34.197453+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "TFSA",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-04T00:06:42.739877+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "TBHC",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-06T07:08:37.094287+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SBDS",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-06T07:10:03.857931+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "QH",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-06T23:26:51.687065+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "OAKU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-07T05:57:02.438939+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "NSC",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-07T06:49:02.754738+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "EICC",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-07T07:07:52.876526+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "IOBT",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-07T08:51:53.491632+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "NBY",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-07T09:39:03.781545+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "SWKH",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-07T09:49:03.841819+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "BITF",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-07T09:55:53.881826+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "OAKUR",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-07T10:15:03.993592+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "OAKUU",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-07T12:07:14.686605+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "VCIC",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-08T02:01:21.060277+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "HYAC",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-09T02:20:45.566310+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CAPT",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-09T10:11:36.497526+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "HOLX",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-09T12:51:07.373092+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "QNC",
+    "reason": "Error 200: The contract description specified for QNCX is ambiguous.",
+    "timestamp": "2026-04-10T22:08:15.892334+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "NXPL",
+    "reason": "Error 200: The contract description specified for NXPL is ambiguous.",
+    "timestamp": "2026-04-10T23:10:46.227123+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "JEM",
+    "reason": "Error 200: The contract description specified for JEM is ambiguous.",
+    "timestamp": "2026-04-10T23:52:36.458224+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "XTKG",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-10T23:57:46.480580+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "MSA",
+    "reason": "Error 200: The contract description specified for MSAI is ambiguous.",
+    "timestamp": "2026-04-11T00:45:46.738261+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "ASNS",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-11T03:31:27.597218+00:00",
+    "source": "downloader"
+  },
+  {
+    "ticker": "CIGL",
+    "reason": "Error 200: No security definition has been found for the request",
+    "timestamp": "2026-04-13T06:39:26.768590+00:00",
+    "source": "downloader"
+  }
+]
