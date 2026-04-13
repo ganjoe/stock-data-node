@@ -265,9 +265,9 @@ class ConfigLoader(IConfigLoader):
             market_data_type_wait=float(raw.get("market_data_type_wait", 0.5)),
             market_data_snapshot_wait=float(raw.get("market_data_snapshot_wait", 2.0)),
             processing_threads=int(raw.get("processing_threads", 4)),
-            live_max_concurrent=int(raw.get("live_max_concurrent", 20)),
+            live_max_concurrent=int(raw.get("live_max_concurrent", 5)),
             live_pacing_delay=float(raw.get("live_pacing_delay", 0.1)),
-            delayed_max_concurrent=int(raw.get("delayed_max_concurrent", 15)),
+            delayed_max_concurrent=int(raw.get("delayed_max_concurrent", 5)),
             delayed_pacing_delay=float(raw.get("delayed_pacing_delay", 0.5)),
             # F-OPT-020: Dynamic Semaphore Throttling
             throttle_recovery_threshold=int(raw.get("throttle_recovery_threshold", 5)),

@@ -166,46 +166,61 @@ class GatewayClient(IGatewayClient):
         self, contracts: dict[str, IBKRContract]
     ) -> dict[str, IBKRContract]:
         """
-        Qualifies all contracts in a single IBKR batch call.
+        Qualifies all contracts in batch calls of at most 200 contracts each.
         Returns only successfully qualified contracts (conId != 0). (F-IMP-040)
+
+        IBKR limit: /trsv/secdef — 200 conids per request.
         """
+        # IBKR Additional Usage Limit: 200 conids per /trsv/secdef request
+        MAX_SECDEF_BATCH = 200
+
         if not self._connection_active.is_set():
             logger.debug("Waiting for IBKR connection to be restored before qualifying contracts...")
             await self._connection_active.wait()
         if not contracts:
             return {}
 
-        # Build ib_insync Contract objects
-        ib_contracts: dict[str, Contract] = {}
-        for ticker, ibkr in contracts.items():
-            c = Contract(
-                symbol=ibkr.symbol,
-                secType=ibkr.sec_type,
-                exchange=ibkr.exchange,
-                currency=ibkr.currency,
-            )
-            ib_contracts[ticker] = c
-
-        # Batch qualify
-        try:
-            await self._ib.qualifyContractsAsync(*ib_contracts.values())
-        except Exception as exc:
-            logger.warning("Batch contract qualification error: %s", exc)
-            return {}
-
-        # Filter: only successful (conId != 0)
+        tickers = list(contracts.keys())
         qualified: dict[str, IBKRContract] = {}
-        for ticker, c in ib_contracts.items():
-            if c.conId and c.conId != 0:
-                qualified[ticker] = contracts[ticker]
-            else:
-                logger.warning("Contract qualification failed for %s — will be skipped", ticker)
+
+        for batch_start in range(0, len(tickers), MAX_SECDEF_BATCH):
+            batch_keys = tickers[batch_start : batch_start + MAX_SECDEF_BATCH]
+            batch_map: dict[str, IBKRContract] = {k: contracts[k] for k in batch_keys}
+
+            # Build ib_insync Contract objects
+            ib_contracts: dict[str, Contract] = {}
+            for ticker, ibkr in batch_map.items():
+                c = Contract(
+                    symbol=ibkr.symbol,
+                    secType=ibkr.sec_type,
+                    exchange=ibkr.exchange,
+                    currency=ibkr.currency,
+                )
+                ib_contracts[ticker] = c
+
+            try:
+                await self._ib.qualifyContractsAsync(*ib_contracts.values())
+            except Exception as exc:
+                logger.warning(
+                    "Batch contract qualification error (batch %d/%d): %s",
+                    batch_start // MAX_SECDEF_BATCH + 1,
+                    (len(tickers) + MAX_SECDEF_BATCH - 1) // MAX_SECDEF_BATCH,
+                    exc,
+                )
+                continue
+
+            for ticker, c in ib_contracts.items():
+                if c.conId and c.conId != 0:
+                    qualified[ticker] = contracts[ticker]
+                else:
+                    logger.warning("Contract qualification failed for %s — will be skipped", ticker)
 
         logger.info(
             "Contract qualification: %d/%d succeeded",
             len(qualified), len(contracts),
         )
         return qualified
+
 
     async def search_contract(self, symbol: str) -> list[ContractDescription]:
         """

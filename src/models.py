@@ -108,10 +108,11 @@ class SettingsConfig:
     processing_threads: int
     
     # Batching parameters (adapt to market data permissions)
-    live_max_concurrent: int = 20
-    live_pacing_delay: float = 0.1
-    delayed_max_concurrent: int = 15          # (F-OPT-020) raised from 1
-    delayed_pacing_delay: float = 0.5         # (F-OPT-020) lowered from 3.0, dynamic throttling covers safety
+    # IBKR hard limit: /iserver/marketdata/history — 5 concurrent requests
+    live_max_concurrent: int = 5
+    live_pacing_delay: float = 0.1      # 10 req/s global limit
+    delayed_max_concurrent: int = 5     # same IBKR history concurrency limit
+    delayed_pacing_delay: float = 0.5   # conservative for delayed data
 
     # Dynamic Semaphore Throttling (F-OPT-020)
     throttle_recovery_threshold: int = 5      # successful requests before increasing semaphore by 1
@@ -412,7 +413,12 @@ class IRateLimiter(ABC):
 
     @abstractmethod
     async def acquire(self) -> None:
-        """Blocks until a request slot is available."""
+        """Acquires a concurrency slot and applies pacing delay. Caller MUST call release()."""
+        ...
+
+    @abstractmethod
+    def release(self) -> None:
+        """Releases the concurrency slot acquired by acquire(). (F-OPT-020)"""
         ...
 
     @abstractmethod

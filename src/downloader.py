@@ -35,9 +35,8 @@ from models import (
 
 logger = logging.getLogger(__name__)
 
-# Logger is already initialized above
-
-# Lookback removed, now in config
+# IBKR Additional Usage Limit: /iserver/marketdata/history — 5 concurrent requests
+IBKR_MAX_CONCURRENT_HISTORY = 5
 
 
 def classify_error(error_msg: str) -> ErrorCategory:
@@ -216,142 +215,162 @@ class Downloader:
             return
 
         logger.info(
-            "▶️  Downloading %s/%s in %d chunk(s)...",
-            request.ticker, request.timeframe, len(chunks)
+            "▶️  Downloading %s/%s in %d chunk(s) (up to %d parallel)...",
+            request.ticker, request.timeframe, len(chunks), IBKR_MAX_CONCURRENT_HISTORY
         )
 
-        for i, chunk in enumerate(chunks):
-            # Preemption check (F-FNC-020): any lower-priority task can be preempted by a higher-priority one
+        # Process chunks in parallel batches of IBKR_MAX_CONCURRENT_HISTORY (5).
+        # The concurrency semaphore in the rate limiter enforces the hard limit;
+        # the batch loop adds a preemption checkpoint between batches.
+        batch_size = IBKR_MAX_CONCURRENT_HISTORY
+        chunk_index = 0
+        abort = False
+
+        for batch_start in range(0, len(chunks), batch_size):
+            if abort:
+                break
+
+            batch = chunks[batch_start : batch_start + batch_size]
+
+            # Preemption check (F-FNC-020): yield to higher-priority requests between batches
             if self._queue.has_higher_priority_waiting(request.priority):
                 logger.info(
                     "⚡ Preempting %s/%s at chunk %d/%d — higher-priority request waiting",
-                    request.ticker, request.timeframe, i + 1, len(chunks)
+                    request.ticker, request.timeframe, batch_start + 1, len(chunks)
                 )
                 self._queue.enqueue(request)
                 return  # preempted — no batch summary
 
-            # Rate limiting
-            await self._rate_limiter.acquire()
+            # Launch the batch concurrently; each task holds the semaphore for its
+            # full duration via _download_chunk_with_limit.
+            tasks = [
+                self._download_chunk_with_limit(chunk, request.contract)
+                for chunk in batch
+            ]
+            results: list[DownloadResult] = await asyncio.gather(*tasks)
 
-            # Download the chunk
-            result = await self._download_chunk(chunk, request.contract)
+            for i_in_batch, result in enumerate(results):
+                chunk_index += 1
+                i = batch_start + i_in_batch  # overall chunk index
 
-            if result.error:
-                category = classify_error(result.error)
+                if result.error:
+                    category = classify_error(result.error)
 
-                if category == ErrorCategory.PACING:
-                    logger.warning("⏳ Pacing error on %s/%s — applying backoff and retrying chunk", request.ticker, request.timeframe)
-                    self._rate_limiter.report_pacing_error()
-                    await self._rate_limiter.acquire()
-                    result = await self._download_chunk(chunk, request.contract)
-                    if result.error:
+                    if category == ErrorCategory.PACING:
+                        logger.warning(
+                            "⏳ Pacing error on %s/%s chunk %d — applying backoff and retrying",
+                            request.ticker, request.timeframe, chunk_index
+                        )
+                        self._rate_limiter.report_pacing_error()
+                        retry = await self._download_chunk_with_limit(batch[i_in_batch], request.contract)
+                        if retry.error:
+                            logger.error(
+                                "❌ Chunk retry also failed for %s/%s: %s",
+                                request.ticker, request.timeframe, retry.error
+                            )
+                            chunk_fail += 1
+                            request.status = TickerStatus.FAILED
+                            abort = True
+                            break
+                        result = retry
+
+                    elif category == ErrorCategory.QUALIFY_FAILED:
+                        logger.warning("⚠️ Qualify failed for %s — attempting auto-discovery fallback.", request.ticker)
+                        new_contract = await self._auto_discover_contract(request.ticker)
+                        if new_contract:
+                            request.contract = new_contract
+                            retry = await self._download_chunk_with_limit(batch[i_in_batch], request.contract)
+                        if not new_contract or (new_contract and retry.error):
+                            logger.error(
+                                "❌ Permanent error for %s/%s: %s — adding to blacklist and mapping to SKIP",
+                                request.ticker, request.timeframe, result.error
+                            )
+                            self._failed_store.add(FailedTickerEntry(
+                                ticker=request.ticker,
+                                reason=result.error or "Auto-discovery failed",
+                                timestamp=datetime.now(timezone.utc).isoformat(),
+                                source="downloader",
+                            ))
+                            if hasattr(self._config, "register_unmapped_ticker"):
+                                self._config.register_unmapped_ticker(request.ticker)
+                            chunk_fail += 1
+                            request.status = TickerStatus.FAILED
+                            abort = True
+                            break
+                        result = retry
+
+                    elif category == ErrorCategory.NO_DATA:
+                        # Full download: hitting NO_DATA means we've reached the IPO date.
+                        if not last_ts:
+                            logger.info(
+                                "ℹ️ Reached beginning of history (IPO) for %s/%s at chunk %d/%d — stopping early.",
+                                request.ticker, request.timeframe, chunk_index, len(chunks)
+                            )
+                            abort = True
+                            break
+                        else:
+                            logger.debug(
+                                "ℹ️ No data for %s/%s chunk %d/%d — skipping (not a permanent error)",
+                                request.ticker, request.timeframe, chunk_index, len(chunks)
+                            )
+                            chunk_fail += 1
+                            continue
+
+                    elif category == ErrorCategory.NO_PERMISSIONS:
                         logger.error(
-                            "❌ Chunk retry also failed for %s/%s: %s",
+                            "❌ Permission error for %s/%s: %s — stopping",
                             request.ticker, request.timeframe, result.error
                         )
                         chunk_fail += 1
                         request.status = TickerStatus.FAILED
+                        abort = True
                         break
 
-                elif category == ErrorCategory.QUALIFY_FAILED:
-                    logger.warning("⚠️ Qualify failed for %s — attempting auto-discovery fallback.", request.ticker)
-                    new_contract = await self._auto_discover_contract(request.ticker)
-                    if new_contract:
-                        request.contract = new_contract
-                        await self._rate_limiter.acquire()
-                        result = await self._download_chunk(chunk, request.contract)
-                        
-                    if not new_contract or result.error:
+                    elif category == ErrorCategory.INVALID_CONTRACT:
                         logger.error(
-                            "❌ Permanent error for %s/%s: %s — adding to blacklist and mapping to SKIP",
+                            "❌ Invalid contract error for %s/%s: %s — adding to blacklist and stopping",
                             request.ticker, request.timeframe, result.error
                         )
                         self._failed_store.add(FailedTickerEntry(
                             ticker=request.ticker,
-                            reason=result.error or "Auto-discovery failed",
+                            reason=result.error or "Invalid Contract",
                             timestamp=datetime.now(timezone.utc).isoformat(),
                             source="downloader",
                         ))
-                        # Also register as null mapping so we don't spam IBKR on restart
                         if hasattr(self._config, "register_unmapped_ticker"):
                             self._config.register_unmapped_ticker(request.ticker)
-                        
-                        chunk_fail = chunk_fail + 1
+                        chunk_fail += 1
                         request.status = TickerStatus.FAILED
+                        abort = True
                         break
 
-                elif category == ErrorCategory.NO_DATA:
-                    # If this is a full download (fetching backwards in time), hitting NO_DATA 
-                    # usually means we've reached the IPO date or the end of the exchange's history.
-                    # We can safely abort fetching even older chunks.
-                    if not last_ts:
-                        logger.info(
-                            "ℹ️ Reached beginning of history (IPO) for %s/%s at chunk %d/%d — stopping early.",
-                            request.ticker, request.timeframe, i + 1, len(chunks)
+                    elif category == ErrorCategory.TIMEOUT:
+                        logger.error(
+                            "❌ TIMEOUT error for %s/%s: %s — skipping remaining chunks for this ticker",
+                            request.ticker, request.timeframe, result.error
                         )
+                        chunk_fail += 1
+                        request.status = TickerStatus.FAILED
+                        abort = True
                         break
+
                     else:
-                        # For delta downloads (fetching forwards), maybe a weekend/holiday chunk is empty.
-                        logger.debug(
-                            "ℹ️ No data for %s/%s chunk %d/%d — skipping (not a permanent error)",
-                            request.ticker, request.timeframe, i + 1, len(chunks)
+                        logger.error(
+                            "❌ %s error for %s/%s: %s — skipping chunk",
+                            category.value, request.ticker, request.timeframe, result.error
                         )
-                        chunk_fail = chunk_fail + 1
+                        chunk_fail += 1
                         continue
 
-                elif category == ErrorCategory.NO_PERMISSIONS:
-                    logger.error(
-                        "❌ Permission error for %s/%s: %s — stopping",
-                        request.ticker, request.timeframe, result.error
-                    )
-                    chunk_fail = chunk_fail + 1
-                    request.status = TickerStatus.FAILED
-                    break
+                self._rate_limiter.report_success()
 
-                elif category == ErrorCategory.INVALID_CONTRACT:
-                    logger.error(
-                        "❌ Invalid contract error for %s/%s: %s — adding to blacklist and stopping",
-                        request.ticker, request.timeframe, result.error
-                    )
-                    self._failed_store.add(FailedTickerEntry(
-                        ticker=request.ticker,
-                        reason=result.error or "Invalid Contract",
-                        timestamp=datetime.now(timezone.utc).isoformat(),
-                        source="downloader",
-                    ))
-                    if hasattr(self._config, "register_unmapped_ticker"):
-                        self._config.register_unmapped_ticker(request.ticker)
-                    chunk_fail = chunk_fail + 1
-                    request.status = TickerStatus.FAILED
-                    break
-
-                elif category == ErrorCategory.TIMEOUT:
-                    # Target behavior: Skip entire ticker on TIMEOUT instead of just chunk
-                    logger.error(
-                        "❌ TIMEOUT error for %s/%s: %s — skipping remaining chunks for this ticker",
-                        request.ticker, request.timeframe, result.error
-                    )
-                    chunk_fail = chunk_fail + 1
-                    request.status = TickerStatus.FAILED
-                    break
-
+                if result.bars:
+                    self._writer.append_bars(request.ticker, request.timeframe, result.bars)
+                    chunk_ok += 1
+                    total_bars += len(result.bars)
                 else:
-                    logger.error(
-                        "❌ %s error for %s/%s: %s — skipping chunk",
-                        category.value, request.ticker, request.timeframe, result.error
-                    )
-                    chunk_fail = chunk_fail + 1
-                    continue
-
-            self._rate_limiter.report_success()
-
-            if result.bars:
-                self._writer.append_bars(request.ticker, request.timeframe, result.bars)
-                chunk_ok = chunk_ok + 1
-                total_bars = total_bars + len(result.bars)
-            else:
-                logger.debug("Empty chunk for %s/%s (no new bars)", request.ticker, request.timeframe)
-                chunk_ok = chunk_ok + 1  # empty but successful
+                    logger.debug("Empty chunk for %s/%s (no new bars)", request.ticker, request.timeframe)
+                    chunk_ok += 1  # empty but successful
 
         # Batch progress reporting (F-IMP-130)
         elapsed = time.monotonic() - request_start
@@ -476,6 +495,22 @@ class Downloader:
             chunks.extend(_build_chunks(ideal_start, first_ts - 1))
 
         return chunks
+
+    async def _download_chunk_with_limit(
+        self, chunk: DownloadChunk, contract: Optional[IBKRContract]
+    ) -> DownloadResult:
+        """
+        Wraps _download_chunk with rate-limiter acquire/release.
+
+        The concurrency semaphore is held for the FULL duration of the HTTP
+        request, enforcing IBKR's 5 concurrent /iserver/marketdata/history limit.
+        The pacing delay is applied inside acquire() before the request starts.
+        """
+        await self._rate_limiter.acquire()
+        try:
+            return await self._download_chunk(chunk, contract)
+        finally:
+            self._rate_limiter.release()
 
     async def _download_chunk(
         self, chunk: DownloadChunk, contract: Optional[IBKRContract]
