@@ -13,5 +13,5 @@
     "request_debounce_seconds": 15.0,
     "connection_watchdog_interval": 600.0,
     "bulk_log_level": "INFO",
-    "historical_data_timeout": 60.0
+    "historical_data_timeout": 120.0
 }
