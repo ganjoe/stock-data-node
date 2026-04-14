@@ -35,36 +35,4 @@ Ein Vergleich mit den offiziellen Yahoo Finance Daten bestätigt:
 
 ## Lösungsvorschlag
 
-### 1. Sofortmaßnahme (Manuell)
-Korrektur der Einträge in `config/ticker_map.json` für alle betroffenen Ticker:
-```json
-"ORCL": {
-    "symbol": "ORCL",
-    "exchange": "NYSE",
-    "currency": "USD",
-    "sec_type": "STK"
-}
-```
-
-### 2. Systematische Korrektur (Konfiguration)
-In `config/auto_discovery.json` sollte die Konfiguration der Börsenprioritäten überprüft und ggf. angepasst werden:
-```json
-"exchange_priority": ["SMART", "IBIS2", "NYSE", "NASDAQ", "LSEETF"]
-```
-*(NYSE vor NASDAQ, wenn hauptsächlich US-Blue-Chips gehandelt werden).*
-
-### 3. Systematische Korrektur (Code)
-Anpassung der Scoring-Logik in `src/downloader.py`. Der Algorithmus sollte Treffer, bei denen das gefundene Symbol **exakt** mit dem gesuchten Ticker übereinstimmt, am höchsten priorisieren, noch bevor die Börsenpriorität greift.
-
-```python
-# Empfohlener Pseudo-Code für downloader.py:
-def score(desc):
-    # 1. Prio: Exakter Ticker-Match
-    ticker_match = 0 if desc.contract.symbol == search_ticker else 1
-    # 2. Prio: Währung
-    # 3. Prio: Börse
-    return (ticker_match, curr_score, exch_score)
-```
-
----
-*Erstellt am 13. April 2026*
+....

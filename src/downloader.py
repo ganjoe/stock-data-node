@@ -594,8 +594,13 @@ class Downloader:
         auto_cfg = self._config.get_auto_discovery_config()
         
         # Scoring function: lower score = better priority
-        def score(desc) -> tuple[int, int]:
+        def score(desc) -> tuple[int, int, int]:
             c = desc.contract
+            
+            # Symbol match priority: exact match is 0, otherwise 1
+            # (Allows finding ORCL on NYSE even if NASDAQ is prioritized)
+            symbol_score = 0 if c.symbol.upper() == ticker.upper() else 1
+            
             # Currency priority
             curr = c.currency
             curr_score = 999
@@ -608,7 +613,7 @@ class Downloader:
             if exch in auto_cfg.exchange_priority:
                 exch_score = auto_cfg.exchange_priority.index(exch)
                 
-            return (curr_score, exch_score)
+            return (symbol_score, curr_score, exch_score)
             
         # Sort by best scores
         stk_results.sort(key=score)

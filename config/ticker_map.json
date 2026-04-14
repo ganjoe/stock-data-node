@@ -24548,14 +24548,14 @@
     "sec_type": "STK"
   },
   "ORC": {
-    "symbol": "ORCX",
-    "exchange": "NASDAQ",
+    "symbol": "ORC",
+    "exchange": "NYSE",
     "currency": "USD",
     "sec_type": "STK"
   },
   "ORCL": {
-    "symbol": "ORCX",
-    "exchange": "NASDAQ",
+    "symbol": "ORCL",
+    "exchange": "NYSE",
     "currency": "USD",
     "sec_type": "STK"
   },
