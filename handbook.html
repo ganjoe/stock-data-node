@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>STOCK-DATA-NODE - DAS OFFIZIELLE HANDBUCH (V1.0)</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080">
+
+<center>
+<pre>
+   _____ _             _      _____       _          _   _           _      
+  / ____| |           | |    |  __ \     | |        | \ | |         | |     
+ | (___ | |_ ___   ___| | __ | |  | | ___| |_ __ _  |  \| | ___   __| | ___ 
+  \___ \| __/ _ \ / __| |/ / | |  | |/ _` | __/ _` | | . ` |/ _ \ / _` |/ _ \
+  ____) | || (_) | (__|   <  | |__| | (_| | || (_| | | |\  | (_) | (_| |  __/
+ |_____/ \__\___/ \___|_|\_\ |_____/ \___|\__\__,_| |_| \_|\___/ \__,_|\___|
+                                                                            
+             --- DIE GHOST-IN-THE-SHELL EDITION (VER. 1.0) ---
+</pre>
+</center>
+
+<hr size="4" noshade>
+
+<h2>INHALTSVERZEICHNIS</h2>
+<ul>
+    <li><a href="#intro">1. WAS IST DAS HIER &Uuml;BERHAUPT?</a></li>
+    <li><a href="#logic">2. DIE MAGIE UNTER DER HAUBE (LOGIK)</a></li>
+    <li><a href="#usage">3. BEDIENUNGSANLEITUNG (WATCH-FILES)</a></li>
+    <li><a href="#api">4. DIE REST-API REFERENZ</a></li>
+    <li><a href="#logs">5. LOGS LESEN F&Uuml;R FORTGESCHRITTENE</a></li>
+    <li><a href="#json">6. DIE JSON-GEHEIMNISSE</a></li>
+    <li><a href="#parquet">7. DIE PARQUET-SCHATZKAMMER</a></li>
+</ul>
+
+<hr>
+
+<a name="intro"></a>
+<h2>1. WAS IST DAS HIER &Uuml;BERHAUPT?</h2>
+<p>
+    Willkommen beim <b>Stock Data Node</b>! Dieses Programm ist dein pers&ouml;nlicher Sklave, wenn es darum geht, historische Kursdaten direkt von Interactive Brokers (IBKR) zu rauben. 
+    Es ist kein einfaches "Download-Skript", sondern ein hochintelligenter Knotenpunkt, der genau wei&szlig;, wann welche Aktie an welcher B&ouml;rse gehandelt wird und welche Daten dir noch in deiner Sammlung fehlen.
+</p>
+<p>
+    Das Ziel: Eine l&uuml;ckenlose Datenbank im Parquet-Format, die du f&uuml;r Backtests, Analysen oder zum Angeben nutzen kannst.
+</p>
+
+<hr>
+
+<a name="logic"></a>
+<h2>2. DIE MAGIE UNTER DER HAUBE (LOGIK)</h2>
+<p>Das Programm arbeitet mit mehreren "Gehirnzellen", die st&auml;ndig im Hintergrund laufen:</p>
+<ul>
+    <li><b>Der Watcher:</b> Er starrt ununterbrochen auf den Ordner <code>watch/</code>. Sobald du dort eine Datei mit Tickern reinwirfst, wacht er auf.</li>
+    <li><b>Die API:</b> Ein kleiner Webserver, der auf Befehle von au&szlig;en wartet (z.B. von anderen Programmen oder Tools).</li>
+    <li><b>Die Priority-Queue:</b> Hier wird entschieden, wer zuerst dran ist. API-Anfragen haben <u>immer</u> Vorrang vor automatischen Hintergrund-Updates.</li>
+    <li><b>Chunking & Delta:</b> Wenn du 20 Jahre Historie willst, l&auml;dt das Programm nicht alles in einem Riesen-Kasten. Es zerlegt die Zeit in kleine "Chunks". Dabei merkt es, wenn du schon Daten hast (Delta-Erkennung) und l&auml;dt nur das, was fehlt.</li>
+    <li><b>Preemption (Vordr&auml;ngeln):</b> Wenn gerade ein riesiger Hintergrund-Job l&auml;uft und du pl&ouml;tzlich &uuml;ber die API einen Ticker anfragst, unterbricht das Programm den Job kurzzeitig, erledigt deine Anfrage und macht danach brav weiter.</li>
+    <li><b>Auto-Discovery:</b> Kennst du die genauen B&ouml;rsendaten f&uuml;r eine Aktie nicht? Kein Problem. Das Programm sucht bei IBKR nach dem Symbol und w&auml;hlt basierend auf Priorit&auml;ten (W&auml;hrung, B&ouml;rse) das beste Ergebnis aus.</li>
+</ul>
+
+<hr>
+
+<a name="usage"></a>
+<h2>3. BEDIENUNGSANLEITUNG (WATCH-FILES)</h2>
+<p>Der einfachste Weg, den Node zu f&uuml;ttern, ist das Hinterlegen von Dateien im <code>watch/</code> Ordner.</p>
+
+<h3>Zul&auml;ssige Formate</h3>
+<ul>
+    <li><b>Dateiendung:</b> Muss zwingend <code>.txt</code> sein.</li>
+    <li><b>Inhalt:</b> Ticker-Symbole (Gro&szlig;-/Kleinschreibung egal), die durch **Leerzeichen**, **Kommata** oder **Zeilenumbr&uuml;che** getrennt sind.</li>
+</ul>
+
+<p><b>Beispiel f&uuml;r eine g&uuml;ltige Datei:</b></p>
+<pre>
+    AAPL, MSFT
+    TSLA NVDA AMD
+    Intel, IBM
+</pre>
+
+<h3>Lebenszyklus einer Watch-Datei</h3>
+<ol>
+    <li>Du kopierst die Datei in den Ordner <code>watch/</code>.</li>
+    <li>Der Node erkennt die Datei (innerhalb von max. 10 Sek.).</li>
+    <li>Eine Kopie wird zur Sicherheit in <code>data/watchlists/</code> abgelegt.</li>
+    <li>Die Ticker werden extrahiert und mit <b>Hintergrund-Priorit&auml;t</b> in die Warteschlange eingereiht.</li>
+    <li><b>Erfolg:</b> Wenn alle Ticker erkannt wurden, wird die Datei im <code>watch/</code> Ordner gel&ouml;scht.</li>
+    <li><b>Teilerfolg/Fehler:</b> Wenn Ticker nicht aufgel&ouml;st werden konnten (und Auto-Discovery scheitert), wird die Datei &uuml;berschrieben und enth&auml;lt danach nur noch die problematischen Ticker zur manuellen Pr&uuml;fung.</li>
+</ol>
+
+<hr>
+
+<a name="api"></a>
+<h2>4. DIE REST-API REFERENZ</h2>
+<p>F&uuml;r die Integration in eigene Scripte bietet der Node eine REST-API (Standardm&auml;&szlig;ig auf Port <code>8002</code>).</p>
+
+<table border="1" cellpadding="5">
+    <tr bgcolor="#CCCCCC">
+        <th>Methode</th>
+        <th>Endpunkt</th>
+        <th>Beschreibung</th>
+    </tr>
+    <tr>
+        <td><b>POST</b></td>
+        <td><code>/download</code></td>
+        <td>F&uuml;gt einen Ticker mit <b>h&ouml;chster Priorit&auml;t</b> hinzu.</td>
+    </tr>
+    <tr>
+        <td><b>POST</b></td>
+        <td><code>/trigger-staleness</code></td>
+        <td>Pr&uuml;ft alle vorhandenen Daten auf Aktualit&auml;t und l&auml;dt Fehlendes nach.</td>
+    </tr>
+    <tr>
+        <td><b>GET</b></td>
+        <td><code>/status</code></td>
+        <td>Gibt die aktuelle Gr&ouml;&szlig;e der Warteschlange zur&uuml;ck.</td>
+    </tr>
+    <tr>
+        <td><b>GET</b></td>
+        <td><code>/health</code></td>
+        <td>Einfacher Liveness-Check (f&uuml;r Docker/Monitoring).</td>
+    </tr>
+</table>
+
+<h3>Beispiel: Download anfordern</h3>
+<p>Sende einen POST-Request an <code>http://localhost:8002/download</code> mit folgendem JSON-Body:</p>
+<pre>
+{
+  "ticker": "AAPL",
+  "timeframes": ["1D", "1h"]
+}
+</pre>
+<p><i>Hinweis: Wird <code>timeframes</code> weggelassen, verwendet der Node die Standard-Einstellungen aus der Konfiguration.</i></p>
+
+<hr>
+
+<a name="logs"></a>
+<h2>5. LOGS LESEN F&Uuml;R FORTGESCHRITTENE</h2>
+<p>Das Terminal-Log nutzt ANSI-Farben zur schnellen Orientierung:</p>
+<ul>
+    <li><b><font color="cyan">CYAN</font>:</b> Ticker-Symbole. Erreicht das System einen Meilenstein f&uuml;r einen Ticker, leuchtet er hier auf.</li>
+    <li><b><font color="magenta">MAGENTA</font>:</b> Metriken. Anzahl der geladenen Kerzen, Dauer des Requests oder Anzahl der Chunks.</li>
+    <li><b><font color="yellow">GELB (WARN)</font>:</b> Pacing-Verst&ouml;&szlig;e oder kurzzeitige Verbindungsprobleme. Das System regelt hier automatisch ab (Exponential Backoff).</li>
+    <li><b><font color="red">ROT (ERROR)</font>:</b> Kritische Abbruchbedingungen (z.B. "Invalid Contract").</li>
+</ul>
+<p><b>Pro-Tipp:</b> Achte auf die "════" Trennlinien. Sie markieren den Start einer neuen Phase (z.B. Initialisierung oder Abschluss eines kompletten Download-Zyklus).</p>
+
+<hr>
+
+<a name="json"></a>
+<h2>6. DIE JSON-GEHEIMNISSE</h2>
+<p>Hier wird das Gehirn konfiguriert:</p>
+<ul>
+    <li><b>config/ticker_map.json:</b> Die wichtigste Datei. Sie mappt Ticker auf IBKR-Vertr&auml;ge.
+        <br><i>Format:</i> <code>"AAPL": {"symbol": "AAPL", "exchange": "SMART", "currency": "USD"}</code>
+    </li>
+    <li><b>state/failed_ticker.json:</b> Die Blacklist. Hier landen Ticker, die auch nach mehreren Versuchen nicht geladen werden konnten (Grund wird mitgespeichert).</li>
+    <li><b>config/auto_discovery.json:</b> Hier definierst du, welche B&ouml;rsen (z.B. SMART, XETRA) und W&auml;hrungen bei der automatischen Suche bevorzugt werden sollen.</li>
+</ul>
+
+<hr>
+
+<a name="parquet"></a>
+<h2>7. DIE PARQUET-SCHATZKAMMER</h2>
+<p>
+    Deine Daten landen im Ordner <code>data/parquet/</code>. 
+    Struktur: <code>[TICKER]/[TIMEFRAME].parquet</code>
+</p>
+<p>
+    <b>Vorteile von Parquet:</b>
+    <ul>
+        <li><b>Kompression:</b> Bis zu 90% kleiner als CSV.</li>
+        <li><b>Typensicherheit:</b> Zeitstempel und Kurswerte sind exakt definiert.</li>
+        <li><b>Speed:</b> Perfekt f&uuml;r Python Bibliotheken wie <code>pandas</code> oder <code>polars</code>.</li>
+    </ul>
+</p>
+
+<hr size="4" noshade>
+<center>
+    <i>Erstellt von Antigravity - Dokumentations-Update v1.1.</i><br>
+    --- ENDE DER &Uuml;BERTRAGUNG ---
+</center>
+
+</body>
+</html>
