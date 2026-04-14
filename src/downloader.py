@@ -585,21 +585,21 @@ class Downloader:
         """
         results = await self._gateway.search_contract(ticker)
         
-        # Filter strictly for STK
-        stk_results = [r for r in results if r.contract.secType == "STK"]
+        # Filter strictly for STK and exact symbol match (F-EXT-090)
+        stk_results = [
+            r for r in results 
+            if r.contract.secType == "STK" and r.contract.symbol.upper() == ticker.upper()
+        ]
+        
         if not stk_results:
-            logger.warning("Auto-discovery found no STK contracts for %s", ticker)
+            logger.warning("Auto-discovery found no exact STK matches for %s", ticker)
             return None
             
         auto_cfg = self._config.get_auto_discovery_config()
         
-        # Scoring function: lower score = better priority
-        def score(desc) -> tuple[int, int, int]:
+        # Scoring function: lower score = better priority (F-EXT-060)
+        def score(desc) -> tuple[int, int]:
             c = desc.contract
-            
-            # Symbol match priority: exact match is 0, otherwise 1
-            # (Allows finding ORCL on NYSE even if NASDAQ is prioritized)
-            symbol_score = 0 if c.symbol.upper() == ticker.upper() else 1
             
             # Currency priority
             curr = c.currency
@@ -613,7 +613,7 @@ class Downloader:
             if exch in auto_cfg.exchange_priority:
                 exch_score = auto_cfg.exchange_priority.index(exch)
                 
-            return (symbol_score, curr_score, exch_score)
+            return (curr_score, exch_score)
             
         # Sort by best scores
         stk_results.sort(key=score)
