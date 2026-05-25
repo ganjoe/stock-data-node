@@ -184,19 +184,20 @@ class DownloadRequest:
     contract: Optional[IBKRContract] = None
     status: TickerStatus = TickerStatus.PENDING
     created_at: float = field(default_factory=time.time)
+    last_updated: float = 0.0
 
     def __repr__(self) -> str:
         dt = datetime.fromtimestamp(self.created_at, tz=timezone.utc).strftime("%H:%M:%S")
         return f"DownloadRequest({self.ticker}/{self.timeframe}, prio={self.priority.name}, created={dt})"
 
     def __lt__(self, other: DownloadRequest) -> bool:
-        """For heapq ordering: lower priority value = higher priority."""
-        return (int(self.priority), self.created_at) < (int(other.priority), other.created_at)
+        """For heapq ordering: lower priority value = higher priority. Older last_updated goes first."""
+        return (int(self.priority), self.last_updated, self.created_at) < (int(other.priority), other.last_updated, other.created_at)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, DownloadRequest):
             return NotImplemented
-        return (int(self.priority), self.created_at) == (int(other.priority), other.created_at)
+        return (int(self.priority), self.last_updated, self.created_at) == (int(other.priority), other.last_updated, other.created_at)
 
 
 @dataclass

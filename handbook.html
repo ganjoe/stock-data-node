@@ -30,6 +30,7 @@
     <li><a href="#logs">5. LOGS LESEN F&Uuml;R FORTGESCHRITTENE</a></li>
     <li><a href="#json">6. DIE JSON-GEHEIMNISSE</a></li>
     <li><a href="#parquet">7. DIE PARQUET-SCHATZKAMMER</a></li>
+    <li><a href="#staleness">8. DER STALENESS-CHECKER</a></li>
 </ul>
 
 <hr>
@@ -172,6 +173,27 @@
         <li><b>Typensicherheit:</b> Zeitstempel und Kurswerte sind exakt definiert.</li>
         <li><b>Speed:</b> Perfekt f&uuml;r Python Bibliotheken wie <code>pandas</code> oder <code>polars</code>.</li>
     </ul>
+</p>
+
+<hr>
+
+<a name="staleness"></a>
+<h2>8. DER STALENESS-CHECKER (STANDALONE SCRIPT)</h2>
+<p>
+    Wenn du nur mal eben pr&uuml;fen m&ouml;chtest, wie aktuell deine Daten wirklich sind, ohne direkt einen Download-Zyklus zu starten, gibt es daf&uuml;r ein eigenes Tool.
+</p>
+<p>
+    <b>Starten des Scripts:</b>
+    <pre>
+    ./check_staleness.sh
+    </pre>
+</p>
+<p>
+    Dieses Script liest direkt aus deiner Parquet-Datenbank den neuesten Timestamp f&uuml;r jeden Ticker aus und berechnet die Verteilung des "Alters" (in Tagen). 
+    Das Resultat ist eine kompakte &Uuml;bersicht in der Konsole, sortiert nach dem prozentualen Anteil (h&ouml;chster Anteil zuerst).
+</p>
+<p>
+    <b>Tipp zur Priorisierung:</b> Der Node selbst nutzt diese Logik ebenfalls! Bevor automatische Hintergrund-Updates (Staleness Sweeps) gestartet werden, rechnet das System aus, welche Ticker am l&auml;ngsten nicht mehr aktualisiert wurden (oder noch gar nicht existieren). Diese "outdated" Ticker rutschen in der Download-Queue ganz nach vorne!
 </p>
 
 <hr size="4" noshade>

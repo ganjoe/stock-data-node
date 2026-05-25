@@ -24,6 +24,7 @@ from models import (
     FailedTickerEntry,
     IConfigLoader,
     IFailedTickerStore,
+    IParquetWriter,
     IPriorityQueue,
     ITickerResolver,
 )
@@ -52,7 +53,7 @@ class StatusResponse(BaseModel):
 # ─── Helpers ─────────────────────────────────────────────────────
 
 def enqueue_staleness_sweep(
-    watcher: Any, config: IConfigLoader, resolver: ITickerResolver, queue: IPriorityQueue
+    watcher: Any, config: IConfigLoader, resolver: ITickerResolver, queue: IPriorityQueue, writer: IParquetWriter
 ) -> int:
     """
     Scans watch directory first, then parquet directory for all known tickers,
@@ -79,6 +80,10 @@ def enqueue_staleness_sweep(
     
     logger.info("▶️  Triggering staleness sweep for %d ticker(s)", len(all_tickers))
     count = 0
+    age_counts = {}
+    import time
+    now = time.time()
+    
     for ticker in all_tickers:
         if resolver.is_ignored(ticker):
             continue
@@ -87,15 +92,38 @@ def enqueue_staleness_sweep(
         timeframes = config.get_timeframes_for_ticker(ticker)
         for tf in timeframes:
             contract = resolver.resolve(ticker)
+            last_ts = writer.read_last_timestamp(ticker, tf)
+            
+            if last_ts is None:
+                last_updated = 0.0
+                bucket = "No data"
+            else:
+                last_updated = float(last_ts)
+                days_outdated = int((now - last_updated) // 86400)
+                bucket = f"-{days_outdated} days"
+
+            age_counts[bucket] = age_counts.get(bucket, 0) + 1
+            
             req = DownloadRequest(
                 ticker=ticker,
                 timeframe=tf,
                 priority=DownloadPriority.STALENESS,
                 contract=contract,
+                last_updated=last_updated,
             )
             queue.enqueue(req)
             count += 1
             
+    if count > 0:
+        logger.info("Staleness Distribution:")
+        def bucket_sort_key(b):
+            return age_counts[b]
+            
+        for b in sorted(age_counts.keys(), key=bucket_sort_key, reverse=True):
+            c = age_counts[b]
+            pct = (c / count) * 100
+            logger.info("  %5.1f%% %-10s (%d)", pct, b, c)
+
     logger.info("✅ Enqueued %d staleness requests", count)
     return count
 
@@ -107,6 +135,7 @@ def create_api(
     config: IConfigLoader,
     failed_store: IFailedTickerStore,
     watcher: "FileWatcher",
+    writer: IParquetWriter,
 ) -> FastAPI:
     """
     Creates and returns the FastAPI application with all routes configured.
@@ -184,7 +213,7 @@ def create_api(
         """
         logger.info("API: Trigger staleness request received.")
         # Process the sweep
-        count = enqueue_staleness_sweep(watcher, config, resolver, queue)
+        count = enqueue_staleness_sweep(watcher, config, resolver, queue, writer)
 
         # 5. Return JSONResponse with 202
         return JSONResponse(

@@ -49,7 +49,7 @@ def classify_error(error_msg: str) -> ErrorCategory:
 
     msg = error_msg.lower()
 
-    if "error 200" in msg or "error 321" in msg or "invalid contract" in msg or "no security definition" in msg:
+    if "error 200" in msg or "error 321" in msg or "invalid contract" in msg or "no security definition" in msg or "no data of type" in msg:
         return ErrorCategory.INVALID_CONTRACT
     if "qualify" in msg or "ambiguous contract" in msg:
         return ErrorCategory.QUALIFY_FAILED

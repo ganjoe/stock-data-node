@@ -203,7 +203,7 @@ async def main() -> None:
     gateway      = GatewayClient(config)
     downloader   = Downloader(gateway, queue, writer, rate_limiter, config, failed_store)
     watcher      = FileWatcher(paths.watch_dir, queue, resolver, config, failed_store)
-    api          = create_api(queue, resolver, config, failed_store, watcher)
+    api          = create_api(queue, resolver, config, failed_store, watcher, writer)
 
     # ── Startup checks (F-SYS-020) ────────────────────────────
     checker = StartupChecker(paths, writer)
@@ -218,7 +218,7 @@ async def main() -> None:
     logger.info("═══════════════════════════════════════════════════════════════")
     logger.info("  Starting Initial Staleness Sweep")
     logger.info("═══════════════════════════════════════════════════════════════")
-    enqueue_staleness_sweep(watcher, config, resolver, queue)
+    enqueue_staleness_sweep(watcher, config, resolver, queue, writer)
 
     # ── Cycle-Complete Callback (F-LC-011, F-LC-012) ─────────
     # After every download cycle: trigger feature service, then restart downloads.
@@ -229,7 +229,7 @@ async def main() -> None:
         logger.info("  Restarting Download Cycle — Staleness Sweep (F-LC-012)")
         logger.info("═══════════════════════════════════════════════════════════════")
         watcher.scan_once()
-        enqueue_staleness_sweep(watcher, config, resolver, queue)
+        enqueue_staleness_sweep(watcher, config, resolver, queue, writer)
 
     downloader.set_on_cycle_complete(_on_download_cycle_complete)
 
