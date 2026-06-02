@@ -159,11 +159,15 @@ def create_api(
 
         logger.info("API: download request for %s (timeframes=%s)", ticker, body.timeframes)
 
-        # Check if explicitly blacklisted or skipped
-        if resolver.is_ignored(ticker):
-            logger.warning("❌ Rejected API download for %s (blacklisted/SKIP)", ticker)
-            raise HTTPException(status_code=400, detail=f"Ticker {ticker} is blacklisted or mapped to SKIP")
+        # Automatically de-blacklist if it was previously failed, allowing a retry
+        if failed_store.is_blacklisted(ticker):
+            logger.info("ℹ️ API request for blacklisted ticker %s — removing from blacklist to allow retry", ticker)
+            failed_store.remove(ticker)
             
+        # Check if mapped to SKIP
+        if resolver.is_ignored(ticker):
+            logger.warning("❌ Rejected API download for %s (mapped to SKIP)", ticker)
+            raise HTTPException(status_code=400, detail=f"Ticker {ticker} is mapped to SKIP")
         # Resolve ticker to IBKR contract (will be None if unmapped, triggering Auto-Discovery later)
         contract = resolver.resolve(ticker)
 

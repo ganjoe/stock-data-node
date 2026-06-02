@@ -24,6 +24,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from api_server import create_api
 from config_loader import ConfigLoader
 from downloader import Downloader
+from fallback_downloader import FallbackDownloader
 from failed_ticker_store import FailedTickerStore
 from file_watcher import FileWatcher
 from gateway_client import GatewayClient
@@ -202,6 +203,7 @@ async def main() -> None:
     rate_limiter = AdaptiveRateLimiter()
     gateway      = GatewayClient(config)
     downloader   = Downloader(gateway, queue, writer, rate_limiter, config, failed_store)
+    fallback     = FallbackDownloader(writer, config)
     watcher      = FileWatcher(paths.watch_dir, queue, resolver, config, failed_store)
     api          = create_api(queue, resolver, config, failed_store, watcher, writer)
 
@@ -308,6 +310,7 @@ async def main() -> None:
         await shutdown_event.wait()
         logger.info("Shutdown signal received — stopping downloader…")
         downloader.stop()
+        fallback.stop()
 
     # ── Run everything concurrently ────────────────────────────
     logger.info("✅ All systems go — entering main loop.")
@@ -315,6 +318,7 @@ async def main() -> None:
         file_watcher_loop(),
         api_server_loop(),
         downloader.run_loop(),
+        fallback.run_loop(),
         shutdown_watcher(),
         return_exceptions=True,
     )

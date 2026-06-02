@@ -318,9 +318,17 @@ class Downloader:
 
                     elif category == ErrorCategory.NO_PERMISSIONS:
                         logger.error(
-                            "❌ Permission error for %s/%s: %s — stopping",
+                            "❌ Permission error for %s/%s: %s — adding to blacklist and stopping",
                             request.ticker, request.timeframe, result.error
                         )
+                        self._failed_store.add(FailedTickerEntry(
+                            ticker=request.ticker,
+                            reason=result.error or "No Permissions",
+                            timestamp=datetime.now(timezone.utc).isoformat(),
+                            source="downloader",
+                        ))
+                        if hasattr(self._config, "register_unmapped_ticker"):
+                            self._config.register_unmapped_ticker(request.ticker)
                         chunk_fail += 1
                         request.status = TickerStatus.FAILED
                         abort = True
