@@ -1,6 +1,7 @@
 import logging
 import pandas as pd
 import yfinance as yf
+from datetime import datetime, timezone
 from typing import Optional
 
 from models import OHLCVBar
@@ -31,16 +32,21 @@ class YFinanceClient:
     def get_yf_ticker(ibkr_ticker: str) -> Optional[str]:
         return YF_MAPPING.get(ibkr_ticker, None)
 
-    async def fetch_historical_bars(self, yf_ticker: str) -> list[OHLCVBar]:
-        """Fetches max history (1D) for the given YF ticker."""
+    async def fetch_historical_bars(self, yf_ticker: str, start_ts: Optional[int] = None) -> list[OHLCVBar]:
+        """Fetches history for the given YF ticker. If start_ts is provided, does a delta download."""
         if yf_ticker == "SKIP":
             return []
             
         try:
             logger.info("Fetching historical data from YFinance for %s...", yf_ticker)
-            # period="max" fetches all available daily data
             ticker_obj = yf.Ticker(yf_ticker)
-            df = ticker_obj.history(period="max")
+            
+            if start_ts:
+                start_date = datetime.fromtimestamp(start_ts, tz=timezone.utc).strftime('%Y-%m-%d')
+                df = ticker_obj.history(start=start_date)
+            else:
+                # period="max" fetches all available daily data
+                df = ticker_obj.history(period="max")
             
             if df.empty:
                 logger.warning("YFinance returned empty DataFrame for %s", yf_ticker)

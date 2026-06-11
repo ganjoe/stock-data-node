@@ -82,34 +82,48 @@ class GatewayClient(IGatewayClient):
                 self._connection_active.set()
 
     async def connect(self) -> None:
-        """Connects to the active IB Gateway endpoint. Raises ConnectionError on failure."""
+        """Connects to the active IB Gateway endpoint, with failover to the other endpoint. Raises ConnectionError on failure."""
         gw_config = self._config.get_gateway_config()
         settings = self._config.get_settings_config()
-        endpoint = gw_config.active_endpoint
-        logger.info(
-            "🌐 Connecting to IB Gateway at %s:%d (mode=%s)…",
-            endpoint.host, endpoint.port, gw_config.mode
-        )
-        try:
-            client_id = random.randint(1, 9999)
-            await self._ib.connectAsync(
-                host=endpoint.host,
-                port=endpoint.port,
-                clientId=client_id,
-                timeout=settings.gateway_connect_timeout,
-            )
+        
+        # Determine primary and fallback endpoints based on configured mode
+        if gw_config.mode == "live":
+            endpoints = [("live", gw_config.live), ("paper", gw_config.paper)]
+        else:
+            endpoints = [("paper", gw_config.paper), ("live", gw_config.live)]
+            
+        last_exc = None
+        
+        for mode_name, endpoint in endpoints:
             logger.info(
-                "✅ Connected to IB Gateway at %s:%d (clientId=%d)",
-                endpoint.host, endpoint.port, client_id
+                "🌐 Connecting to IB Gateway at %s:%d (mode=%s)…",
+                endpoint.host, endpoint.port, mode_name
             )
-            self._last_activity_time = time.monotonic()  # (F-OPT-050)
-        except Exception as exc:
-            msg = (
-                f"Cannot connect to IB Gateway at {endpoint.host}:{endpoint.port}. "
-                f"Is it running and authenticated? Error: {exc}"
-            )
-            logger.error(msg)
-            raise ConnectionError(msg) from exc
+            try:
+                client_id = random.randint(1, 9999)
+                await self._ib.connectAsync(
+                    host=endpoint.host,
+                    port=endpoint.port,
+                    clientId=client_id,
+                    timeout=settings.gateway_connect_timeout,
+                )
+                logger.info(
+                    "✅ Connected to IB Gateway at %s:%d (clientId=%d, mode=%s)",
+                    endpoint.host, endpoint.port, client_id, mode_name
+                )
+                self._last_activity_time = time.monotonic()  # (F-OPT-050)
+                return  # Success!
+            except Exception as exc:
+                logger.warning(
+                    "❌ Failed to connect to %s gateway at %s:%d: %s",
+                    mode_name, endpoint.host, endpoint.port, exc
+                )
+                last_exc = exc
+                
+        # If we exhausted both options:
+        msg = "Cannot connect to any IB Gateway (tried both live and paper). Is at least one running and authenticated?"
+        logger.error(msg)
+        raise ConnectionError(msg) from last_exc
 
     async def disconnect(self) -> None:
         """Gracefully disconnects from the gateway."""

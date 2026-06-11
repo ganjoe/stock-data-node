@@ -31341,5 +31341,17 @@
     "exchange": "TSE",
     "currency": "CAD",
     "sec_type": "STK"
+  },
+  "SMH": {
+    "symbol": "SMH",
+    "exchange": "SMART",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
+  "EWY": {
+    "symbol": "EWY",
+    "exchange": "SMART",
+    "currency": "USD",
+    "sec_type": "STK"
   }
 }

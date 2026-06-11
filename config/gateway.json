@@ -1,16 +1,16 @@
 {
   "live": {
-    "host": "172.18.0.2",
-    "port": 4001
+    "host": "127.0.0.1",
+    "port": 4002
   },
   "paper": {
     "_comment": "lokal die ip vom docker verwenden, ansonten localhost für serverbetrieb",
-    "host": "172.18.0.2",
-    "port": 4002
+    "host": "127.0.0.1",
+    "port": 4001
   },
   "api": {
     "host": "0.0.0.0",
     "port": 8002
   },
-  "mode": "paper"
+  "mode": "live"
 }

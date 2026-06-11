@@ -124,7 +124,7 @@ class FallbackDownloader:
                 self._save_yf_failed(yf_failed)
                 continue
                 
-            bars = await self._yf_client.fetch_historical_bars(yf_ticker)
+            bars = await self._yf_client.fetch_historical_bars(yf_ticker, start_ts=last_ts)
             if not bars:
                 logger.error("YFinance: Download failed or empty for %s (%s)", ticker, yf_ticker)
                 yf_failed[ticker] = {
