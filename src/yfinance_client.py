@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import pandas as pd
 import yfinance as yf
@@ -43,10 +44,10 @@ class YFinanceClient:
             
             if start_ts:
                 start_date = datetime.fromtimestamp(start_ts, tz=timezone.utc).strftime('%Y-%m-%d')
-                df = ticker_obj.history(start=start_date)
+                df = await asyncio.to_thread(ticker_obj.history, start=start_date)
             else:
                 # period="max" fetches all available daily data
-                df = ticker_obj.history(period="max")
+                df = await asyncio.to_thread(ticker_obj.history, period="max")
             
             if df.empty:
                 logger.warning("YFinance returned empty DataFrame for %s", yf_ticker)

@@ -225,7 +225,7 @@ async def main() -> None:
     # ── Cycle-Complete Callback (F-LC-011, F-LC-012) ─────────
     # After every download cycle: trigger feature service, then restart downloads.
     async def _on_download_cycle_complete() -> None:
-        _trigger_feature_service("Post-Cycle Feature Calculation (F-LC-011)")
+        await asyncio.to_thread(_trigger_feature_service, "Post-Cycle Feature Calculation (F-LC-011)")
 
         logger.info("═══════════════════════════════════════════════════════════════")
         logger.info("  Restarting Download Cycle — Staleness Sweep (F-LC-012)")
