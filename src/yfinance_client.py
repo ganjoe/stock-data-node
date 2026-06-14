@@ -33,7 +33,7 @@ class YFinanceClient:
     def get_yf_ticker(ibkr_ticker: str) -> Optional[str]:
         return YF_MAPPING.get(ibkr_ticker, None)
 
-    async def fetch_historical_bars(self, yf_ticker: str, start_ts: Optional[int] = None) -> list[OHLCVBar]:
+    async def fetch_historical_bars(self, yf_ticker: str, start_ts: Optional[int] = None, timeout: float = 10.0) -> list[OHLCVBar]:
         """Fetches history for the given YF ticker. If start_ts is provided, does a delta download."""
         if yf_ticker == "SKIP":
             return []
@@ -44,10 +44,10 @@ class YFinanceClient:
             
             if start_ts:
                 start_date = datetime.fromtimestamp(start_ts, tz=timezone.utc).strftime('%Y-%m-%d')
-                df = await asyncio.to_thread(ticker_obj.history, start=start_date)
+                df = await asyncio.to_thread(ticker_obj.history, start=start_date, timeout=timeout)
             else:
                 # period="max" fetches all available daily data
-                df = await asyncio.to_thread(ticker_obj.history, period="max")
+                df = await asyncio.to_thread(ticker_obj.history, period="max", timeout=timeout)
             
             if df.empty:
                 logger.warning("YFinance returned empty DataFrame for %s", yf_ticker)

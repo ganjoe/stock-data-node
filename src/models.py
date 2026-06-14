@@ -129,6 +129,7 @@ class SettingsConfig:
 
     # Configurable Request Timeout (F-OPT-080)
     historical_data_timeout: float = 30.0
+    yfinance_timeout: float = 10.0
 
 
 @dataclass(frozen=True)

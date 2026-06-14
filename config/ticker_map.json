@@ -1,4 +1,8 @@
 {
+  "$STATS.ASSETS_VALUE": null,
+  "$STATS.CASH_QUOTE": null,
+  "$STATS.NAV": null,
+  "$STATS.PNL": null,
   "2577": {
     "symbol": "2577",
     "exchange": "SEHK",
@@ -9915,6 +9919,12 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "EWY": {
+    "symbol": "EWY",
+    "exchange": "SMART",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
   "EXAS": {
     "symbol": "EXAS",
     "exchange": "VALUE",
@@ -15434,6 +15444,12 @@
     "symbol": "KCHVU",
     "exchange": "NASDAQ",
     "currency": "USD",
+    "sec_type": "STK"
+  },
+  "KCLI.CN": {
+    "symbol": "KCLI",
+    "exchange": "TSE",
+    "currency": "CAD",
     "sec_type": "STK"
   },
   "KDK": {
@@ -25657,6 +25673,12 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "SMH": {
+    "symbol": "SMH",
+    "exchange": "SMART",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
   "SMHB": {
     "symbol": "SMHB",
     "exchange": "ARCA",
@@ -26425,6 +26447,12 @@
     "symbol": "STAK",
     "exchange": "NASDAQ",
     "currency": "USD",
+    "sec_type": "STK"
+  },
+  "STAR.L": {
+    "symbol": "STAR",
+    "exchange": "LSE",
+    "currency": "GBP",
     "sec_type": "STK"
   },
   "STBA": {
@@ -29405,6 +29433,18 @@
     "currency": "USD",
     "sec_type": "STK"
   },
+  "VLX.L": {
+    "symbol": "VLX",
+    "exchange": "LSE",
+    "currency": "GBP",
+    "sec_type": "STK"
+  },
+  "VLXGF": {
+    "symbol": "VLXGF",
+    "exchange": "PINK",
+    "currency": "USD",
+    "sec_type": "STK"
+  },
   "VLY": {
     "symbol": "VLY",
     "exchange": "NASDAQ",
@@ -31317,41 +31357,5 @@
     "currency": "USD",
     "sec_type": "STK"
   },
-  "_CASH": null,
-  "VLX.L": {
-    "symbol": "VLX",
-    "exchange": "LSE",
-    "currency": "GBP",
-    "sec_type": "STK"
-  },
-  "STAR.L": {
-    "symbol": "STAR",
-    "exchange": "LSE",
-    "currency": "GBP",
-    "sec_type": "STK"
-  },
-  "VLXGF": {
-    "symbol": "VLXGF",
-    "exchange": "PINK",
-    "currency": "USD",
-    "sec_type": "STK"
-  },
-  "KCLI.CN": {
-    "symbol": "KCLI",
-    "exchange": "TSE",
-    "currency": "CAD",
-    "sec_type": "STK"
-  },
-  "SMH": {
-    "symbol": "SMH",
-    "exchange": "SMART",
-    "currency": "USD",
-    "sec_type": "STK"
-  },
-  "EWY": {
-    "symbol": "EWY",
-    "exchange": "SMART",
-    "currency": "USD",
-    "sec_type": "STK"
-  }
+  "_CASH": null
 }

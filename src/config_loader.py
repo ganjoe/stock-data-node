@@ -254,6 +254,7 @@ class ConfigLoader(IConfigLoader):
                 market_data_type_wait=0.5,
                 market_data_snapshot_wait=2.0,
                 processing_threads=4,
+                yfinance_timeout=10.0,
             )
             return
 
@@ -280,6 +281,7 @@ class ConfigLoader(IConfigLoader):
             bulk_log_level=str(raw.get("bulk_log_level", "INFO")),
             # F-OPT-080: Configurable Request Timeout
             historical_data_timeout=float(raw.get("historical_data_timeout", 30.0)),
+            yfinance_timeout=float(raw.get("yfinance_timeout", 10.0)),
         )
         self._file_mtimes[str(path)] = path.stat().st_mtime
         logger.debug("Loaded settings.json")

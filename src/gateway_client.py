@@ -81,6 +81,16 @@ class GatewayClient(IGatewayClient):
                 logger.info("✅ Connection between Gateway and IBKR restored (Error 1102). Resuming API queries...")
                 self._connection_active.set()
 
+    async def _wait_for_connection(self) -> None:
+        """Waits for the IBKR connection to be active, checking periodically if the gateway is still connected."""
+        while not self._connection_active.is_set():
+            if not self._ib.isConnected():
+                raise ConnectionError("Gateway is disconnected")
+            try:
+                await asyncio.wait_for(self._connection_active.wait(), timeout=1.0)
+            except asyncio.TimeoutError:
+                continue
+
     async def connect(self) -> None:
         """Connects to the active IB Gateway endpoint, with failover to the other endpoint. Raises ConnectionError on failure."""
         gw_config = self._config.get_gateway_config()
@@ -111,6 +121,7 @@ class GatewayClient(IGatewayClient):
                     "✅ Connected to IB Gateway at %s:%d (clientId=%d, mode=%s)",
                     endpoint.host, endpoint.port, client_id, mode_name
                 )
+                self._connection_active.set()
                 self._last_activity_time = time.monotonic()  # (F-OPT-050)
                 return  # Success!
             except Exception as exc:
@@ -190,7 +201,7 @@ class GatewayClient(IGatewayClient):
 
         if not self._connection_active.is_set():
             logger.debug("Waiting for IBKR connection to be restored before qualifying contracts...")
-            await self._connection_active.wait()
+            await self._wait_for_connection()
         if not contracts:
             return {}
 
@@ -245,7 +256,7 @@ class GatewayClient(IGatewayClient):
             
         if not self._connection_active.is_set():
             logger.debug("Waiting for IBKR connection to be restored before searching contract...")
-            await self._connection_active.wait()
+            await self._wait_for_connection()
         logger.info("Searching IBKR for matching symbols: %s", symbol)
         try:
             results = await self._ib.reqMatchingSymbolsAsync(symbol)
@@ -298,7 +309,7 @@ class GatewayClient(IGatewayClient):
 
         if not self._connection_active.is_set():
             logger.debug("Waiting for IBKR connection to be restored before historical data request...")
-            await self._connection_active.wait()
+            await self._wait_for_connection()
 
         captured_error: str | None = None
 
