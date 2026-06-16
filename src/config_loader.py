@@ -129,8 +129,10 @@ class ConfigLoader(IConfigLoader):
 
         raw[normalized] = None  # null = unmapped, awaiting manual mapping
         sorted_map = dict(sorted(raw.items()))
-        with open(path, "w", encoding="utf-8") as f:
+        tmp_path = path.with_suffix(".tmp")
+        with open(tmp_path, "w", encoding="utf-8") as f:
             json.dump(sorted_map, f, indent=2, ensure_ascii=False)
+        os.replace(tmp_path, path)
         logger.info(
             "Auto-registered %s as null in ticker_map.json (awaiting manual mapping)",
             normalized,
@@ -156,11 +158,14 @@ class ConfigLoader(IConfigLoader):
             "exchange": contract.exchange,
             "currency": contract.currency,
             "sec_type": contract.sec_type,
+            "provider": contract.provider,
         }
         
         sorted_map = dict(sorted(raw.items()))
-        with open(path, "w", encoding="utf-8") as f:
+        tmp_path = path.with_suffix(".tmp")
+        with open(tmp_path, "w", encoding="utf-8") as f:
             json.dump(sorted_map, f, indent=2, ensure_ascii=False)
+        os.replace(tmp_path, path)
             
         logger.info(
             "Saved auto-discovered mapping for %s to ticker_map.json",
@@ -351,7 +356,7 @@ class ConfigLoader(IConfigLoader):
             if data is None:
                 # null = unmapped/SKIP sentinel (F-IMP-070)
                 self._ticker_map[key] = IBKRContract(
-                    symbol="SKIP", exchange="", currency="", sec_type=""
+                    symbol="SKIP", exchange="", currency="", sec_type="", provider="IBKR"
                 )
                 null_count += 1
             else:
@@ -360,6 +365,7 @@ class ConfigLoader(IConfigLoader):
                     exchange=data["exchange"],
                     currency=data["currency"],
                     sec_type=data["sec_type"],
+                    provider=data.get("provider", "IBKR"),
                 )
 
         self._file_mtimes[str(path)] = path.stat().st_mtime

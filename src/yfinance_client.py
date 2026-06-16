@@ -28,10 +28,48 @@ YF_MAPPING = {
 
 class YFinanceClient:
     """Client for fetching data from Yahoo Finance as a fallback."""
+    
+    _dynamic_mapping = {}
+
+    @classmethod
+    async def resolve_ticker(cls, ibkr_ticker: str) -> str:
+        if ibkr_ticker in YF_MAPPING:
+            return YF_MAPPING[ibkr_ticker]
+        if ibkr_ticker in cls._dynamic_mapping:
+            return cls._dynamic_mapping[ibkr_ticker]
+            
+        def _search():
+            try:
+                s = yf.Search(ibkr_ticker, max_results=1)
+                if hasattr(s, 'quotes') and s.quotes:
+                    return s.quotes[0].get("symbol")
+            except Exception as e:
+                logger.error("yf.Search failed for %s: %s", ibkr_ticker, e)
+            return None
+            
+        logger.info("YF Ticker not in static mapping, searching YFinance for %s...", ibkr_ticker)
+        result = await asyncio.to_thread(_search)
+        
+        if result:
+            logger.info("✅ YFinance search mapped %s to %s", ibkr_ticker, result)
+            cls._dynamic_mapping[ibkr_ticker] = result
+            return result
+            
+        return ibkr_ticker
 
     @staticmethod
-    def get_yf_ticker(ibkr_ticker: str) -> Optional[str]:
-        return YF_MAPPING.get(ibkr_ticker, None)
+    async def check_availability(yf_ticker: str) -> bool:
+        if yf_ticker == "SKIP":
+            return False
+        try:
+            ticker_obj = yf.Ticker(yf_ticker)
+            # Fetching info can be slow, run in thread
+            info = await asyncio.to_thread(lambda: ticker_obj.info)
+            # If info dict is not empty and has typical fields, it exists
+            return bool(info and "regularMarketPrice" in info or "symbol" in info)
+        except Exception as e:
+            logger.error("YFinance check_availability failed for %s: %s", yf_ticker, e)
+            return False
 
     async def fetch_historical_bars(self, yf_ticker: str, start_ts: Optional[int] = None, timeout: float = 10.0) -> list[OHLCVBar]:
         """Fetches history for the given YF ticker. If start_ts is provided, does a delta download."""

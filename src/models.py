@@ -146,6 +146,7 @@ class IBKRContract:
     exchange: str
     currency: str
     sec_type: str        # "STK", "FUT", etc.
+    provider: str = "IBKR" # Default data provider
 
 
 @dataclass(frozen=True)

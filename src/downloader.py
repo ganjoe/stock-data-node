@@ -14,6 +14,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Coroutine, Optional
 
+from mqtt_publisher import publish_download_complete, publish_download_failed
+
 from models import (
     DownloadChunk,
     DownloadPriority,
@@ -96,6 +98,7 @@ class Downloader:
         self._running = False
         self._watchlist_dirty = False
         self._processed_count = 0
+        self._new_bars_count = 0
         self._on_cycle_complete: Optional[Callable[[], Coroutine]] = None
 
     def set_on_cycle_complete(self, callback: Callable[[], Coroutine]) -> None:
@@ -112,19 +115,30 @@ class Downloader:
 
             request = self._queue.dequeue()
             if request is None:
+                # Connection Watchdog for idle periods
+                try:
+                    if hasattr(self._gateway, 'ensure_connected'):
+                        await self._gateway.ensure_connected()
+                except Exception as exc:
+                    logger.error("Watchdog idle check failed: %s", exc)
+
                 if self._watchlist_dirty:
                     self._update_master_watchlist()
                     self._watchlist_dirty = False
-                # F-LC-011/F-LC-012: Cycle complete detection
-                if self._processed_count > 0 and self._on_cycle_complete:
+                if self._processed_count > 0:
                     logger.info("═══════════════════════════════════════════════════════════════")
                     logger.info("  Download Cycle Complete — %d request(s) processed", self._processed_count)
                     logger.info("═══════════════════════════════════════════════════════════════")
                     self._processed_count = 0
-                    try:
-                        await self._on_cycle_complete()
-                    except Exception as exc:
-                        logger.error("❌ Cycle-complete callback failed: %s", exc, exc_info=True)
+                    
+                    if self._new_bars_count > 0 and self._on_cycle_complete:
+                        logger.info("  New data was downloaded (%d bars), triggering feature service.", self._new_bars_count)
+                        self._new_bars_count = 0
+                        try:
+                            # Launch as a background task to prevent blocking the watchdog and event loop
+                            asyncio.create_task(self._on_cycle_complete())
+                        except Exception as exc:
+                            logger.error("❌ Cycle-complete callback failed: %s", exc, exc_info=True)
                     continue  # Re-check queue immediately (callback may have enqueued new items)
                 await asyncio.sleep(1)
                 continue
@@ -144,7 +158,8 @@ class Downloader:
                 request.priority.name, self._queue.size()
             )
             try:
-                await self._process_request(request)
+                bars_downloaded = await self._process_request(request)
+                self._new_bars_count += bars_downloaded
                 self._watchlist_dirty = True
                 self._processed_count += 1
             except Exception as exc:
@@ -161,8 +176,8 @@ class Downloader:
         self._running = False
         logger.info("Downloader stop requested.")
 
-    async def _process_request(self, request: DownloadRequest) -> None:
-        """Processes one DownloadRequest with chunking, preemption, and batch progress."""
+    async def _process_request(self, request: DownloadRequest) -> int:
+        """Processes one DownloadRequest with chunking, preemption, and batch progress. Returns number of bars downloaded."""
         request.status = TickerStatus.DOWNLOADING
         request_start = time.monotonic() # Metrics
         chunk_ok: int = 0
@@ -173,7 +188,7 @@ class Downloader:
             logger.error("❌ Gateway disconnected — re-queuing %s/%s", request.ticker, request.timeframe)
             self._queue.enqueue(request)
             await asyncio.sleep(5)
-            return
+            return 0
             
         if request.contract is None:
             logger.info("ℹ️  No contract provided for %s. Attempting auto-discovery...", request.ticker)
@@ -191,7 +206,32 @@ class Downloader:
                 if hasattr(self._config, "register_unmapped_ticker"):
                     self._config.register_unmapped_ticker(request.ticker)
                 request.status = TickerStatus.FAILED
-                return
+                publish_download_failed(request.ticker, request.timeframe, "Auto-discovery failed")
+                return 0
+
+        if request.contract.provider == "YFINANCE":
+            logger.info("ℹ️  Provider for %s is YFINANCE. Delegating to YFinance downloader.", request.ticker)
+            from yfinance_client import YFinanceClient
+            yf_client = YFinanceClient()
+            yf_ticker = await yf_client.resolve_ticker(request.ticker)
+            if yf_ticker == "SKIP" or not yf_ticker:
+                logger.error("❌ YFinance resolution failed for %s", request.ticker)
+                request.status = TickerStatus.FAILED
+                publish_download_failed(request.ticker, request.timeframe, "YFinance resolution failed")
+                return 0
+                
+            timeout = self._config.get_settings_config().yfinance_timeout
+            last_ts = self._writer.read_last_timestamp(request.ticker, request.timeframe)
+            bars = await yf_client.fetch_historical_bars(yf_ticker, start_ts=last_ts, timeout=timeout)
+            
+            if bars:
+                self._writer.append_bars(request.ticker, request.timeframe, bars)
+                request.status = TickerStatus.DONE
+                publish_download_complete(request.ticker, request.timeframe)
+            else:
+                request.status = TickerStatus.FAILED
+                publish_download_failed(request.ticker, request.timeframe, "YFinance download failed or empty")
+            return len(bars) if bars else 0
 
         # Delta & Backfill detection (F-FNC-030)
         first_ts = self._writer.read_first_timestamp(request.ticker, request.timeframe)
@@ -212,7 +252,7 @@ class Downloader:
         if not chunks:
             logger.info("✅ No chunks to download for %s/%s — already up to date.", request.ticker, request.timeframe)
             request.status = TickerStatus.DONE
-            return
+            return 0
 
         logger.info(
             "▶️  Downloading %s/%s in %d chunk(s) (up to %d parallel)...",
@@ -239,7 +279,7 @@ class Downloader:
                     request.ticker, request.timeframe, batch_start + 1, len(chunks)
                 )
                 self._queue.enqueue(request)
-                return  # preempted — no batch summary
+                return total_bars  # preempted — return what we got so far
 
             # Launch the batch concurrently; each task holds the semaphore for its
             # full duration via _download_chunk_with_limit.
@@ -409,7 +449,14 @@ class Downloader:
             f"{total_bars:,d}".replace(",", "."), 
             elapsed,
         )
+        
+        if request.status == TickerStatus.DONE:
+            publish_download_complete(request.ticker, request.timeframe)
+        else:
+            publish_download_failed(request.ticker, request.timeframe, "Chunks failed or timeout")
+
         # Watchlist generation is now deferred until the queue hits 0 (handled in run_loop)
+        return total_bars
 
     def _update_master_watchlist(self) -> None:
         """

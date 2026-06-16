@@ -104,7 +104,7 @@ class FallbackDownloader:
                     logger.debug("YFinance: %s is fresh (%.1f days old). Skipping.", ticker, age_days)
                     continue
                 
-            yf_ticker = self._yf_client.get_yf_ticker(ticker)
+            yf_ticker = await self._yf_client.resolve_ticker(ticker)
             if not yf_ticker:
                 # No mapping exists
                 logger.warning("YFinance: No mapping for failed ticker %s", ticker)

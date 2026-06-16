@@ -3,6 +3,20 @@
   "$STATS.CASH_QUOTE": null,
   "$STATS.NAV": null,
   "$STATS.PNL": null,
+  "093370": {
+    "symbol": "093370",
+    "exchange": "KRX",
+    "currency": "KRW",
+    "sec_type": "STK",
+    "provider": "YFINANCE"
+  },
+  "093370.KS": {
+    "symbol": "093370.KS",
+    "exchange": "",
+    "currency": "",
+    "sec_type": "",
+    "provider": "YFINANCE"
+  },
   "2577": {
     "symbol": "2577",
     "exchange": "SEHK",
@@ -14739,6 +14753,13 @@
     "exchange": "NASDAQ",
     "currency": "USD",
     "sec_type": "STK"
+  },
+  "IQE": {
+    "symbol": "IQE",
+    "exchange": "LSE",
+    "currency": "GBP",
+    "sec_type": "STK",
+    "provider": "IBKR"
   },
   "IQST": {
     "symbol": "IQST",

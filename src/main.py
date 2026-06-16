@@ -33,6 +33,7 @@ from priority_queue import DownloadQueue
 from rate_limiter import AdaptiveRateLimiter
 from startup_checks import StartupChecker
 from ticker_resolver import TickerResolver
+from mqtt_listener import MQTTListener
 
 # ─── Logging Setup ───────────────────────────────────────────────
 
@@ -205,7 +206,13 @@ async def main() -> None:
     downloader   = Downloader(gateway, queue, writer, rate_limiter, config, failed_store)
     fallback     = FallbackDownloader(writer, config)
     watcher      = FileWatcher(paths.watch_dir, queue, resolver, config, failed_store)
-    api          = create_api(queue, resolver, config, failed_store, watcher, writer)
+    api          = create_api(queue, resolver, config, failed_store, watcher, writer, gateway)
+    
+    # ── MQTT Listener ──────────────────────────────────────────
+    mqtt_host = os.environ.get("MQTT_HOST", "localhost")
+    mqtt_port = int(os.environ.get("MQTT_PORT", "1883"))
+    mqtt_listener = MQTTListener(mqtt_host, mqtt_port, queue, resolver, failed_store, config)
+    mqtt_listener.start()
 
     # ── Startup checks (F-SYS-020) ────────────────────────────
     checker = StartupChecker(paths, writer)
@@ -222,16 +229,10 @@ async def main() -> None:
     logger.info("═══════════════════════════════════════════════════════════════")
     enqueue_staleness_sweep(watcher, config, resolver, queue, writer)
 
-    # ── Cycle-Complete Callback (F-LC-011, F-LC-012) ─────────
-    # After every download cycle: trigger feature service, then restart downloads.
+    # ── Cycle-Complete Callback (F-LC-011) ─────────
+    # Trigger feature service if new data was downloaded.
     async def _on_download_cycle_complete() -> None:
         await asyncio.to_thread(_trigger_feature_service, "Post-Cycle Feature Calculation (F-LC-011)")
-
-        logger.info("═══════════════════════════════════════════════════════════════")
-        logger.info("  Restarting Download Cycle — Staleness Sweep (F-LC-012)")
-        logger.info("═══════════════════════════════════════════════════════════════")
-        watcher.scan_once()
-        enqueue_staleness_sweep(watcher, config, resolver, queue, writer)
 
     downloader.set_on_cycle_complete(_on_download_cycle_complete)
 
@@ -306,17 +307,43 @@ async def main() -> None:
                 logger.error("❌ API server error: %s", e)
             shutdown_event.set()
 
+    async def staleness_sweep_loop() -> None:
+        interval = 3600.0  # Run every 60 minutes
+        logger.info("ℹ️  Staleness sweep background task started (interval: %.0fs)", interval)
+        while not shutdown_event.is_set():
+            # Wait first, since we do an initial sweep on startup
+            try:
+                # Use wait_for so we can break early if shutdown_event is set
+                await asyncio.wait_for(shutdown_event.wait(), timeout=interval)
+                break  # shutdown_event was set, exit loop
+            except asyncio.TimeoutError:
+                pass  # timeout means interval elapsed, run the sweep
+
+            if shutdown_event.is_set():
+                break
+
+            logger.info("═══════════════════════════════════════════════════════════════")
+            logger.info("  Periodic Download Cycle — Staleness Sweep (F-LC-012)")
+            logger.info("═══════════════════════════════════════════════════════════════")
+            try:
+                watcher.scan_once()
+                enqueue_staleness_sweep(watcher, config, resolver, queue, writer)
+            except Exception as exc:
+                logger.error("❌ Periodic staleness sweep error: %s", exc, exc_info=True)
+
     async def shutdown_watcher() -> None:
         await shutdown_event.wait()
         logger.info("Shutdown signal received — stopping downloader…")
         downloader.stop()
         fallback.stop()
+        mqtt_listener.stop()
 
     # ── Run everything concurrently ────────────────────────────
     logger.info("✅ All systems go — entering main loop.")
     await asyncio.gather(
         file_watcher_loop(),
         api_server_loop(),
+        staleness_sweep_loop(),
         downloader.run_loop(),
         fallback.run_loop(),
         shutdown_watcher(),

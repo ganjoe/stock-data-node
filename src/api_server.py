@@ -27,6 +27,7 @@ from models import (
     IParquetWriter,
     IPriorityQueue,
     ITickerResolver,
+    IGatewayClient,
 )
 
 logger = logging.getLogger(__name__)
@@ -46,11 +47,46 @@ class TickerResponse(BaseModel):
     message: str
 
 
+class ProviderRequest(BaseModel):
+    provider: str
+
+
 class StatusResponse(BaseModel):
     queue_size: int
 
 
 # ─── Helpers ─────────────────────────────────────────────────────
+
+def get_staleness_distribution(config: IConfigLoader, resolver: ITickerResolver, writer: IParquetWriter) -> dict:
+    from pathlib import Path
+    import time
+    
+    parquet_dir = config.get_paths_config().parquet_dir
+    p_dir = Path(parquet_dir)
+    all_tickers = set()
+    if p_dir.exists() and p_dir.is_dir():
+        for item in p_dir.iterdir():
+            if not item.is_dir():
+                continue
+            all_tickers.add(item.name)
+            
+    age_counts = {}
+    now = time.time()
+    for ticker in all_tickers:
+        if resolver.is_ignored(ticker):
+            continue
+        timeframes = config.get_timeframes_for_ticker(ticker)
+        for tf in timeframes:
+            last_ts = writer.read_last_timestamp(ticker, tf)
+            if last_ts is None:
+                bucket = "No data"
+            else:
+                last_updated = float(last_ts)
+                days_outdated = int((now - last_updated) // 86400)
+                bucket = f"-{days_outdated} days"
+            age_counts[bucket] = age_counts.get(bucket, 0) + 1
+            
+    return age_counts
 
 def enqueue_staleness_sweep(
     watcher: Any, config: IConfigLoader, resolver: ITickerResolver, queue: IPriorityQueue, writer: IParquetWriter
@@ -136,6 +172,7 @@ def create_api(
     failed_store: IFailedTickerStore,
     watcher: "FileWatcher",
     writer: IParquetWriter,
+    gateway: IGatewayClient,
 ) -> FastAPI:
     """
     Creates and returns the FastAPI application with all routes configured.
@@ -146,6 +183,42 @@ def create_api(
         description="Request historical OHLCV downloads from IB Gateway.",
         version="1.0.0",
     )
+
+    from fastapi import Body
+    
+    @app.post("/config/provider/{ticker}")
+    async def set_provider(ticker: str, req: ProviderRequest = Body(...)) -> dict:
+        """Sets the provider for a ticker, updates the config, and deletes existing parquet data."""
+        from pathlib import Path
+        import shutil
+        import asyncio
+        from models import IBKRContract
+        
+        normalized = ticker.strip().upper()
+        
+        config.reload_if_changed()
+        mapping = config.get_ticker_map()
+        contract = mapping.get(normalized)
+        
+        if not contract or contract.symbol == "SKIP":
+            contract = IBKRContract(symbol=normalized, exchange="", currency="", sec_type="", provider=req.provider.upper())
+        else:
+            contract.provider = req.provider.upper()
+            
+        config.update_ticker_map(normalized, contract)
+        
+        parquet_dir = config.get_paths_config().parquet_dir
+        ticker_path = Path(parquet_dir) / normalized
+        deleted = False
+        if ticker_path.exists() and ticker_path.is_dir():
+            try:
+                await asyncio.to_thread(shutil.rmtree, ticker_path)
+                logger.info("Deleted old chart data for %s due to provider switch", normalized)
+                deleted = True
+            except Exception as e:
+                logger.error("Failed to delete chart data for %s: %s", normalized, e)
+                
+        return {"ticker": normalized, "provider": req.provider.upper(), "data_deleted": deleted}
 
     @app.post("/download", response_model=TickerResponse)
     async def request_download(body: TickerRequest) -> TickerResponse:
@@ -225,6 +298,59 @@ def create_api(
             content={"status": "accepted", "tickers_evaluated": count}
         )
 
+
+    @app.get("/staleness/report")
+    async def get_staleness_report() -> dict:
+        """Returns the current staleness distribution without triggering a sweep."""
+        return get_staleness_distribution(config, resolver, writer)
+
+    @app.get("/fallback/check/{ticker}")
+    async def check_yfinance(ticker: str) -> dict:
+        """Runs a quick check if a ticker exists in YFinance."""
+        from yfinance_client import YFinanceClient
+        yf_ticker = await YFinanceClient.resolve_ticker(ticker.upper())
+        exists = await YFinanceClient.check_availability(yf_ticker)
+        return {"ticker": ticker.upper(), "yf_ticker": yf_ticker, "yfinance_available": exists}
+
+    @app.get("/data/status/{ticker}")
+    async def get_data_status(ticker: str) -> dict:
+        """Returns whether the parquet folder exists, if it has data, and the last candle info."""
+        from pathlib import Path
+        from datetime import datetime, timezone
+        
+        ticker = ticker.upper()
+        parquet_dir = config.get_paths_config().parquet_dir
+        ticker_path = Path(parquet_dir) / ticker
+        
+        folder_exists = ticker_path.exists() and ticker_path.is_dir()
+        
+        tfs = config.get_timeframes_for_ticker(ticker)
+        if not tfs:
+            tfs = ["1D"]
+            
+        data_status = {}
+        for tf in tfs:
+            last_ts = writer.read_last_timestamp(ticker, tf)
+            if last_ts is None:
+                data_status[tf] = {"has_data": False}
+            else:
+                last_dt = datetime.fromtimestamp(float(last_ts), tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+                data_status[tf] = {
+                    "has_data": True,
+                    "last_candle_timestamp": float(last_ts),
+                    "last_candle_date": last_dt
+                }
+                
+        return {
+            "ticker": ticker,
+            "folder_exists": folder_exists,
+            "timeframes": data_status
+        }
+
+    @app.get("/status/connection")
+    async def get_connection_status() -> dict:
+        """Returns the IBKR Gateway connection status."""
+        return {"connected": gateway.is_connected()}
 
     @app.get("/status", response_model=StatusResponse)
     async def get_status() -> StatusResponse:
